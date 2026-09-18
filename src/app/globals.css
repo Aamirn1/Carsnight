@@ -43,7 +43,13 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* Cars Night - light palette with vibrant orange accent */
+/* Cars Night - light palette with vibrant golden accent */
+/* Golden brand colors:
+   - Golden (primary):   #F5B82E (deep gold) → used as the --primary token
+   - Golden hover/soft:  #FFD15A (light gold)
+   - Button bg:          linear-gradient(135deg, #F5B82E 0%, #C98216 100%)
+   - Button hover bg:     linear-gradient(135deg, #FFD15A 0%, #F5B82E 100%)
+*/
 :root {
   --radius: 0.75rem;
   --background: oklch(0.99 0.005 60);          /* near-white warm */
@@ -52,35 +58,41 @@
   --card-foreground: oklch(0.18 0.02 280);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.18 0.02 280);
-  --primary: oklch(0.65 0.22 35);              /* vibrant orange (#FF5A1F-like) */
-  --primary-foreground: oklch(0.99 0 0);
+  --primary: #C98216;                          /* deep gold (matches gradient end) */
+  --primary-foreground: oklch(0.18 0.02 280);  /* dark text on gold for readability */
   --secondary: oklch(0.96 0.01 280);           /* light grey */
   --secondary-foreground: oklch(0.2 0.02 280);
   --muted: oklch(0.96 0.005 280);
   --muted-foreground: oklch(0.5 0.015 280);
-  --accent: oklch(0.95 0.03 50);               /* warm light accent */
+  --accent: oklch(0.95 0.03 80);               /* warm light gold accent */
   --accent-foreground: oklch(0.2 0.02 280);
   --destructive: oklch(0.6 0.25 25);
   --border: oklch(0.92 0.005 280);
   --input: oklch(0.94 0.005 280);
-  --ring: oklch(0.65 0.22 35);                 /* matches primary */
-  --chart-1: oklch(0.65 0.22 35);              /* orange */
+  --ring: #C98216;                             /* matches primary */
+  --chart-1: #C98216;                           /* gold */
   --chart-2: oklch(0.6 0.18 250);              /* blue */
   --chart-3: oklch(0.65 0.15 160);             /* green */
-  --chart-4: oklch(0.7 0.2 80);                 /* yellow */
+  --chart-4: oklch(0.7 0.2 80);                /* yellow */
   --chart-5: oklch(0.55 0.2 300);              /* purple */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.18 0.02 280);
-  --sidebar-primary: oklch(0.65 0.22 35);
-  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-primary: #C98216;
+  --sidebar-primary-foreground: oklch(0.18 0.02 280);
   --sidebar-accent: oklch(0.96 0.005 280);
   --sidebar-accent-foreground: oklch(0.2 0.02 280);
   --sidebar-border: oklch(0.92 0.005 280);
-  --sidebar-ring: oklch(0.65 0.22 35);
+  --sidebar-ring: #C98216;
 
   /* Brand-specific tokens */
-  --brand-orange: oklch(0.65 0.22 35);
+  --brand-gold: #C98216;
+  --brand-gold-bright: #F5B82E;
+  --brand-gold-soft: #FFD15A;
   --brand-navy: oklch(0.25 0.04 270);
+
+  /* Brand gradients */
+  --brand-gradient: linear-gradient(135deg, #F5B82E 0%, #C98216 100%);
+  --brand-gradient-hover: linear-gradient(135deg, #FFD15A 0%, #F5B82E 100%);
 }
 
 .dark {
@@ -90,31 +102,31 @@
   --card-foreground: oklch(0.97 0 0);
   --popover: oklch(0.21 0.02 270);
   --popover-foreground: oklch(0.97 0 0);
-  --primary: oklch(0.7 0.22 35);
+  --primary: #F5B82E;                           /* brighter gold in dark mode */
   --primary-foreground: oklch(0.16 0.015 270);
   --secondary: oklch(0.27 0.02 270);
   --secondary-foreground: oklch(0.97 0 0);
   --muted: oklch(0.27 0.02 270);
   --muted-foreground: oklch(0.72 0.01 270);
-  --accent: oklch(0.32 0.05 35);
+  --accent: oklch(0.32 0.06 80);
   --accent-foreground: oklch(0.97 0 0);
   --destructive: oklch(0.7 0.2 25);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 14%);
-  --ring: oklch(0.7 0.22 35);
-  --chart-1: oklch(0.7 0.22 35);
+  --ring: #F5B82E;
+  --chart-1: #F5B82E;
   --chart-2: oklch(0.65 0.18 250);
   --chart-3: oklch(0.7 0.15 160);
   --chart-4: oklch(0.75 0.2 80);
   --chart-5: oklch(0.6 0.2 300);
   --sidebar: oklch(0.21 0.02 270);
   --sidebar-foreground: oklch(0.97 0 0);
-  --sidebar-primary: oklch(0.7 0.22 35);
+  --sidebar-primary: #F5B82E;
   --sidebar-primary-foreground: oklch(0.16 0.015 270);
   --sidebar-accent: oklch(0.27 0.02 270);
   --sidebar-accent-foreground: oklch(0.97 0 0);
   --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: oklch(0.7 0.22 35);
+  --sidebar-ring: #F5B82E;
 }
 
 @layer base {
@@ -126,6 +138,34 @@
     font-feature-settings: "rlig" 1, "calt" 1;
   }
   html { scroll-behavior: smooth; }
+
+  /* Golden gradient buttons — applies the brand gradient to all primary buttons.
+     Targets shadcn Button's default variant via [data-slot="button"] which has
+     the .bg-primary class, plus our explicit .btn-gold utility. */
+  [data-slot="button"].bg-primary,
+  [data-slot="button"].btn-gold,
+  button.bg-primary,
+  a.bg-primary {
+    background-image: var(--brand-gradient);
+    background-color: #C98216; /* fallback */
+    color: var(--primary-foreground);
+    border-color: transparent;
+    box-shadow: 0 2px 6px -1px rgba(201, 130, 22, 0.35);
+  }
+  [data-slot="button"].bg-primary:hover,
+  [data-slot="button"].btn-gold:hover,
+  button.bg-primary:hover,
+  a.bg-primary:hover {
+    background-image: var(--brand-gradient-hover);
+    background-color: #F5B82E; /* fallback */
+    box-shadow: 0 4px 12px -2px rgba(245, 184, 46, 0.45);
+  }
+
+  /* Gradient border for outline buttons that should match the brand.
+     (Optional — keeps outline buttons with the warm ring tone.) */
+  [data-slot="button"]:hover:not(.bg-primary):not(.btn-gold):not(.ghost):not(.link):not(.bg-destructive) {
+    border-color: #C98216;
+  }
 }
 
 /* Custom scrollbar for long lists */
@@ -194,9 +234,9 @@
   .parallax-bg { background-attachment: scroll; }
 }
 
-/* Gradient text */
+/* Gradient text — golden brand gradient */
 .gradient-text {
-  background: linear-gradient(135deg, var(--primary), oklch(0.6 0.18 250));
+  background: linear-gradient(135deg, #FFD15A 0%, #F5B82E 50%, #C98216 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;

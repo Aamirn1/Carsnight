@@ -42,7 +42,7 @@ export function HomeHero({ tagline, saleCount, rentCount, userCount }: Props) {
 
             <h1 className="mt-5 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-tight">
               <span className="block">Your global car</span>
-              <span className="block gradient-text">marketplace,</span>
+              <span className="block">marketplace,</span>
               <span className="block min-h-[1.2em]">
                 <Typewriter
                   phrases={[

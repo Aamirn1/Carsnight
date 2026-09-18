@@ -339,3 +339,33 @@ Final deliverables:
 - Full SEO: sitemap.xml, robots.txt, manifest, JSON-LD (Organization, WebSite, Vehicle, BreadcrumbList, FAQPage, ItemList)
 - Full security: bcrypt hashing, httpOnly session cookies, rate limiting, input validation, admin RBAC, audit logs
 - Full design: light palette, vibrant orange accent, typewriter hero, 3D float animations, glassmorphism, card-3d tilt, mobile-first responsive
+
+---
+Task ID: 9
+Agent: main (orchestrator)
+Task: Re-theme to golden palette (gradient buttons + remove hero gradient bar)
+
+Work Log:
+- Updated globals.css :root tokens:
+  - --primary: changed from oklch orange (#FF5A1F-like) to deep gold #C98216 (light mode) / #F5B82E (dark mode)
+  - --primary-foreground: dark ink-navy for readability on gold (instead of white)
+  - --ring, --chart-1, --sidebar-primary, --sidebar-ring: all switched to gold
+  - --accent: warm light gold (oklch 0.95 0.03 80)
+  - Added brand tokens: --brand-gold, --brand-gold-bright (#F5B82E), --brand-gold-soft (#FFD15A)
+  - Added --brand-gradient: linear-gradient(135deg, #F5B82E 0%, #C98216 100%)
+  - Added --brand-gradient-hover: linear-gradient(135deg, #FFD15A 0%, #F5B82E 100%)
+- Added CSS rules in @layer base that target all primary buttons via [data-slot="button"].bg-primary / button.bg-primary / a.bg-primary and apply the golden gradient as background-image, with the lighter hover gradient. Added a subtle gold glow shadow on hover.
+- Updated .gradient-text utility to use the golden 3-stop gradient (#FFD15A → #F5B82E → #C98216).
+- Removed the `gradient-text` class from the "marketplace," word in src/components/home-hero.tsx (per user request — the gradient bar below "Your global car" is now plain dark text).
+
+Stage Summary:
+- All primary buttons across the site now use: linear-gradient(135deg, #F5B82E 0%, #C98216 100%)
+- Hover state uses: linear-gradient(135deg, #FFD15A 0%, #F5B82E 100%)
+- All previously orange `text-primary` icons/texts now render in golden tones (because --primary is gold)
+- The hero "marketplace," word is now plain dark foreground — the gradient bar is gone
+- ESLint passes, no runtime errors in dev.log
+- Verified end-to-end with Agent Browser + VLM:
+  - Home page: Browse cars / Post a free ad / Get started free / See full pricing buttons all golden gradient; hover state confirmed lighter gold (#FFD15A → #F5B82E) via computed style + VLM; hero "marketplace," word now plain dark; announcement bar uses soft gold tint; all icons (ShieldCheck, Globe2, Bitcoin, Sparkles, Car) golden
+  - Pricing page: plan prices ($5/$8/$10) golden; "Most popular" badge golden gradient; Buy now buttons golden; checkmarks golden
+  - Cars for Sale: listing card prices golden; Apply filters button golden (computed style confirmed linear-gradient(135deg, rgb(245,184,46) 0%, rgb(201,130,22) 100%)); MapPin + filter icons golden
+  - Signin: Sign in button golden; marketing icons golden
