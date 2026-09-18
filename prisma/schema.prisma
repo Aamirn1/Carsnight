@@ -1,0 +1,117 @@
+// Cars Night - Global car marketplace schema
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  name          String?
+  passwordHash   String
+  role          String   @default("USER") // USER | ADMIN
+  country       String?
+  city          String?
+  phone         String?
+  avatarUrl     String?
+  freePostsUsed Int      @default(0) // out of 2 free
+  listingCredits Int     @default(0) // purchased credits
+  banned        Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  listings      Listing[]
+  transactions  Transaction[]
+  auditLogs     AuditLog[]
+}
+
+model Listing {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  category    String   // SALE | RENT
+  price       Float
+  currency    String   @default("USD")
+  // vehicle attrs
+  make        String
+  model       String
+  year        Int?
+  mileage     Int?
+  fuelType    String?  // Petrol | Diesel | Electric | Hybrid | LPG
+  transmission String? // Manual | Automatic | Semi-Automatic
+  bodyType    String?  // Sedan | SUV | Coupe | Hatchback | Truck | Van | Convertible
+  color       String?
+  // location
+  country     String
+  city        String
+  // rental
+  rentalPeriod String? // day | week | month (for RENT)
+  // media
+  images      String   // JSON array of URLs (max 5)
+  // moderation + ownership
+  status      String   @default("PENDING") // PENDING | APPROVED | REJECTED | EXPIRED
+  paidType    String   @default("FREE") // FREE | PAID
+  featured    Boolean  @default(false)
+  slug        String
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  views       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category, status, country, city])
+  @@index([userId])
+  @@index([slug])
+}
+
+model Plan {
+  id          String   @id @default(cuid())
+  name        String
+  price       Float
+  currency    String   @default("USD")
+  credits     Int      // number of listing credits
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+}
+
+model Transaction {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId        String?
+  amount        Float
+  currency      String   @default("USD")
+  paymentMethod String   // CARD | CRYPTO
+  cryptoWallet  String?
+  status        String   @default("PENDING") // PENDING | COMPLETED | FAILED
+  credits       Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  details   String?
+  ip        String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+}
