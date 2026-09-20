@@ -502,3 +502,60 @@ Stage Summary:
   - No native video UI: hasControls=false, video element is 1px×1px opacity 0 pointer-events-none -z-10 (completely hidden).
   - Scrolling past hero (scrollY 1400): normal light content (trust badges, categories) continues — sticky releases correctly.
   - Reverse scroll: video frame-by-frame reverses (90% → 7.25s, then scroll back to 5% → 0.41s).
+
+---
+Task ID: 13
+Agent: main (orchestrator)
+Task: Replace logo with frameless gold version, transparent-over-hero navbar, burger menu updates, rename Pricing→Plans, new Blog/About/Contact pages
+
+Work Log:
+- Processed the uploaded "ChatGPT Image Sep 20, 2026, 07_01_13 AM.png" (1774×887 RGBA PNG, thin light-gray car outline on transparent background) into a clean frameless gold logo:
+  - Cropped to content bbox (67,167,1714,767)
+  - Extracted the alpha channel (captures the car shape with anti-aliasing)
+  - Boosted contrast/brightness so faint edges become fully visible
+  - Composited a solid gold (#C98216) layer through the alpha mask → /public/logo-mark.png (1647×600, transparent bg, golden car silhouette, ~110KB)
+  - Also generated a square 256×256 version /public/logo-mark-square.png for favicons
+- Updated src/components/brand-mark.tsx:
+  - Removed the rounded-xl frame, shadow, and ring-1 ring-black/5 wrapper (frameless now)
+  - Switched to object-contain (preserves the car shape, no cropping)
+  - Increased logo size: sm h-7 w-77px, md h-10 w-110px, lg h-12 w-132px (was h-7/8/9 square — now ~3× wider to fit the landscape car silhouette)
+  - Added a `light` prop that renders the wordmark in white (for dark/hero backgrounds)
+- Updated src/components/ui/sheet.tsx: added a `hideClose` prop to SheetContent that hides the built-in X close button in the top-right corner (per user request to remove the extra cross from the burger menu)
+- Rewrote src/components/site-header.tsx with 5 changes:
+  1. Transparent-over-hero navbar: added a `scrolled` state initialized to `pathname !== "/"` (solid on inner pages, transparent on home). On the home page, a scroll listener flips it to solid once `window.scrollY > innerHeight * 0.7`. When transparent: bg-transparent, no border, no blur; nav links + Sign in button render in white; brand wordmark renders in white via `light` prop. When solid: bg-background/80 + backdrop-blur + border-b + dark text. Smooth 300ms transition.
+  2. Renamed "Pricing" → "Plans" in both desktop nav and burger menu (NAV_LINKS + BURGER_LINKS).
+  3. Added Blog, About, Contact to the burger menu (BURGER_LINKS array, positioned just below "Cars for Rent" and "Plans" — order: Home, Cars for Sale, Cars for Rent, Plans, Blog, About, Contact).
+  4. Removed the X close button from the burger menu (uses hideClose prop on SheetContent). Users close by tapping outside or navigating.
+  5. Moved Sign in / Sign up to a single row at the BOTTOM of the burger menu (grid-cols-2 gap-2, in a bordered footer section with mt-auto). Replaced the old in-list Sign in/Sign up entries.
+- Updated src/components/site-footer.tsx: renamed "Pricing Plans" → "Plans", reordered Company links to About/Blog/Contact/FAQ/Privacy/Terms.
+- Updated src/app/page.tsx: wrapped VideoScrollHero in a `<div className="-mt-16">` so the hero pulls up under the transparent navbar (the navbar overlays the top of the dark hero). The hero's sticky top-0 inner container still pins correctly.
+- Fixed a React 19 lint error (set-state-in-effect) by initializing `scrolled` state from `pathname` instead of setting it synchronously inside useEffect.
+- Built new src/app/blog/page.tsx (premium blog listing):
+  - Dark hero with "Insider guides, market trends & car reviews" headline + newsletter CTA
+  - Category pills row (All, Buying Guide, Rentals, Payments, Selling Tips, Market Insights)
+  - Featured article section with large image + full excerpt + metadata
+  - 5 blog post cards in a 3-col grid (Lamborghini wedding rental, crypto payments, selling photos, EV buyer's guide, rent vs lease vs buy)
+  - Newsletter signup CTA section with email input
+- Redesigned src/app/about/page.tsx (premium About page):
+  - Dark hero with "We're building the world's most human car marketplace" headline
+  - Stats bar (20+ countries, 14+ listings, 5+ sellers, 100% secure)
+  - Mission section with 4 value cards (Global, Crypto, Secure, Fair pricing)
+  - Vertical timeline (2025 The idea, 2026 Launch, 2026+ Where we're going)
+  - "What makes us different" section with 3 cards (Humans not bots, Cars first, Security is a feature)
+  - CTA section
+- Redesigned src/app/contact/contact-form.tsx (premium Contact page):
+  - Dark hero with "Let's talk. We're here to help." headline
+  - 4 contact info cards (Email, Live chat, Phone, Response time)
+  - Contact form with name, email, topic selector (4 pills: General, Support, Payments, Partnership), message textarea
+  - Sidebar: Headquarters card, Follow Cars Night (Twitter/Instagram/LinkedIn social links), abuse report card
+- Updated src/app/contact/page.tsx metadata (richer description + OG tags).
+
+Stage Summary:
+- New frameless gold car logo at /public/logo-mark.png (transparent bg, golden silhouette, larger in navbar)
+- Navbar transparent over the dark cinematic hero on home page, solid on all other pages and after scrolling past ~70% of the viewport
+- Burger menu: no X close button, links include Home/Cars for Sale/Cars for Rent/Plans/Blog/About/Contact, Sign in + Sign up in a single bottom row
+- "Pricing" → "Plans" everywhere (nav, burger, footer)
+- New premium Blog page (/blog) with featured article + 5 post cards + newsletter CTA
+- New premium About page (/about) with hero + stats + mission + timeline + differentiation + CTA
+- New premium Contact page (/contact) with hero + info cards + topic-tagged form + social sidebar
+- ESLint passes; all routes return 200; verified end-to-end with Agent Browser + VLM

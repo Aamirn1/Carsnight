@@ -1,54 +1,182 @@
 import Link from "next/link";
-import { ShieldCheck, Globe2, Bitcoin, Tag, Sparkles, Car } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import type { Metadata } from "next";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ShieldCheck, Globe2, Bitcoin, Tag, Sparkles, Car, Heart, Target, Users, Rocket } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "About Cars Night",
   description: "Cars Night is a global car marketplace on a mission to make buying, selling, and renting cars effortless, secure, and global — with crypto and card payments.",
   alternates: { canonical: "/about" },
+  openGraph: {
+    title: "About Cars Night — Your Global Car Marketplace",
+    description: "Our mission, our story, and what makes Cars Night different.",
+    type: "website",
+  },
 };
+
+const VALUES = [
+  { icon: Globe2, title: "Global by default", text: "Buyers and sellers across 20+ countries, with localized listings tuned to your country and city." },
+  { icon: Bitcoin, title: "Crypto-native", text: "Pay with Bitcoin, Ethereum, or USDT — no bank fees, no chargebacks, instant settlement worldwide." },
+  { icon: ShieldCheck, title: "Secure by design", text: "OWASP-aligned security, hashed passwords, rate-limited APIs, and audit logs for every admin action." },
+  { icon: Tag, title: "Fair pricing", text: "Two free ads for everyone. Upgrade with a one-time Pro Plan purchase from $5. Credits never expire." },
+];
+
+const STATS = [
+  { value: "20+", label: "Countries" },
+  { value: "14+", label: "Active listings" },
+  { value: "5+", label: "Verified sellers" },
+  { value: "100%", label: "Secure payments" },
+];
+
+const TIMELINE = [
+  { year: "2025", title: "The idea", text: "Cars Night was born from a simple frustration: buying a car online was fragmented, unsafe, and deeply local. We set out to fix that." },
+  { year: "2026", title: "Launch", text: "We opened to early users in 5 countries — the US, UK, Pakistan, Japan, and the UAE — with crypto payments from day one." },
+  { year: "2026+", title: "Where we're going", text: "Expanding to 50+ countries, AI-powered vehicle inspections, virtual test drives, and a mobile app — all while keeping the experience premium and human." },
+];
 
 export default function AboutPage() {
   return (
-    <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-      <div className="text-center">
-        <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 border border-primary/20 px-3 py-1 text-xs font-medium text-primary">
-          <Sparkles className="h-3.5 w-3.5" /> About Us
-        </span>
-        <h1 className="mt-4 text-4xl sm:text-5xl font-bold tracking-tight">
-          Your global car marketplace, <span className="gradient-text">no gravity needed</span>
-        </h1>
-        <p className="mt-5 text-lg text-muted-foreground max-w-2xl mx-auto">
-          Cars Night exists to make car transactions effortless, secure, and global — whether you&apos;re buying your first car, selling a supercar, or renting a Tesla for the weekend.
-        </p>
-      </div>
-
-      <div className="mt-12 grid sm:grid-cols-2 gap-6">
-        {[
-          { icon: Globe2, title: "Global by default", text: "Buyers and sellers across 20+ countries, with localized listings tuned to your country." },
-          { icon: Bitcoin, title: "Crypto-native", text: "Pay with Bitcoin, Ethereum, or USDT — no bank fees, no chargebacks, instant settlement." },
-          { icon: ShieldCheck, title: "Secure by design", text: "OWASP-aligned security, hashed passwords, rate-limited APIs, and audit logs for every admin action." },
-          { icon: Tag, title: "Fair pricing", text: "Two free ads for everyone. Upgrade with a one-time Pro Plan purchase from $5. Credits never expire." },
-        ].map((f, i) => (
-          <div key={i} className="rounded-2xl border bg-card p-6 shadow-sm">
-            <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary mb-3">
-              <f.icon className="h-5 w-5" />
-            </div>
-            <h2 className="font-semibold text-lg">{f.title}</h2>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{f.text}</p>
+    <div className="flex flex-col">
+      {/* Hero */}
+      <section className="relative overflow-hidden bg-foreground">
+        <div className="absolute inset-0 opacity-30">
+          <Image src="/hero-bg.png" alt="" fill priority sizes="100vw" className="object-cover" />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-foreground/50 via-foreground/70 to-foreground" />
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-white">
+          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md border border-white/25 px-3.5 py-1.5 text-xs sm:text-sm font-medium">
+            <Sparkles className="h-3.5 w-3.5 text-[#F5B82E]" /> About Cars Night
           </div>
-        ))}
-      </div>
+          <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] max-w-3xl">
+            We&apos;re building the world&apos;s most
+            <span className="block text-[#F5B82E]">human car marketplace</span>
+          </h1>
+          <p className="mt-5 text-base sm:text-lg text-white/80 max-w-2xl">
+            Cars Night exists to make car transactions effortless, secure, and global — whether you&apos;re buying your first car, selling a supercar, or renting a Tesla for the weekend.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Button asChild size="lg" className="btn-gold">
+              <Link href="/signup"><Sparkles className="h-4 w-4 mr-1" /> Join free</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="bg-white/10 backdrop-blur-md border-white/30 text-white hover:bg-white/20 hover:text-white">
+              <Link href="/contact">Get in touch</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
 
-      <div className="mt-12 rounded-3xl border bg-gradient-to-br from-primary/10 to-background p-8 text-center">
-        <Car className="mx-auto h-8 w-8 text-primary" />
-        <h2 className="mt-3 text-2xl font-bold">Join Cars Night today</h2>
-        <p className="mt-2 text-muted-foreground">Two free listings, no credit card needed. Reach buyers and renters worldwide.</p>
-        <Button asChild className="mt-5 bg-primary text-primary-foreground hover:bg-primary/90">
-          <Link href="/signup">Get started free</Link>
-        </Button>
-      </div>
+      {/* Stats */}
+      <section className="border-y bg-card/40">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {STATS.map((s, i) => (
+              <div key={i} className="text-center">
+                <div className="text-4xl sm:text-5xl font-bold tracking-tight text-primary">{s.value}</div>
+                <div className="mt-1 text-sm text-muted-foreground">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Mission */}
+      <section className="py-16 sm:py-20">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <Badge variant="outline" className="mb-3 text-primary border-primary/30"><Target className="h-3 w-3 mr-1" /> Our Mission</Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">A car marketplace that respects your time, money, and trust</h2>
+          </div>
+          <div className="mt-10 grid sm:grid-cols-2 gap-6">
+            {VALUES.map((v, i) => (
+              <div key={i} className="group rounded-2xl border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start gap-4">
+                  <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors shrink-0">
+                    <v.icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">{v.title}</h3>
+                    <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{v.text}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Story timeline */}
+      <section className="py-16 sm:py-20 bg-card/30">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <Badge variant="outline" className="mb-3 text-primary border-primary/30"><Rocket className="h-3 w-3 mr-1" /> Our Story</Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">From a simple idea to a global marketplace</h2>
+          </div>
+          <div className="relative">
+            {/* Vertical line */}
+            <div className="absolute left-4 sm:left-1/2 sm:-translate-x-1/2 top-0 bottom-0 w-px bg-border" />
+            <div className="space-y-10">
+              {TIMELINE.map((t, i) => (
+                <div key={i} className={`relative flex sm:items-center ${i % 2 === 0 ? "sm:flex-row" : "sm:flex-row-reverse"}`}>
+                  <div className="hidden sm:block sm:w-1/2" />
+                  <div className="absolute left-4 sm:left-1/2 sm:-translate-x-1/2 w-3 h-3 rounded-full bg-primary ring-4 ring-background" />
+                  <div className={`pl-12 sm:pl-0 sm:w-1/2 sm:px-8 ${i % 2 === 0 ? "sm:text-right" : "sm:text-left"}`}>
+                    <div className="rounded-2xl border bg-card p-6 shadow-sm">
+                      <div className="text-2xl font-bold text-primary">{t.year}</div>
+                      <h3 className="mt-1 font-semibold text-lg">{t.title}</h3>
+                      <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{t.text}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* What makes us different */}
+      <section className="py-16 sm:py-20">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
+          <Badge variant="outline" className="mb-3 text-primary border-primary/30"><Heart className="h-3 w-3 mr-1" /> What Makes Us Different</Badge>
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Built for car people, by car people</h2>
+          <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
+            We&apos;re a small, obsessive team of car enthusiasts and engineers. We&apos;ve bought cars the painful way — and we&apos;re building the marketplace we wish existed. Every decision starts with a simple question: would we use this ourselves?
+          </p>
+          <div className="mt-12 grid sm:grid-cols-3 gap-6 text-left">
+            <div className="rounded-2xl border bg-card p-6 shadow-sm">
+              <Users className="h-6 w-6 text-primary" />
+              <h3 className="mt-3 font-semibold">Humans, not bots</h3>
+              <p className="mt-1 text-sm text-muted-foreground">Every listing is reviewed by a real person. No spam, no fake dealers, no AI-generated inventory.</p>
+            </div>
+            <div className="rounded-2xl border bg-card p-6 shadow-sm">
+              <Car className="h-6 w-6 text-primary" />
+              <h3 className="mt-3 font-semibold">Cars first</h3>
+              <p className="mt-1 text-sm text-muted-foreground">The car is the hero. Our cinematic hero, large listing photos, and minimal UI keep the spotlight where it belongs.</p>
+            </div>
+            <div className="rounded-2xl border bg-card p-6 shadow-sm">
+              <ShieldCheck className="h-6 w-6 text-primary" />
+              <h3 className="mt-3 font-semibold">Security is a feature</h3>
+              <p className="mt-1 text-sm text-muted-foreground">Hashed passwords, rate limits, audit logs, crypto escrow. We invest in security so you don&apos;t have to worry.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="pb-16 sm:pb-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="rounded-3xl border bg-gradient-to-br from-primary/10 to-background p-8 sm:p-12 text-center shadow-sm">
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Join Cars Night today</h2>
+            <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
+              Two free listings, no credit card needed. Reach buyers and renters worldwide.
+            </p>
+            <Button asChild size="lg" className="mt-6 btn-gold">
+              <Link href="/signup"><Sparkles className="h-4 w-4 mr-1" /> Get started free</Link>
+            </Button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

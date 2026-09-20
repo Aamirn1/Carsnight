@@ -3,8 +3,13 @@ import { ContactForm } from "./contact-form";
 
 export const metadata: Metadata = {
   title: "Contact Cars Night",
-  description: "Reach the Cars Night team — support, partnerships, and feedback. We reply within one business day.",
+  description: "Get in touch with the Cars Night team — support, partnerships, and feedback. Email, live chat, or phone. We reply within one business day.",
   alternates: { canonical: "/contact" },
+  openGraph: {
+    title: "Contact Cars Night",
+    description: "Reach the Cars Night team — support, partnerships, and feedback. We reply within one business day.",
+    type: "website",
+  },
 };
 
 export default function ContactPage() {

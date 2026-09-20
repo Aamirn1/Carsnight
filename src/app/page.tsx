@@ -61,14 +61,18 @@ export default async function HomePage() {
     <div className="flex flex-col">
       {/* Cinematic scroll-controlled video hero. The video timeline is scrubbed
           by the user's scroll position over ~700px (desktop) / ~600px (mobile).
-          Single persistent <video> element, no JPG frames, no database. */}
-      <VideoScrollHero
-        tagline={tagline}
-        announcement={announcement}
-        saleCount={saleCount}
-        rentCount={rentCount}
-        userCount={userCount}
-      />
+          Single persistent <video> element, no JPG frames, no database.
+          The hero is pulled up under the transparent navbar (-mt-16 = -64px,
+          the navbar height) so the navbar overlays the top of the dark hero. */}
+      <div className="-mt-16">
+        <VideoScrollHero
+          tagline={tagline}
+          announcement={announcement}
+          saleCount={saleCount}
+          rentCount={rentCount}
+          userCount={userCount}
+        />
+      </div>
 
       {/* Trust badges */}
       <section className="border-y bg-card/40">
