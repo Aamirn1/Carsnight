@@ -369,3 +369,40 @@ Stage Summary:
   - Pricing page: plan prices ($5/$8/$10) golden; "Most popular" badge golden gradient; Buy now buttons golden; checkmarks golden
   - Cars for Sale: listing card prices golden; Apply filters button golden (computed style confirmed linear-gradient(135deg, rgb(245,184,46) 0%, rgb(201,130,22) 100%)); MapPin + filter icons golden
   - Signin: Sign in button golden; marketing icons golden
+
+---
+Task ID: 10
+Agent: main (orchestrator)
+Task: Replace navbar logo icon with the user-uploaded brand emblem + use a stylish font for the wordmark
+
+Work Log:
+- Inspected the uploaded logo at /home/z/my-project/upload/IMG-20260918-WA0005.jpg (1280x640 JPEG, sports car silhouette in gold/yellow on solid black background).
+- Wrote scripts/process-logo.ts using sharp to generate 4 versions from the source:
+  - /public/logo-mark.png (256x256 black square emblem with the gold car centered) — used in navbar + footer BrandMark
+  - /public/favicon-64.png (64x64) — browser tab icon
+  - /public/apple-icon.png (180x180) — Apple touch icon
+  - /public/logo-full.png (600x300) — landscape logo for OG image / footer / about page
+- Updated src/app/layout.tsx:
+  - Loaded Outfit font (500/600/700/800 weights) as --font-outfit — a geometric modern sans for the brand wordmark
+  - Loaded Playfair Display font (500/600/700, normal+italic) as --font-playfair — refined serif for elegant accents (available for future use)
+  - Added the Outfit + Playfair CSS variables to the body className
+  - Updated metadata.icons to use favicon-64.png + logo-mark.png + apple-icon.png
+  - Added /logo-full.png to openGraph.images array
+  - Added colorScheme: "light dark" to viewport
+- Updated src/components/brand-mark.tsx:
+  - Replaced the lucide Car icon span with an <Image> using /logo-mark.png (gold-on-black emblem)
+  - Wrapped in rounded-xl overflow-hidden with ring-1 ring-black/5 for a premium look
+  - Wordmark now uses font-family: var(--font-outfit) (Outfit) instead of the default body font
+  - Increased gap-2 → gap-2.5 between the emblem and wordmark
+- Updated src/app/manifest.ts:
+  - Icons array now references favicon-64.png, logo-mark.png, apple-icon.png
+  - theme_color updated to #C98216 (brand gold)
+
+Stage Summary:
+- Navbar brand mark now shows the user's uploaded gold-on-black car emblem (256x256, scaled to 40px)
+- Wordmark "CarsNight" rendered in Outfit (geometric modern sans, bold) — looks more premium than default Geist body font
+- "Night" portion remains in golden color (--primary)
+- Footer brand mark (size="sm") uses the same emblem + font, just smaller
+- Browser tab favicon now uses the gold-on-black emblem
+- All size variants (favicon-64, logo-mark 256, apple-icon 180) generated and referenced
+- ESLint passes; verified end-to-end with Agent Browser + VLM on navbar + footer + about page

@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Outfit, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "@/components/providers";
@@ -15,6 +15,23 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// Stylish display font for the brand wordmark (luxury feel)
+const outfit = Outfit({
+  variable: "--font-outfit",
+  subsets: ["latin"],
+  weight: ["500", "600", "700", "800"],
+  display: "swap",
+});
+
+// Refined serif for occasional elegant accents
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  style: ["normal", "italic"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -34,8 +51,11 @@ export const metadata: Metadata = {
   creator: "Cars Night",
   applicationName: "Cars Night",
   icons: {
-    icon: [{ url: "/logo.png", type: "image/png" }],
-    apple: "/logo.png",
+    icon: [
+      { url: "/favicon-64.png", type: "image/png", sizes: "64x64" },
+      { url: "/logo-mark.png", type: "image/png", sizes: "256x256" },
+    ],
+    apple: "/apple-icon.png",
   },
   openGraph: {
     type: "website",
@@ -44,7 +64,10 @@ export const metadata: Metadata = {
     siteName: "Cars Night",
     title: "Cars Night — Your Global Car Marketplace",
     description: "Buy, sell, and rent cars worldwide. 2 free listings, crypto payments, secure & SEO-optimized.",
-    images: [{ url: "/hero-bg.png", width: 1344, height: 768, alt: "Cars Night marketplace" }],
+    images: [
+      { url: "/logo-full.png", width: 600, height: 300, alt: "Cars Night logo" },
+      { url: "/hero-bg.png", width: 1344, height: 768, alt: "Cars Night marketplace" },
+    ],
   },
   twitter: {
     card: "summary_large_image",
@@ -70,6 +93,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
+  colorScheme: "light dark",
 };
 
 export default function RootLayout({
@@ -78,7 +102,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground min-h-screen flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} ${playfair.variable} antialiased bg-background text-foreground min-h-screen flex flex-col`}
       >
         <Providers>
           <ScrollToTop />
