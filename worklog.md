@@ -406,3 +406,46 @@ Stage Summary:
 - Browser tab favicon now uses the gold-on-black emblem
 - All size variants (favicon-64, logo-mark 256, apple-icon 180) generated and referenced
 - ESLint passes; verified end-to-end with Agent Browser + VLM on navbar + footer + about page
+
+---
+Task ID: 11
+Agent: main (orchestrator)
+Task: Build scroll-controlled frame-by-frame cinematic hero from uploaded video frames
+
+Work Log:
+- Extracted /home/z/my-project/upload/ezgif-633bad0d84c99540-jpg.zip → /home/z/my-project/public/hero-frames/ (240 JPGs, 1280x720, 6.7MB total). Frames numbered ezgif-frame-001.jpg .. ezgif-frame-240.jpg.
+- Inspected frame 1, 120, 240 via VLM: animation shows a white Lamborghini Aventador going from front-facing low-angle → side profile with motion blur (camera arcs around the car).
+- Wrote src/components/scroll-frame-hero.tsx — a client component with:
+  - Canvas-based frame renderer (getContext("2d", { alpha: false }) for opaque rendering)
+  - Sticky-pinned hero: section height = 100vh + 600px (desktop) / 100vh + 500px (mobile), sticky inner = 100vh. This gives exactly 600px (or 500px on mobile) of scroll to play all 240 frames — within the requested 500-700px range.
+  - Scroll → target frame mapping: progress = clamp(0,1, -rect.top / (rect.height - innerHeight)); target = progress × 239
+  - Lerp smoothing: current += (target - current) × 0.18 — gives ~5-6 frame catch-up (≈100ms) so rapid scrolling decelerates smoothly without jitter
+  - Progressive preload: first 30 frames loaded in parallel (user can start scrolling immediately); remaining 210 frames load sequentially in background with setTimeout(0) yielding
+  - Deduped loader: loadingPromiseRef Map prevents duplicate concurrent Image() requests for the same frame
+  - Failed-frame handling: loadFrame resolves null on error; canvas fills black for that frame and continues to next
+  - object-fit: cover canvas scaling (centered, no distortion): image wider than canvas → fit height crop sides; image taller → fit width crop top/bottom
+  - DPR-aware canvas backing store (capped at 2 for memory)
+  - Only redraws when frame index changes or needsRedrawRef is set (resize, newly-loaded frame) — so the rAF loop is essentially free when paused on a loaded frame
+  - When a frame finishes loading asynchronously, sets needsRedrawRef = true so it appears even if the user is paused on it
+  - Scroll hint ("Scroll to explore" + bouncing chevron) fades out via direct DOM style updates (no React state, no re-renders during scroll)
+  - Overlay content: announcement chip (uses settings.announcement text), H1 "Your global car marketplace" + Typewriter, tagline, 2 CTA buttons (Browse cars in btn-gold gradient, Post a free ad in glass outline), 3 mini stats
+  - Legibility gradients (top/bottom + left) over the canvas so white text reads on any frame
+- Updated src/app/page.tsx:
+  - Removed the standalone announcement bar (the hero's chip now carries the announcement text)
+  - Replaced <HomeHero /> with <ScrollFrameHero tagline=... announcement=... saleCount=... rentCount=... userCount=... />
+  - Rest of the home page (trust badges, categories, featured listings, how-it-works, stats, pricing preview, CTA) unchanged
+- Kept src/components/home-hero.tsx (unused but not deleted, in case of revert)
+
+Stage Summary:
+- 240 JPG frames extracted to /public/hero-frames/
+- src/components/scroll-frame-hero.tsx created (canvas + scroll-pinned + lerp + progressive preload + deduped loader + overlay)
+- src/app/page.tsx updated to use ScrollFrameHero
+- ESLint passes; home renders 200 OK with no console errors
+- Verified end-to-end with Agent Browser:
+  - Initial load: frame 1 (front-facing white Lamborghini) + full text overlay + "Scroll to explore" hint visible
+  - 50% scroll (frame 120): canvas center pixel changed to [194,203,212], VLM confirmed matching frame 120 (front-three-quarter angle)
+  - 95% scroll (frame 227): VLM confirmed side-profile Lamborghini with motion blur (final frames)
+  - Scrolled back up to ~22% (frame 54): animation reversed smoothly, VLM confirmed matching frame 054 (front-facing angle returned)
+  - Scrolled past hero (scrollY 1200): normal light-themed content (trust badges, categories) continues — sticky releases correctly
+  - Mobile (390x844): scroll distance = 500px (within requested 500-700px), buttons stack vertically, car visible (center-cropped to portrait), text readable
+  - Performance: only redraws when frame index changes (verified via lastDrawnFrameRef pattern); no React re-renders during scroll (all state in refs); rAF-based

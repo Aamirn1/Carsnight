@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ListingCard } from "@/components/listing-card";
 import { Typewriter } from "@/components/typewriter";
-import { HomeHero } from "@/components/home-hero";
+import { ScrollFrameHero } from "@/components/scroll-frame-hero";
 import {
   Car, ArrowRight, ShieldCheck, Globe2, Bitcoin, Sparkles,
   Tag, TrendingUp, Users, ListChecks, Search, PenLine, CreditCard,
@@ -59,15 +59,16 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col">
-      {/* Announcement bar */}
-      <div className="w-full bg-gradient-to-r from-primary/15 via-primary/10 to-primary/15 border-b border-primary/20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-2 text-center text-xs sm:text-sm font-medium text-foreground/80">
-          <Sparkles className="inline h-3.5 w-3.5 mr-1 text-primary" />
-          {announcement}
-        </div>
-      </div>
-
-      <HomeHero tagline={tagline} saleCount={saleCount} rentCount={rentCount} userCount={userCount} />
+      {/* Cinematic scroll-controlled frame-by-frame car animation hero.
+          The announcement is now a chip inside the hero overlay, so the hero
+          fills the viewport on initial load for a premium feel. */}
+      <ScrollFrameHero
+        tagline={tagline}
+        announcement={announcement}
+        saleCount={saleCount}
+        rentCount={rentCount}
+        userCount={userCount}
+      />
 
       {/* Trust badges */}
       <section className="border-y bg-card/40">
