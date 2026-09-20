@@ -449,3 +449,56 @@ Stage Summary:
   - Scrolled past hero (scrollY 1200): normal light-themed content (trust badges, categories) continues — sticky releases correctly
   - Mobile (390x844): scroll distance = 500px (within requested 500-700px), buttons stack vertically, car visible (center-cropped to portrait), text readable
   - Performance: only redraws when frame index changes (verified via lastDrawnFrameRef pattern); no React re-renders during scroll (all state in refs); rAF-based
+
+---
+Task ID: 12
+Agent: main (orchestrator)
+Task: Replace JPG-frame hero with MP4-based scroll-controlled video hero
+
+Work Log:
+- Inspected uploaded /home/z/my-project/upload/Car_accelerates_toward_camera_20260920062453.mp4: 1280x720, 24fps, 8s, 192 frames, ~2.8MB, H.264 High profile.
+- Re-encoded for fast scroll-scrubbing using ffmpeg + libx264:
+  - Desktop: /public/videos/car-hero.mp4 — 1280x720, GOP=1 (ALL frames are keyframes for instant seeking), baseline profile, no B-frames, faststart (moov atom at byte 36), CRF 30, ~4.5MB
+  - Mobile:  /public/videos/car-hero-mobile.mp4 — 854x480, GOP=1, baseline profile, no B-frames, faststart, CRF 32, ~2.0MB
+  - All frames are keyframes (verified via ffprobe: every "frame,1," row) so the browser can seek to any frame without re-decoding from a previous keyframe — this is the key optimization for smooth scroll-scrubbing.
+- Generated poster frames (shown instantly on load before the MP4 buffers):
+  - /public/car-poster.webp (1280x720, 16KB, WebP)
+  - /public/car-poster-mobile.webp (854x480, 10KB, WebP)
+  - /public/car-poster.jpg (fallback, 106KB)
+- Wrote src/components/video-scroll-hero.tsx — a client component with:
+  - Single persistent <video> element (muted, playsInline, preload="auto", poster=...). NEVER destroyed/recreated. No `controls` attribute → no native play/timeline/volume/fullscreen UI. The video is hidden offscreen (1px, opacity 0, pointer-events none, -z-10) and used purely as a source for the canvas.
+  - Canvas-based rendering: the video is drawn onto a <canvas> each rAF tick. Canvas gives clean GPU compositing + lets us overlay legibility gradients + guarantees no native video UI can ever leak through. Uses object-fit: cover math (centered, no distortion; preserves the car's proportions, just crops edges). DPR-aware backing store (capped at 2× for memory).
+  - Sticky-pinned hero: section = 100vh + 700px (desktop) / 100vh + 600px (mobile). Sticky inner = 100vh. So the canvas pins for exactly ~700px (desktop) / ~600px (mobile) of scroll — within the requested 600-800px range.
+  - Scroll → target time: progress = clamp(0,1, -rect.top / (rect.height - innerHeight)); target = progress × video.duration.
+  - Lerp smoothing: currentTimeRef += (target - currentTimeRef) × 0.18 → ~100ms catch-up so rapid mouse-wheel/trackpad decelerates cleanly. Tightly coupled to scroll position (no independent playback).
+  - The video NEVER autoplays independently — currentTime is purely a function of scroll position. When the user stops scrolling, the video stays at the corresponding time. Scrolling up reverses the video frame-by-frame.
+  - When the user reaches 100% progress (end of trigger zone), the sticky releases and the rest of the website scrolls normally.
+  - Progressive loading + poster fallback: poster <img> shows instantly on load (zero JS overhead). The video loads in the background via preload="auto". A "Loading cinematic…" indicator is shown briefly until the video's loadedmetadata/loadeddata/canplay event fires (or until readyState >= 1 + videoWidth > 0 are detected synchronously — handles the case where the video finished loading from HTTP cache BEFORE the React effect attached listeners). Once the canvas draws its first real frame, the poster <img> fades out (opacity transition).
+  - Graceful fallback: if the video fails to load (error event), the poster remains visible and the hero still works as a static image.
+  - Performance: all animation state in refs (no React re-renders during scroll). rAF loop only draws when currentTime changes (or needsRedrawRef is set — resize, first frame ready, seeked event). Only seeks the video when the time delta > 0.01s (avoids spamming currentTime which triggers re-decodes). requestAnimationFrame-driven. Passive scroll listener.
+  - Mobile detection via matchMedia("(max-width: 768px), (max-height: 500px)") → swaps to the smaller 854x480 MP4 + mobile poster.
+  - Premium overlay (unchanged from ScrollFrameHero): announcement chip, H1 + Typewriter, tagline, 2 CTA buttons (Browse cars in gold gradient, Post a free ad in glass outline), 3 mini stats. Legibility gradients (top/bottom + left). "Scroll to explore" hint with bouncing chevron that fades out via direct DOM style updates (no re-renders).
+- Bug fixes during testing:
+  1. Initial canvas was solid black because the video's loadeddata/canplay events fired before the React effect attached listeners (HTTP cache). Fixed by checking readyState + videoWidth synchronously in the effect and calling markReady() immediately if already loaded.
+  2. Mobile video seek got stuck at seeking=true because markReady() was calling v.currentTime = 0 on every canplay/loadeddata event, fighting with the scroll-driven seeking. Fixed by only seeking to 0 on the FIRST loadedmetadata event, and making markReady() just set videoReady=true + needsRedrawRef=true without touching currentTime.
+  3. Draw function was too strict (required readyState >= 2) and returned false when readyState dropped to 1 during seeks. Relaxed to only require videoWidth > 0 (HAVE_METADATA) — drawImage on a video with metadata is safe and the poster covers any blank frames.
+- Integrated into src/app/page.tsx: replaced <ScrollFrameHero /> with <VideoScrollHero /> (same props).
+- Removed the now-unused src/components/scroll-frame-hero.tsx.
+- Deleted /public/hero-frames/ (240 JPGs, 6.7MB) — no longer needed since we use the MP4 as a single optimized video asset (per the user's instruction: "Do not use a JPG frame sequence").
+
+Stage Summary:
+- 4 static assets in /public/videos/ + /public/car-poster*.webp:
+  - car-hero.mp4 (desktop, 1280x720, 4.5MB, all-keyframe, faststart)
+  - car-hero-mobile.mp4 (mobile, 854x480, 2.0MB, all-keyframe, faststart)
+  - car-poster.webp (16KB), car-poster-mobile.webp (10KB)
+- src/components/video-scroll-hero.tsx: single persistent <video> + canvas + rAF + lerp + poster fallback + mobile swap
+- src/app/page.tsx uses VideoScrollHero
+- Old ScrollFrameHero + 240 JPG frames deleted
+- ESLint passes; home renders 200 OK; no console errors
+- Verified end-to-end with Agent Browser:
+  - Initial load: poster shows instantly (white Lamborghini front view), then video frame 1 takes over as the MP4 buffers (~3-5s on first load, instant on reload). Loading indicator visible briefly then disappears.
+  - Desktop (1280x800): 50% scroll → videoTime 3.59s (matches target 3.43s ± lerp); 90% scroll → videoTime 7.25s; 5% reverse scroll → videoTime 0.41s. All seeks completed with seeking=false (instant thanks to all-keyframe encoding).
+  - Mobile (390x844): uses car-hero-mobile.mp4 (854x480), 600px scroll distance, 42% scroll → videoTime 3.40s. Side-profile Lamborghini visible (VLM confirmed angle changed from initial front view).
+  - No native video UI: hasControls=false, video element is 1px×1px opacity 0 pointer-events-none -z-10 (completely hidden).
+  - Scrolling past hero (scrollY 1400): normal light content (trust badges, categories) continues — sticky releases correctly.
+  - Reverse scroll: video frame-by-frame reverses (90% → 7.25s, then scroll back to 5% → 0.41s).

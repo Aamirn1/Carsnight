@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ListingCard } from "@/components/listing-card";
 import { Typewriter } from "@/components/typewriter";
-import { ScrollFrameHero } from "@/components/scroll-frame-hero";
+import { VideoScrollHero } from "@/components/video-scroll-hero";
 import {
   Car, ArrowRight, ShieldCheck, Globe2, Bitcoin, Sparkles,
   Tag, TrendingUp, Users, ListChecks, Search, PenLine, CreditCard,
@@ -59,10 +59,10 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col">
-      {/* Cinematic scroll-controlled frame-by-frame car animation hero.
-          The announcement is now a chip inside the hero overlay, so the hero
-          fills the viewport on initial load for a premium feel. */}
-      <ScrollFrameHero
+      {/* Cinematic scroll-controlled video hero. The video timeline is scrubbed
+          by the user's scroll position over ~700px (desktop) / ~600px (mobile).
+          Single persistent <video> element, no JPG frames, no database. */}
+      <VideoScrollHero
         tagline={tagline}
         announcement={announcement}
         saleCount={saleCount}
