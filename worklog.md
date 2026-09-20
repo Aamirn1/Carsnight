@@ -559,3 +559,39 @@ Stage Summary:
 - New premium About page (/about) with hero + stats + mission + timeline + differentiation + CTA
 - New premium Contact page (/contact) with hero + info cards + topic-tagged form + social sidebar
 - ESLint passes; all routes return 200; verified end-to-end with Agent Browser + VLM
+
+---
+Task ID: 14
+Agent: main (orchestrator)
+Task: Replace navbar "Cars Night" text with brush-script wordmark matching the user's reference image
+
+Work Log:
+- Analyzed the uploaded /home/z/my-project/upload/Screenshot_20260920-071909.jpg (720x168 JPEG): the text "Cars Night" rendered in a modern brush script / calligraphy font with high contrast between thick downstrokes and thin upstrokes, exaggerated ascenders, and a sweeping decorative entry stroke on the 'C'. VLM identified it as closest to "Allura" (Google Font) but noted the exact look has more dramatic thick/thin contrast than the standard Allura.
+- Decision: rather than approximating with a web font, take the user's instruction "if you didn't find the exact font then redesign the same provided image text in white and golden as current style and use that in place of cars night text in nav bar". So I recolored the ORIGINAL text image (which preserves the exact brush script the user wants) into a transparent PNG wordmark.
+- Wrote a Python (PIL) script that:
+  1. Loaded the source JPEG, computed grayscale, and derived an alpha channel = (255 - gray) so the white background becomes transparent and the black text becomes the visible shape.
+  2. Detected the word boundary by finding the largest vertical gap (cols 186-207, 21px wide) between "Cars" and "Night" → split column = 197.
+  3. Cropped to the content bbox (with 6px padding) → 683x168 wordmark.
+  4. Generated TWO variants:
+     - public/brand-wordmark-light.png → white "Cars" + gold #C98216 "Night" (for dark/hero backgrounds)
+     - public/brand-wordmark-dark.png  → dark ink (20,20,30) "Cars" + gold "Night" (for light navbar backgrounds)
+  5. Both are RGBA PNGs with transparent backgrounds, ~31KB each.
+- Updated src/components/brand-mark.tsx:
+  - Replaced the previous Outfit-font text wordmark with an <Image> that loads /brand-wordmark-light.png or /brand-wordmark-dark.png based on the `light` prop.
+  - The `light` prop is already passed by SiteHeader based on whether the navbar is transparent (over the hero) or solid (inner pages / scrolled).
+  - Wordmark dimensions: sm h-6 w-97px, md h-9 w-145px, lg h-11 w-177px (~4:1 aspect matching the source image).
+  - Kept the frameless gold car logo (logo-mark.png) at the same size as before, now followed by the brush-script wordmark image.
+- Deleted the intermediate /public/brand-wordmark.png and /public/brand-wordmark-black.png (only the two named variants remain).
+
+Stage Summary:
+- The exact brush-script "Cars Night" wordmark from the user's reference image is now used in the navbar (as a recolored transparent PNG), preserving the original font's character — sweeping 'C', thick/thin contrast, exaggerated ascenders, hand-lettered rhythm.
+- Two variants ensure readability on both backgrounds:
+  - White "Cars" + gold "Night" → over the dark cinematic hero (transparent navbar)
+  - Dark "Cars" + gold "Night" → on the solid light navbar (inner pages / after scrolling)
+- Colors preserved per user instruction: "do not change the colors just change the font" — the gold (#C98216) is unchanged, only the font/wordmark style changed to match the reference.
+- Verified end-to-end with Agent Browser + VLM:
+  - Transparent navbar over hero: ✅ golden car logo + brush-script "Cars Night" (white Cars + gold Night)
+  - Solid navbar on /cars-for-sale: ✅ golden car logo + brush-script "Cars Night" (dark Cars + gold Night)
+  - Footer on /about: ✅ same dark variant on light background
+  - Mobile burger menu: ✅ dark variant on the light menu background
+- ESLint passes; all routes return 200; no console errors.
