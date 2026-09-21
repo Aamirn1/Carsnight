@@ -595,3 +595,31 @@ Stage Summary:
   - Footer on /about: ✅ same dark variant on light background
   - Mobile burger menu: ✅ dark variant on the light menu background
 - ESLint passes; all routes return 200; no console errors.
+
+---
+Task ID: 15
+Agent: main (orchestrator)
+Task: Remove the car image logo — keep only the brush-script text wordmark in the navbar
+
+Work Log:
+- Updated src/components/brand-mark.tsx:
+  - Removed the entire car-logo <span> block (the <Image src="/logo-mark.png"> element) — only the brush-script "Cars Night" wordmark image remains.
+  - Removed the `gap-2` spacing on the Link (no longer needed since there's only one child).
+  - Increased the wordmark size since it's now the sole brand element:
+    - sm: h-7 w-113px (was h-6 w-97px)
+    - md: h-11 w-178px (was h-9 w-145px)
+    - lg: h-14 w-226px (was h-11 w-177px)
+  - Updated the <Image> alt to "Cars Night — luxury car marketplace" (it was previously on the car icon).
+  - Kept the `light` prop logic: still swaps between /brand-wordmark-light.png (white Cars + gold Night, for dark/hero) and /brand-wordmark-dark.png (dark Cars + gold Night, for light navbar).
+- No other files changed — SiteHeader, SiteFooter, and the burger menu all use <BrandMark> so they all pick up the text-only version automatically.
+
+Stage Summary:
+- The navbar (and footer + burger menu) now shows ONLY the brush-script "Cars Night" text wordmark — no car image/logo icon beside it.
+- Two variants still swap based on background (transparent-over-hero → white Cars + gold Night; solid light navbar → dark Cars + gold Night).
+- Wordmark slightly larger now that it's the sole brand element.
+- Verified end-to-end with Agent Browser + VLM:
+  - Transparent navbar over hero: ✅ "only the 'Cars Night' text wordmark in brush script, no car image/icon logo beside it, 'Cars' white, 'Night' golden"
+  - Solid navbar on /cars-for-sale: ✅ "solely the 'Cars Night' text wordmark in brush script, no car image/icon beside it, 'Cars' dark/black, 'Night' golden"
+  - Footer on /about: ✅ "text wordmark in brush script without a car icon, 'Cars' dark, 'Night' golden"
+  - Mobile burger menu: ✅ "only the 'Cars Night' text wordmark in brush script, no car icon/image beside it"
+- ESLint passes; all routes return 200; no console errors.
