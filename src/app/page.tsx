@@ -133,7 +133,7 @@ export default async function HomePage() {
                 <h3 className="text-2xl font-bold">Find the perfect car to buy</h3>
                 <p className="mt-1 text-sm text-white/80 max-w-md">Browse {saleCount.toLocaleString()}+ verified cars for sale worldwide.</p>
                 <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary-foreground bg-primary rounded-md px-3 py-1.5 w-fit">
-                  Browse for sale <ArrowRight className="h-3.5 w-3.5" />
+                  Buy a car <ArrowRight className="h-3.5 w-3.5" />
                 </span>
               </div>
             </Link>
@@ -146,7 +146,7 @@ export default async function HomePage() {
                 <h3 className="text-2xl font-bold">Rent your dream car for special events</h3>
                 <p className="mt-1 text-sm text-white/80 max-w-md">From a Tesla weekend to a Lamborghini for the day — {rentCount.toLocaleString()}+ rentals.</p>
                 <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary-foreground bg-primary rounded-md px-3 py-1.5 w-fit">
-                  Browse for rent <ArrowRight className="h-3.5 w-3.5" />
+                  Rent a car <ArrowRight className="h-3.5 w-3.5" />
                 </span>
               </div>
             </Link>

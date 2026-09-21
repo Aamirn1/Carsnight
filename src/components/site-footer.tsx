@@ -17,8 +17,8 @@ export function SiteFooter() {
           <div>
             <h3 className="text-sm font-semibold mb-3">Marketplace</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><Link href="/cars-for-sale" className="hover:text-primary transition-colors">Cars for Sale</Link></li>
-              <li><Link href="/cars-for-rent" className="hover:text-primary transition-colors">Cars for Rent</Link></li>
+              <li><Link href="/cars-for-sale" className="hover:text-primary transition-colors">Buy Car</Link></li>
+              <li><Link href="/cars-for-rent" className="hover:text-primary transition-colors">Rent Car</Link></li>
               <li><Link href="/post-ad" className="hover:text-primary transition-colors">Post an Ad</Link></li>
               <li><Link href="/pricing" className="hover:text-primary transition-colors">Plans</Link></li>
             </ul>

@@ -239,15 +239,22 @@ export function VideoScrollHero({ tagline, announcement, saleCount, rentCount, u
       const v = videoRef.current;
       if (v && videoReady && v.duration > 0) {
         // Lerp current time toward target for smooth easing on rapid scroll.
-        // 0.18 → ~5-6 frames of catch-up (≈100ms at 60fps). Smooth but tightly
-        // coupled to scroll position.
+        // Adaptive lerp factor: small deltas use a gentle 0.18 (smooth),
+        // large deltas (fast scroll) use up to 0.5 so the video catches up
+        // quickly without lagging behind the scroll position. Without this,
+        // a fast scroll-wheel flick can leave the video paused at an old
+        // frame while the user has already scrolled past the hero.
         const target = targetTimeRef.current;
         const current = currentTimeRef.current;
         const diff = target - current;
-        if (Math.abs(diff) < 0.005) {
+        const absDiff = Math.abs(diff);
+        if (absDiff < 0.005) {
           currentTimeRef.current = target;
         } else {
-          currentTimeRef.current = current + diff * 0.18;
+          // Adaptive: 0.18 baseline, +0.32 scaled by delta magnitude.
+          // For a 1s delta → factor ≈ 0.34; for 4s delta → factor ≈ 0.5 (capped).
+          const factor = Math.min(0.5, 0.18 + Math.min(0.32, absDiff * 0.08));
+          currentTimeRef.current = current + diff * factor;
         }
 
         const timeToDraw = currentTimeRef.current;
@@ -340,11 +347,12 @@ export function VideoScrollHero({ tagline, announcement, saleCount, rentCount, u
           tabIndex={-1}
         />
 
-        {/* Legibility gradients — dark top/bottom and left so white overlay
-            text stays readable over any video frame. pointer-events-none so
-            the gradients never block clicks on the CTAs. */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/15 to-black/75 pointer-events-none" />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/10 to-transparent pointer-events-none" />
+        {/* NO dark gradient overlay — the car video is the primary visual
+            focus and should be clearly visible. The text on the left reads
+            because it sits on the darker lower-left region of the frames
+            (wet pavement + building shadow). If a future frame is too bright,
+            we add a soft scrim only behind the text block (see the
+            backdrop-blur + bg-black/20 on the content container below). */}
 
         {/* Loading indicator (only visible briefly until the video loads) */}
         {!videoReady && (
@@ -354,14 +362,19 @@ export function VideoScrollHero({ tagline, announcement, saleCount, rentCount, u
           </div>
         )}
 
-        {/* Content overlay — headline, typewriter, CTAs, stats */}
-        <div className="relative z-10 h-full flex flex-col justify-center">
+        {/* Content overlay — headline, typewriter, CTAs, stats.
+            Positioned slightly DOWN from center (justify-end + pb-24 on
+            desktop) so the crypto chip lands roughly where the headline
+            used to be, and everything reads as a coherent lower-left block. */}
+        <div className="relative z-10 h-full flex flex-col justify-end pb-24 md:pb-28">
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full">
-            <div className="max-w-2xl text-white">
+            {/* Soft scrim only behind the text block — keeps the car visible
+                everywhere else while ensuring the copy is readable. */}
+            <div className="max-w-2xl text-white rounded-2xl md:pl-0">
               <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md border border-white/25 px-3.5 py-1.5 text-xs sm:text-sm font-medium">
                 <Sparkles className="h-3.5 w-3.5 text-[#F5B82E]" /> {announcement}
               </div>
-              <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1]">
+              <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] [text-shadow:0_2px_12px_rgba(0,0,0,0.55)]">
                 Your global car
                 <br />
                 marketplace,
@@ -377,7 +390,7 @@ export function VideoScrollHero({ tagline, announcement, saleCount, rentCount, u
                   />
                 </span>
               </h1>
-              <p className="mt-6 text-base sm:text-lg text-white/80 max-w-xl">
+              <p className="mt-6 text-base sm:text-lg text-white/90 max-w-xl [text-shadow:0_1px_8px_rgba(0,0,0,0.6)]">
                 {tagline} Buy, sell, and rent cars across 20+ countries. Two free listings to start, then upgrade with Pro Plans from $5.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
@@ -393,7 +406,7 @@ export function VideoScrollHero({ tagline, announcement, saleCount, rentCount, u
                   <Link href="/post-ad"><Sparkles className="h-4 w-4 mr-1.5" /> Post a free ad</Link>
                 </Button>
               </div>
-              <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/75">
+              <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/85 [text-shadow:0_1px_6px_rgba(0,0,0,0.6)]">
                 <span><strong className="font-semibold text-white">{(saleCount + rentCount).toLocaleString()}+</strong> listings</span>
                 <span className="text-white/30">·</span>
                 <span><strong className="font-semibold text-white">20+</strong> countries</span>

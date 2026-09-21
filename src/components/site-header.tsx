@@ -11,26 +11,21 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { BrandMark } from "@/components/brand-mark";
 import { cn } from "@/lib/utils";
 
-// Main nav links (desktop top bar). Renamed "Pricing" → "Plans" per request.
-// Blog / About / Contact live in the burger menu and footer, not the top bar
-// (to keep the top bar concise).
+// Main nav links (desktop top bar + burger menu). Blog / About / Contact
+// are now shown in the desktop top bar too (per user request). "Cars for
+// Sale" renamed → "Buy Car", "Cars for Rent" renamed → "Rent Car".
 const NAV_LINKS = [
   { href: "/", label: "Home" },
-  { href: "/cars-for-sale", label: "Cars for Sale" },
-  { href: "/cars-for-rent", label: "Cars for Rent" },
-  { href: "/pricing", label: "Plans" },
-];
-
-// Burger-menu links (mobile). Blog / About / Contact added below Cars for Rent.
-const BURGER_LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/cars-for-sale", label: "Cars for Sale" },
-  { href: "/cars-for-rent", label: "Cars for Rent" },
+  { href: "/cars-for-sale", label: "Buy Car" },
+  { href: "/cars-for-rent", label: "Rent Car" },
   { href: "/pricing", label: "Plans" },
   { href: "/blog", label: "Blog" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ];
+
+// Burger-menu links (mobile) — same set as desktop.
+const BURGER_LINKS = NAV_LINKS;
 
 export function SiteHeader() {
   const pathname = usePathname();
@@ -48,18 +43,22 @@ export function SiteHeader() {
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   // --- Transparent-over-hero behaviour ----------------------------------
-  // On the home page, the navbar starts transparent over the dark cinematic
-  // hero and becomes solid (with a light background + border + blur) once the
-  // user scrolls past the hero. On every other page, the navbar is solid from
-  // the top so it always looks correct over light content.
+  // On the home page, the navbar stays TRANSPARENT for the entire cinematic
+  // hero animation (which spans ~100vh + 700px of scroll) and only becomes
+  // solid (with a light background + border + blur) when the user reaches the
+  // "Browse by your goal" section (the first content section after the hero).
+  // On every other page, the navbar is solid from the top.
   useEffect(() => {
     if (pathname !== "/") return;
     const compute = () => {
-      // The hero section is roughly 100vh tall (sticky). Once the user scrolls
-      // past ~70% of the first viewport, we treat the navbar as solid.
-      // This is intentionally a little early so the navbar is solid before the
-      // hero fully leaves the screen, avoiding any visual gap.
-      setScrolled(window.scrollY > window.innerHeight * 0.7);
+      // The hero section is `100vh + 700px` tall (desktop) / `100vh + 600px`
+      // (mobile). The "Browse by your goal" section starts right after it.
+      // We flip the navbar to solid a touch early (50px before the section
+      // actually starts) so it transitions in just as the section scrolls
+      // into view, avoiding any visual gap where transparent navbar text
+      // would overlap the light content section.
+      const heroTrigger = window.innerHeight + 700 - 50;
+      setScrolled(window.scrollY > heroTrigger);
     };
     compute();
     window.addEventListener("scroll", compute, { passive: true });
@@ -86,13 +85,13 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-8">
           <BrandMark light={light} />
-          <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
+          <nav className="hidden lg:flex items-center gap-1" aria-label="Main navigation">
             {NAV_LINKS.map((l) => (
               <Link
                 key={l.href}
                 href={l.href}
                 className={cn(
-                  "rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  "rounded-md px-2.5 py-2 text-sm font-medium transition-colors whitespace-nowrap",
                   scrolled
                     ? isActive(l.href)
                       ? "bg-primary/10 text-primary"
@@ -146,7 +145,7 @@ export function SiteHeader() {
               <Button
                 variant="ghost"
                 size="icon"
-                className={cn("md:hidden", !scrolled && "text-white hover:bg-white/10 hover:text-white")}
+                className={cn("lg:hidden", !scrolled && "text-white hover:bg-white/10 hover:text-white")}
                 aria-label="Open menu"
               >
                 <Menu className="h-5 w-5" />

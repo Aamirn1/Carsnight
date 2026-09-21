@@ -112,7 +112,7 @@ export default async function ListingPage({ params }: PageProps) {
   const isRent = pub.category === "RENT";
   const sellerName = pub.user?.name || "Cars Night Seller";
   const categoryPath = isRent ? "/cars-for-rent" : "/cars-for-sale";
-  const categoryLabel = isRent ? "Cars for Rent" : "Cars for Sale";
+  const categoryLabel = isRent ? "Rent Car" : "Buy Car";
 
   // Related listings: same category, prioritize same country, exclude self.
   let relatedRaw: any[] = [];

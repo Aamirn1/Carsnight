@@ -25,12 +25,12 @@ import { Car, ChevronLeft, ChevronRight, SearchX, SlidersHorizontal } from "luci
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Cars for Sale — Buy Used & New Cars Worldwide",
+  title: "Buy Car — Buy Used & New Cars Worldwide | Cars Night",
   description:
     "Browse thousands of cars for sale worldwide. Filter by country, city, price, make, year, fuel, transmission, and more. Buy used and new cars securely with card or crypto on Cars Night.",
   alternates: { canonical: "/cars-for-sale" },
   openGraph: {
-    title: "Cars for Sale — Buy Used & New Cars Worldwide",
+    title: "Buy Car — Buy Used & New Cars Worldwide | Cars Night",
     description:
       "Browse thousands of cars for sale worldwide. Filter by country, city, price, make, year, fuel, and more.",
     url: "/cars-for-sale",
@@ -87,7 +87,7 @@ export default async function CarsForSalePage({ searchParams }: PageProps) {
       {
         "@type": "ListItem",
         position: 2,
-        name: "Cars for Sale",
+        name: "Buy Car",
         item: "https://carsnight.example.com/cars-for-sale",
       },
     ],
@@ -97,7 +97,7 @@ export default async function CarsForSalePage({ searchParams }: PageProps) {
   const itemListJsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: "Cars for Sale",
+    name: "Buy Car",
     numberOfItems: total,
     itemListElement: listings.map((l, i) => ({
       "@type": "ListItem",
@@ -121,7 +121,7 @@ export default async function CarsForSalePage({ searchParams }: PageProps) {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Cars for Sale</BreadcrumbPage>
+                <BreadcrumbPage>Buy Car</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -135,7 +135,7 @@ export default async function CarsForSalePage({ searchParams }: PageProps) {
             </Badge>
           </div>
           <h1 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            Cars for Sale
+            Buy Car
           </h1>
           <p className="mt-3 text-muted-foreground max-w-2xl text-sm sm:text-base">
             Find the perfect car to buy — filter by country, price, make and more.
