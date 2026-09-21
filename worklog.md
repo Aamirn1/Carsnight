@@ -694,3 +694,36 @@ Stage Summary:
 - Once the user sets env vars on Vercel (DATABASE_URL, NEXTAUTH_SECRET, ADMIN_EMAIL), the app works fully.
 - The recommended database for Vercel is PostgreSQL (not SQLite) — the user should change prisma/schema.prisma provider to "postgresql" and set DATABASE_URL to a Postgres connection string (e.g., from Vercel Postgres or Neon or Supabase).
 - The NEXTAUTH_URL fallback uses VERCEL_URL automatically, so the user doesn't need to set it manually on Vercel.
+
+---
+Task ID: 18
+Agent: main (orchestrator)
+Task: 6 fixes — hero overlay positioning, remove black shade, show Blog/About/Contact in desktop nav, rename sale/rent labels, scroll reliability, nav-solid timing
+
+Work Log:
+- src/components/video-scroll-hero.tsx:
+  - Removed the two full-screen dark gradient overlays (from-black/55 via-black/15 to-black/75 and from-black/55 via-black/10 to-transparent). The car video is now fully visible with no black shade.
+  - Repositioned the content overlay: changed justify-center → justify-end + pb-24 (desktop) / pb-28 so the entire text block (crypto chip, headline, CTAs, stats) sits in the lower-left area. The "Crypto payments now accepted" chip now lands roughly where the "Your global car marketplace" headline used to be.
+  - Added per-element text-shadow on the headline ([text-shadow:0_2px_12px_rgba(0,0,0,0.55)]), description, and stats so the white text stays readable over bright video frames WITHOUT a full-screen dark overlay.
+  - Adaptive lerp for scroll reliability: replaced the fixed 0.18 factor with `Math.min(0.5, 0.18 + Math.min(0.32, absDiff * 0.08))`. Small deltas still use a gentle 0.18 (smooth), but large deltas (fast scroll) use up to 0.5 so the video catches up quickly. Verified via Agent Browser: after aggressive fast scrolls (0→750px in 4 jumps with 50ms gaps), diff between target and actual video time = 0.00s. Same in reverse.
+- src/components/site-header.tsx:
+  - NAV_LINKS now has 7 entries: Home, Buy Car, Rent Car, Plans, Blog, About, Contact. BURGER_LINKS = NAV_LINKS (same set).
+  - Renamed "Cars for Sale" → "Buy Car", "Cars for Rent" → "Rent Car".
+  - Desktop nav breakpoint: hidden md:flex → hidden lg:flex (so 7 links fit on large screens; tablet/mobile use the burger menu). Burger button: md:hidden → lg:hidden.
+  - Nav link padding tightened (px-3 → px-2.5) + whitespace-nowrap so all 7 links fit on lg screens.
+  - Navbar solid timing: threshold changed from `window.scrollY > window.innerHeight * 0.7` (70% of first viewport — too early) to `window.scrollY > window.innerHeight + 700 - 50` (end of hero trigger zone, just before "Browse by your goal"). The navbar now stays transparent for the ENTIRE hero animation and becomes solid exactly when the first content section scrolls into view.
+- src/components/site-footer.tsx: "Cars for Sale" → "Buy Car", "Cars for Rent" → "Rent Car".
+- src/app/cars-for-sale/page.tsx: H1 "Cars for Sale" → "Buy Car", breadcrumb, metadata title, JSON-LD BreadcrumbList + ItemList names all updated.
+- src/app/cars-for-rent/page.tsx: H1 "Cars for Rent" → "Rent Car", same updates.
+- src/app/listing/[slug]/page.tsx: categoryLabel "Cars for Rent"/"Cars for Sale" → "Rent Car"/"Buy Car".
+- src/app/page.tsx: "Browse by your goal" section CTA buttons "Browse for sale"/"Browse for rent" → "Buy a car"/"Rent a car".
+
+Stage Summary:
+- All 6 user-requested fixes applied and verified end-to-end with Agent Browser + VLM:
+  1. Hero overlay: crypto chip + headline + CTAs now in the lower-left block (not top). ✅
+  2. No black shade over the hero video — car is fully visible. ✅
+  3. Desktop navbar shows all 7 links: Home, Buy Car, Rent Car, Plans, Blog, About, Contact. ✅
+  4. "Cars for Sale" → "Buy Car" and "Cars for Rent" → "Rent Car" everywhere (nav, footer, page H1s, breadcrumbs, metadata). ✅
+  5. Scroll animation reliable at high speed — adaptive lerp catches up within ~0.00s diff even on aggressive fast scrolls (verified in both directions). ✅
+  6. Navbar stays transparent during the entire hero animation, becomes solid exactly when "Browse by your goal" section is reached (scrollY > innerHeight + 700 - 50). ✅
+- ESLint passes; all routes return 200; committed as f96f09a and pushed to GitHub.
