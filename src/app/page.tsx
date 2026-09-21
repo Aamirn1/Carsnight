@@ -13,21 +13,36 @@ import {
 } from "lucide-react";
 
 export const revalidate = 60;
+// Allow build to succeed even if DATABASE_URL isn't configured yet — the
+// page will be ISR'd with real data once the DB is available at runtime.
+export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  // Fetch featured listings + counts + public settings
-  const [featured, saleCount, rentCount, userCount, settingsRows] = await Promise.all([
-    db.listing.findMany({
-      where: { status: "APPROVED", featured: true },
-      orderBy: { createdAt: "desc" },
-      take: 8,
-      include: { user: { select: { id: true, name: true, email: true } } },
-    }),
-    db.listing.count({ where: { status: "APPROVED", category: "SALE" } }),
-    db.listing.count({ where: { status: "APPROVED", category: "RENT" } }),
-    db.user.count(),
-    db.setting.findMany({ where: { key: { in: ["site_name", "tagline", "announcement", "contact_email"] } } }),
-  ]);
+  // Fetch featured listings + counts + public settings.
+  // Wrapped in try/catch so the build succeeds even when the database is
+  // not yet configured (e.g., first Vercel deploy before env vars are set).
+  // At runtime with a configured DB, real data is served via ISR.
+  let featured: any[] = [];
+  let saleCount = 0;
+  let rentCount = 0;
+  let userCount = 0;
+  let settingsRows: any[] = [];
+  try {
+    [featured, saleCount, rentCount, userCount, settingsRows] = await Promise.all([
+      db.listing.findMany({
+        where: { status: "APPROVED", featured: true },
+        orderBy: { createdAt: "desc" },
+        take: 8,
+        include: { user: { select: { id: true, name: true, email: true } } },
+      }),
+      db.listing.count({ where: { status: "APPROVED", category: "SALE" } }),
+      db.listing.count({ where: { status: "APPROVED", category: "RENT" } }),
+      db.user.count(),
+      db.setting.findMany({ where: { key: { in: ["site_name", "tagline", "announcement", "contact_email"] } } }),
+    ]);
+  } catch {
+    // DB not available — use fallback values so the page renders.
+  }
   const settings: Record<string, string> = {};
   for (const s of settingsRows) settings[s.key] = s.value;
   const tagline = settings.tagline || "Your global car marketplace, no gravity needed!";

@@ -64,4 +64,4 @@ server.log
 /agent-ctx/
 /.zscripts/
 # Internal worklog (conversation between agents, not part of the app)
-/worklog.md
+/worklog.mdtool-results/

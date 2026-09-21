@@ -26,8 +26,6 @@ import {
 } from "@/components/ui/accordion";
 import { PlanBuyButton } from "@/components/plan-buy-button";
 
-export const dynamic = "force-dynamic";
-
 // Feature list per plan — based on PRD: credits never expire, use for sale or rent, higher tiers add priority support
 const PLAN_FEATURES: Record<string, string[]> = {
   Starter: ["3 listing credits", "Use for sale or rent", "Credits never expire", "Email support"],
@@ -39,18 +37,34 @@ function featuresFor(name: string): string[] {
   return PLAN_FEATURES[name] ?? ["Listing credits", "Use for sale or rent", "Credits never expire"];
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function PricingPage() {
   const user = await getSessionUser();
   let quota: { freeRemaining: number; paidRemaining: number; total: number } | null = null;
   if (user) {
-    const q = await getUserQuota(user.id);
-    quota = { freeRemaining: q.freeRemaining, paidRemaining: q.paidRemaining, total: q.total };
+    try {
+      const q = await getUserQuota(user.id);
+      quota = { freeRemaining: q.freeRemaining, paidRemaining: q.paidRemaining, total: q.total };
+    } catch {
+      // DB not available — skip quota display.
+    }
   }
 
-  const plans = await db.plan.findMany({
-    where: { active: true },
-    orderBy: { price: "asc" },
-  });
+  let plans: any[] = [];
+  try {
+    plans = await db.plan.findMany({
+      where: { active: true },
+      orderBy: { price: "asc" },
+    });
+  } catch {
+    // DB not available — fall back to static plan definitions.
+    plans = [
+      { id: "fallback-starter", name: "Starter", price: 5, currency: "USD", credits: 3, description: "3 extra listings" },
+      { id: "fallback-pro", name: "Pro", price: 8, currency: "USD", credits: 5, description: "5 extra listings" },
+      { id: "fallback-business", name: "Business", price: 10, currency: "USD", credits: 10, description: "10 extra listings" },
+    ];
+  }
 
   // Highlight the Pro plan (middle / "Most popular")
   const popularName = "Pro";

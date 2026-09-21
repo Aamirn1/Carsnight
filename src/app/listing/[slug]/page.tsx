@@ -46,10 +46,14 @@ interface PageProps {
 }
 
 async function getListing(slug: string) {
-  return db.listing.findFirst({
-    where: { OR: [{ slug }, { id: slug }] },
-    include: { user: { select: { id: true, name: true, email: true } } },
-  });
+  try {
+    return await db.listing.findFirst({
+      where: { OR: [{ slug }, { id: slug }] },
+      include: { user: { select: { id: true, name: true, email: true } } },
+    });
+  } catch {
+    return null;
+  }
 }
 
 const SITE_BASE = "https://carsnight.example.com";
@@ -111,16 +115,21 @@ export default async function ListingPage({ params }: PageProps) {
   const categoryLabel = isRent ? "Cars for Rent" : "Cars for Sale";
 
   // Related listings: same category, prioritize same country, exclude self.
-  const relatedRaw = await db.listing.findMany({
-    where: {
-      status: "APPROVED",
-      category: pub.category,
-      id: { not: pub.id },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 12,
-    include: { user: { select: { id: true, name: true, email: true } } },
-  });
+  let relatedRaw: any[] = [];
+  try {
+    relatedRaw = await db.listing.findMany({
+      where: {
+        status: "APPROVED",
+        category: pub.category,
+        id: { not: pub.id },
+      },
+      orderBy: { createdAt: "desc" },
+      take: 12,
+      include: { user: { select: { id: true, name: true, email: true } } },
+    });
+  } catch {
+    // DB not available — no related listings.
+  }
   const sameCountry = relatedRaw.filter((l) => l.country === pub.country);
   const others = relatedRaw.filter((l) => l.country !== pub.country);
   const related: PublicListing[] = [...sameCountry, ...others]

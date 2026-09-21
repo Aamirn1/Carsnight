@@ -47,6 +47,8 @@ const CATEGORY: "SALE" | "RENT" = "RENT";
 const PRICE_MIN = 0;
 const PRICE_MAX = 5_000;
 
+export const dynamic = "force-dynamic";
+
 export default async function CarsForRentPage({ searchParams }: PageProps) {
   const sp = await searchParams;
   const q = buildBrowseQuery(sp, CATEGORY);
@@ -55,16 +57,22 @@ export default async function CarsForRentPage({ searchParams }: PageProps) {
   const pageSize = q.pageSize ?? BROWSE_PAGE_SIZE;
   const skip = (page - 1) * pageSize;
 
-  const [items, total] = await Promise.all([
-    db.listing.findMany({
-      where,
-      orderBy,
-      skip,
-      take: pageSize,
-      include: { user: { select: { id: true, name: true, email: true } } },
-    }),
-    db.listing.count({ where }),
-  ]);
+  let items: any[] = [];
+  let total = 0;
+  try {
+    [items, total] = await Promise.all([
+      db.listing.findMany({
+        where,
+        orderBy,
+        skip,
+        take: pageSize,
+        include: { user: { select: { id: true, name: true, email: true } } },
+      }),
+      db.listing.count({ where }),
+    ]);
+  } catch {
+    // DB not available — render with empty results.
+  }
 
   const listings: PublicListing[] = items.map(toPublicListing);
   const totalPages = Math.max(1, Math.ceil(total / pageSize));

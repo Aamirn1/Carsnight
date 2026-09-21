@@ -1,3 +1,4 @@
+import "@/lib/env-setup"; // Must be first — sets NEXTAUTH_URL fallback before next-auth loads
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Outfit, Playfair_Display } from "next/font/google";
 import "./globals.css";

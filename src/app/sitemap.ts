@@ -1,5 +1,4 @@
 import type { MetadataRoute } from "next";
-import { db } from "@/lib/db";
 
 const BASE = "https://carsnight.example.com";
 
@@ -21,9 +20,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${BASE}/terms`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
   ];
 
-  // Dynamic listing pages
+  // Dynamic listing pages — use dynamic import so that if the database is
+  // unavailable (e.g. during build without DATABASE_URL configured), the
+  // module load doesn't crash the build; the try/catch handles it gracefully.
   let listingRoutes: MetadataRoute.Sitemap = [];
   try {
+    const { db } = await import("@/lib/db");
     const listings = await db.listing.findMany({
       where: { status: "APPROVED" },
       select: { slug: true, updatedAt: true },
@@ -35,7 +37,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }));
   } catch {
-    // ignore DB errors in sitemap generation
+    // DB not available (missing DATABASE_URL, build-time, etc.) — return
+    // the static routes only so the sitemap still works.
   }
 
   return [...staticRoutes, ...listingRoutes];

@@ -101,6 +101,10 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/signin",
   },
+  // trustHost lets next-auth use the request's Host header instead of
+  // requiring NEXTAUTH_URL. This is the recommended setting for Vercel and
+  // other serverless platforms where the URL varies per deployment.
+  trustHost: true,
   secret: process.env.NEXTAUTH_SECRET,
 };
 
