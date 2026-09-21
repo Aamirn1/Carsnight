@@ -32,6 +32,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -52,3 +53,15 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# Cars Night — local-only / generated artifacts
+# Local SQLite database (regenerate via `bun run db:push && bun run scripts/seed.ts`)
+/db/*.db
+/db/*.db-journal
+# User-uploaded media (not part of the repo)
+/upload/
+# Agent working context (not part of the app)
+/agent-ctx/
+/.zscripts/
+# Internal worklog (conversation between agents, not part of the app)
+/worklog.md
