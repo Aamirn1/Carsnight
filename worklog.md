@@ -917,3 +917,24 @@ Stage Summary:
   5. Browse button: ✅ no car icon, just 'Browse cars' text
   6. Wordmark: ✅ 'Cars' faint sky blue, 'Night' blue→violet→magenta gradient
 - ESLint passes; all routes return 200; committed as c751211 and pushed to GitHub.
+
+---
+Task ID: 25
+Agent: main (orchestrator)
+Task: Fix wordmark size + position in navbar, burger, and footer (was too small after recolor)
+
+Work Log:
+- Diagnosed: the previous wordmark regeneration (Task 24, point 6) produced a nearly-square PNG (677x675, ~1:1 aspect) instead of the original wide format (661x168, ~4:1). The PIL script's row bounding box used a threshold of 50 which included noise (rows 24-695 = full image height), so the crop was nearly square. When object-contain fit this square image into the navbar's wide slot (h-11 w-178px), the actual text was tiny with lots of empty space above/below.
+- Fixed the PIL script: increased the row detection threshold from 50 to 100 to ignore noise and detect only the actual text rows. This produced a tight 677x148 crop (~4.6:1 aspect) matching the original wordmark's aspect ratio.
+- Regenerated both brand-wordmark-dark.png and brand-wordmark-light.png with the correct wide aspect ratio. Colors preserved: 'Cars' = faint sky blue (#38BDF8 at 35% opacity), 'Night' = neon gradient (blue→violet→magenta).
+- No code changes needed — the BrandMark component dimensions (h-11 w-178px for md, h-7 w-113px for sm, h-14 w-226px for lg) were already designed for the ~4:1 wide aspect. The wide wordmark now fills these slots properly.
+- Verified with Agent Browser + VLM:
+  - Navbar: "logo text is reasonably sized and clearly legible; correctly positioned at the left edge"
+  - Burger menu: "reasonably sized, positioned at the top-left, not shifted"
+  - Footer: "reasonably sized and clearly legible; correctly positioned at the top-left"
+
+Stage Summary:
+- Wordmark size + position restored in all 3 places (navbar, burger, footer).
+- Root cause: PIL crop bbox was nearly square due to noise in row detection; fixed with a higher threshold.
+- Colors preserved: Cars = faint sky blue, Night = neon gradient.
+- ESLint passes; committed as 5205f25 and pushed to GitHub.
