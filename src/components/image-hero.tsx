@@ -34,16 +34,31 @@ export function ImageHero({ tagline, announcement, saleCount, rentCount, userCou
       className="relative w-full h-screen min-h-[600px] overflow-hidden bg-black"
       aria-label="Cinematic car showcase"
     >
-      {/* Full-bleed background image at original quality. object-cover so the
-          image fills the viewport without distortion (preserves the car
-          proportions; just crops edges to fit). NO dark overlay/shade. */}
+      {/* Full-bleed background image at original quality. Two variants are
+          rendered and toggled via CSS so the correct aspect ratio loads for
+          each viewport:
+          - Desktop / tablet (lg+): /hero-cars.png (1672x941 landscape) — fits
+            wide screens without aggressive cropping.
+          - Mobile (< lg): /hero-cars-mobile.png (941x1672 portrait) — fits
+            tall phone screens without cropping the cars.
+          Both use object-cover (preserves car proportions; just crops edges).
+          NO dark overlay/shade. quality={100} so next/image doesn't compress. */}
       <Image
         src="/hero-cars.png"
         alt="Three luxury cars — white SUV, black BMW, and red Mustang — parked at sunset with a city skyline"
         fill
         priority
-        sizes="100vw"
-        className="object-cover"
+        sizes="(max-width: 1023px) 0px, 100vw"
+        className="object-cover hidden lg:block"
+        quality={100}
+      />
+      <Image
+        src="/hero-cars-mobile.png"
+        alt="Three luxury cars — white SUV, black BMW, and red Mustang — parked at sunset with a city skyline"
+        fill
+        priority
+        sizes="(max-width: 1023px) 100vw, 0px"
+        className="object-cover lg:hidden"
         quality={100}
       />
 
