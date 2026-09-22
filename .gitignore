@@ -65,3 +65,5 @@ server.log
 /.zscripts/
 # Internal worklog (conversation between agents, not part of the app)
 /worklog.mdtool-results/
+/public/hero-frames/
+tool-results/

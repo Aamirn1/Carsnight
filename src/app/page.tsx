@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ListingCard } from "@/components/listing-card";
 import { Typewriter } from "@/components/typewriter";
-import { VideoScrollHero } from "@/components/video-scroll-hero";
+import { ImageHero } from "@/components/image-hero";
 import {
   Car, ArrowRight, ShieldCheck, Globe2, Bitcoin, Sparkles,
   Tag, TrendingUp, Users, ListChecks, Search, PenLine, CreditCard,
@@ -74,13 +74,15 @@ export default async function HomePage() {
 
   return (
     <div className="flex flex-col">
-      {/* Cinematic scroll-controlled video hero. The video timeline is scrubbed
-          by the user's scroll position over ~700px (desktop) / ~600px (mobile).
-          Single persistent <video> element, no JPG frames, no database.
-          The hero is pulled up under the transparent navbar (-mt-16 = -64px,
-          the navbar height) so the navbar overlays the top of the dark hero. */}
+      {/* Static image hero — full-bleed high-quality image background (no
+          video, no canvas, no scroll-scrubbing). The hero is exactly 100vh
+          tall. The navbar stays transparent over it and becomes solid when
+          the user scrolls past it. The image is shown at original quality
+          with NO dark overlay/shade.
+          -mt-16 pulls the hero up under the transparent navbar (which is
+          h-16 = 64px tall) so the image fills the full viewport behind it. */}
       <div className="-mt-16">
-        <VideoScrollHero
+        <ImageHero
           tagline={tagline}
           announcement={announcement}
           saleCount={saleCount}

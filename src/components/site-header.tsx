@@ -43,21 +43,19 @@ export function SiteHeader() {
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
   // --- Transparent-over-hero behaviour ----------------------------------
-  // On the home page, the navbar stays TRANSPARENT for the entire cinematic
-  // hero animation (which spans ~100vh + 700px of scroll) and only becomes
-  // solid (with a light background + border + blur) when the user reaches the
-  // "Browse by your goal" section (the first content section after the hero).
-  // On every other page, the navbar is solid from the top.
+  // On the home page, the navbar stays TRANSPARENT over the full-viewport
+  // image hero (100vh tall) and becomes solid (with a light background +
+  // border + blur) when the user scrolls past the hero into the first
+  // content section ("Browse by your goal"). On every other page, the
+  // navbar is solid from the top.
   useEffect(() => {
     if (pathname !== "/") return;
     const compute = () => {
-      // The hero section is `100vh + 700px` tall (desktop) / `100vh + 600px`
-      // (mobile). The "Browse by your goal" section starts right after it.
-      // We flip the navbar to solid a touch early (50px before the section
-      // actually starts) so it transitions in just as the section scrolls
-      // into view, avoiding any visual gap where transparent navbar text
-      // would overlap the light content section.
-      const heroTrigger = window.innerHeight + 700 - 50;
+      // The hero is exactly 100vh tall (no scroll-trigger zone anymore —
+      // we switched from a scroll-scrubbed video to a static image). We
+      // flip the navbar to solid 50px before the hero ends so it
+      // transitions in just as the first content section scrolls into view.
+      const heroTrigger = window.innerHeight - 50;
       setScrolled(window.scrollY > heroTrigger);
     };
     compute();
