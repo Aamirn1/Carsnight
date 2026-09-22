@@ -776,3 +776,41 @@ Stage Summary:
 - Browser only downloads the image that matches the viewport (responsive `sizes` attribute), so no wasted bandwidth.
 - Verified end-to-end with Agent Browser + VLM: mobile (390x844) shows the portrait composition with all three cars fully visible; desktop (1280x800) still shows the landscape composition.
 - ESLint passes; all routes return 200.
+
+---
+Task ID: 21
+Agent: main (orchestrator)
+Task: 6 fixes — scroll-to-top button, burger X + larger logo, trim wordmark line, Buy/Rent labels, theme-aware navbar colors
+
+Work Log:
+1. Scroll-to-top button:
+   - Created src/components/scroll-to-top-button.tsx — a floating golden (btn-gold) circular button fixed at bottom-right (bottom-6 right-6, z-40), 44px (h-11 w-11), with an ArrowUp icon. Appears after the user scrolls >400px (opacity + translate-y transition), scrolls to top on click (smooth, or instant if prefers-reduced-motion). Uses a passive scroll listener.
+   - Added to src/app/layout.tsx (after SiteFooter, before Toaster) so it renders on every page.
+   - Verified on /blog: after scrolling to 1500px the button appears; clicking it sets scrollY to 0.
+2. Recovered one X close button in the burger menu:
+   - The earlier task removed BOTH close buttons (the built-in one via hideClose AND the custom one in the header). Now added back ONE: a SheetClose-wrapped Button with the X icon in the burger header top-right (next to the BrandMark). The hideClose prop stays so there's still only the one we explicitly render (no duplicate from the built-in).
+3. Removed the vertical line before 'C' in the wordmark:
+   - Analyzed both brand-wordmark-light.png and brand-wordmark-dark.png with PIL: found a thin vertical brush entry stroke at columns 6-7 (alpha sum 5344 each) before the actual 'C' letter which starts at column 24.
+   - Trimmed columns 0-21 from both PNGs (with a 2px padding before the C) → new size 661×168. Verified via VLM: "the 'C' is now the first thing visible; there is no vertical line or stroke before it at the left edge."
+4. Increased burger-menu logo size:
+   - Changed <BrandMark size="sm"> (h-7 w-113px) → <BrandMark size="md"> (h-11 w-178px) in the burger header. The logo is now clearly larger and more readable.
+5. Removed the word "Car" from "Buy Car" / "Rent Car":
+   - NAV_LINKS: "Buy Car" → "Buy", "Rent Car" → "Rent" (in both desktop nav and burger menu).
+   - Footer links: "Buy Car" → "Buy", "Rent Car" → "Rent".
+   - cars-for-sale page: metadata title "Buy Car — Buy Used & New Cars Worldwide" → "Buy — Buy Used & New Cars Worldwide"; H1 "Buy Car" → "Buy"; breadcrumb "Buy Car" → "Buy"; JSON-LD BreadcrumbList + ItemList name "Buy Car" → "Buy".
+   - cars-for-rent page: same pattern, "Rent Car" → "Rent".
+   - listing/[slug]/page.tsx: categoryLabel "Rent Car"/"Buy Car" → "Rent"/"Buy".
+6. Theme-aware navbar colors:
+   - src/components/theme-toggle.tsx: added a `light` prop. When true (and not in dark mode), the icon renders in white via `text-white hover:bg-white/10 hover:text-white`. When the navbar is solid, the icon reverts to default foreground.
+   - src/components/site-header.tsx: computes `light = !scrolled || isDark` and passes it to <BrandMark light={light}> and <ThemeToggle light={light}>. Also applies the same white-when-transparent logic to nav links, Sign in button, Dashboard, Sign out, and the burger (Menu) button — but only in light mode (in dark mode the solid navbar is also dark, so white text stays correct everywhere).
+   - Result: in LIGHT mode — transparent navbar over hero = white logo + white icon + white links; solid navbar = black logo + black icon + dark links. In DARK mode — logo + icon + links are always white (correct against both transparent hero and dark solid navbar).
+
+Stage Summary:
+- All 6 user-requested fixes applied and verified end-to-end with Agent Browser + VLM:
+  1. Scroll-to-top button: ✅ golden circular button appears bottom-right after scrolling, clicking scrolls to top.
+  2. Burger X close button: ✅ "exactly one 'X' close button at the top-right corner".
+  3. Wordmark line removed: ✅ "the 'C' is now the first thing visible; no vertical line or stroke before it".
+  4. Burger logo larger: ✅ "reasonably large" (size=md, h-11 w-178px, up from size=sm, h-7 w-113px).
+  5. "Car" removed: ✅ nav shows "Buy" / "Rent"; page H1 + breadcrumb show "Buy" / "Rent" (no "Car").
+  6. Theme-aware colors: ✅ light mode — logo + moon icon + links white over hero, black when solid; dark mode — always white.
+- ESLint passes; all routes return 200; committed as 02ca168 and pushed to GitHub.
