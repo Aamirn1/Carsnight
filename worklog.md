@@ -754,3 +754,25 @@ Stage Summary:
 - Navbar stays transparent over the hero, becomes solid when scrolling past it into "Browse by your goal".
 - Verified end-to-end with Agent Browser + VLM on desktop (1280x800) and mobile (390x844).
 - ESLint passes; all routes return 200.
+
+---
+Task ID: 20
+Agent: main (orchestrator)
+Task: Use a dedicated portrait hero image for mobile view
+
+Work Log:
+- Copied the uploaded "ChatGPT Image Sep 22, 2026, 06_21_18 AM.png" (941x1672 portrait PNG, 2.26MB, three luxury cars at sunset) to public/hero-cars-mobile.png using `cp` (byte-for-byte copy, no re-encoding). Verified MD5 identical: 642fb50f556ae4c1243f80279501860a for both source and destination. Verified served file via curl has the same MD5 and same byte count (2,261,477 bytes) — mobile image quality is 100% preserved.
+- Updated src/components/image-hero.tsx: now renders TWO <Image> elements toggled via Tailwind responsive classes:
+  - Desktop / tablet (lg+): /hero-cars.png (1672x941 landscape) — className="object-cover hidden lg:block", sizes="(max-width: 1023px) 0px, 100vw"
+  - Mobile (< lg): /hero-cars-mobile.png (941x1672 portrait) — className="object-cover lg:hidden", sizes="(max-width: 1023px) 100vw, 0px"
+  Each image has its own `sizes` attribute so the browser only loads the one that matches the viewport (no double-download — the `0px` size tells the browser to skip it on the wrong viewport). Both use object-cover and quality={100}. No dark overlay/shade on either.
+- Committed as a8b45a2 and pushed to GitHub.
+
+Stage Summary:
+- Mobile view (< 1024px) now uses the portrait hero image (941x1672) — all three cars fully visible without aggressive cropping.
+- Desktop view (≥ 1024px) still uses the landscape hero image (1672x941).
+- Both images served at full original quality (MD5 verified byte-for-byte identical to the user's uploads).
+- No black shade/overlay on either variant.
+- Browser only downloads the image that matches the viewport (responsive `sizes` attribute), so no wasted bandwidth.
+- Verified end-to-end with Agent Browser + VLM: mobile (390x844) shows the portrait composition with all three cars fully visible; desktop (1280x800) still shows the landscape composition.
+- ESLint passes; all routes return 200.
