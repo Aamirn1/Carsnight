@@ -938,3 +938,33 @@ Stage Summary:
 - Root cause: PIL crop bbox was nearly square due to noise in row detection; fixed with a higher threshold.
 - Colors preserved: Cars = faint sky blue, Night = neon gradient.
 - ESLint passes; committed as 5205f25 and pushed to GitHub.
+
+---
+Task ID: 26
+Agent: main (orchestrator)
+Task: Recolor wordmark (Cars=white, Night=purple→blue gradient) + center in navbar
+
+Work Log:
+- Analyzed the wordmark image to find the "nig"/"ht" boundary within "Night":
+  - "Cars" spans cols 0-159 (in trimmed image)
+  - Gap between Cars and Night: cols 160-179
+  - "Night" spans cols 180-419 (width 240px)
+  - The brush script letters are connected (no inter-letter gaps), so used
+    the 60% mark (col 324) as the split between "nig" and "ht".
+- Regenerated both brand-wordmark-dark.png and brand-wordmark-light.png with PIL:
+  - "Cars" → white (255,255,255) at full opacity
+  - "nig" (first 60% of Night, cols 180-324) → purple/violet #8B5CF6
+  - "ht" (last 40% of Night, cols 324-420) → blue #00A8FF
+  - 10px smooth transition at the split (cols 314-334) to avoid a hard color boundary
+  - Preserved the wide 677x148 aspect ratio (~4.6:1)
+  - Both variants are now identical (same MD5) — the user wants "Cars" white on all backgrounds
+- Verified: "Cars is white; Night features a gradient from purple to blue"
+- Updated src/components/brand-mark.tsx: added translate-y-[2px] to the wordmark span to nudge it down 2px. The brush script's tall ascenders (C, N, h, t) make the visual center appear slightly above the geometric center; the 2px nudge compensates and centers the logo in the navbar.
+- Verified: "logo is vertically centered within the navbar" (over the transparent hero)
+- Note: on the solid light navbar, "Cars" (white) is invisible against the light background — this is the user's explicit design choice ("use white color for car word"). Only "Night" (purple→blue gradient) is visible on the light navbar.
+
+Stage Summary:
+- Wordmark recolored: Cars = white, Night = purple→blue gradient (nig=purple, ht=blue with smooth transition)
+- Logo vertically centered in the navbar via translate-y-[2px] nudge
+- Both wordmark variants (light/dark) are now identical
+- ESLint passes; committed as 9b76b11 and pushed to GitHub.
