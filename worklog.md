@@ -814,3 +814,30 @@ Stage Summary:
   5. "Car" removed: ✅ nav shows "Buy" / "Rent"; page H1 + breadcrumb show "Buy" / "Rent" (no "Car").
   6. Theme-aware colors: ✅ light mode — logo + moon icon + links white over hero, black when solid; dark mode — always white.
 - ESLint passes; all routes return 200; committed as 02ca168 and pushed to GitHub.
+
+---
+Task ID: 22
+Agent: main (orchestrator)
+Task: 8 fixes — hero text, trust badges, scroll-to-top, About/Contact/FAQs section, dark-mode burger, pricing metadata, navbar consistency
+
+Work Log:
+1. Hero announcement chip: changed default from 'Crypto payments now accepted — pay with BTC, ETH, or USDT!' to 'Buy your dream car — or rent one for your next special event'. Updated in src/app/page.tsx (default fallback) AND in the DB via a one-off script so the rendered value matches.
+2. Hero paragraph: changed `text-white/90` → `text-white` (solid white). Removed '{tagline} Buy, sell, and rent cars across 20+ countries. Two free listings to start, then upgrade with Pro Plans from $5.' Replaced with 'Post your car ad and reach premium buyers worldwide — list in minutes, sell faster, and rent your vehicle for special events.'
+3. Pricing (Plans) page: the page was already rendering correctly — the user's 'error' was the missing metadata export (page title showed the default) + a dev-only Next.js DevTools indicator badge. Added `export const metadata` with title 'Plans — Buy Listing Credits | Cars Night', description, and canonical. Verified: page title now shows correctly, all 3 plan cards render, FAQ + payment methods sections intact.
+4. Trust badges: renamed 'Crypto + Card' → 'Premium Ride' (icon Bitcoin→Car), '2 Free Ads' → 'Luxury Brands' (icon Tag→Crown). Descriptions hidden on mobile (`hidden sm:block`) so the 4 badges fit cleanly without truncation. Added `Crown` and `HelpCircle` to lucide imports.
+5. Scroll-to-top button: moved from bottom-right to BOTTOM-LEFT (`fixed bottom-6 left-6`). Default state: transparent (`bg-black/20 backdrop-blur-sm`) + WHITE arrow + white/40 border. On hover OR click: converts to the golden brand gradient via inline `style={{ backgroundImage: 'linear-gradient(135deg, #F5B82E 0%, #C98216 100%)' }}` (inline style ensures it renders regardless of CSS specificity with the shadcn button rules). Active state persists for 800ms after click. Verified: default `bgImage: none, bg: oklab(0 0 0 / 0.2)`, on click `bgImage: linear-gradient(135deg, rgb(245,184,46) 0%, rgb(201,130,22) 100%)`.
+6. About Us / Contact / FAQs section: added a new 3-column section just below the Pro Plan pricing preview on the home page. Each card has an icon (Users/Search/HelpCircle), title (About Us/Contact/FAQs), description, and a link with arrow to /about, /contact, /faq.
+7. Navbar consistency: verified that /blog and /about navbars look identical (same links, same colors, same logo color). The only difference is the active-state highlight on the current page link, which is expected and correct. No code change needed — the existing behavior already satisfies this.
+8. Dark-mode burger logo: the burger menu BrandMark now passes `light={isDark}` so in dark mode (when the burger's bg-background is dark) it uses the LIGHT wordmark (white Cars + gold Night) for visibility. In light mode it uses the DARK wordmark as before.
+
+Stage Summary:
+- All 8 user-requested fixes applied and verified end-to-end with Agent Browser + VLM:
+  1. Hero chip: ✅ "Buy your dream car — or rent one for your next special event"
+  2. Hero paragraph: ✅ solid white, mentions "Post your car ad" and "premium buyers"
+  3. Pricing page: ✅ title "Plans — Buy Listing Credits | Cars Night", all 3 cards render
+  4. Trust badges: ✅ "Secure, Global, Premium Ride, Luxury Brands", descriptions hidden on mobile
+  5. Scroll-to-top: ✅ bottom-left, transparent + white arrow, golden on hover/click
+  6. About/Contact/FAQs: ✅ 3 cards below pricing preview
+  7. Navbar consistency: ✅ same links + colors across inner pages
+  8. Dark-mode burger: ✅ "logo text is white (with Night in gold), clearly visible"
+- ESLint passes; all routes return 200; committed as 4df240e and pushed to GitHub.
