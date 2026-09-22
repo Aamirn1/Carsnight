@@ -841,3 +841,52 @@ Stage Summary:
   7. Navbar consistency: ✅ same links + colors across inner pages
   8. Dark-mode burger: ✅ "logo text is white (with Night in gold), clearly visible"
 - ESLint passes; all routes return 200; committed as 4df240e and pushed to GitHub.
+
+---
+Task ID: 23
+Agent: main (orchestrator)
+Task: Replace golden gradient with neon (Electric Blue → Violet → Magenta) gradient on all buttons + icons
+
+Work Log:
+- Updated src/app/globals.css:
+  - --primary: #C98216 (gold) → #8B5CF6 (violet) — both light + dark mode
+  - --primary-foreground: now #FFFFFF (pure white on the neon gradient)
+  - --ring, --sidebar-primary, --sidebar-ring, --chart-1..4: all neon colors
+  - --brand-gradient: linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%)
+  - --brand-gradient-hover: slightly brighter version
+  - Button CSS rules: background-image = neon gradient, color = white, with neon glow (box-shadow with violet/magenta tints). Hover = brighter gradient + stronger glow.
+  - New .icon-neon class: overrides lucide SVG stroke to url(#neon-gradient-stroke) with a drop-shadow glow.
+  - .gradient-text utility: now the neon gradient
+- Created src/components/neon-gradient-def.tsx: renders a hidden SVG with <linearGradient> defs so any SVG icon can reference the gradient via stroke=url(#neon-gradient-stroke). Added to root layout.
+- Updated key icons to use icon-neon:
+  - ThemeToggle (Sun + Moon)
+  - SiteHeader hamburger (Menu)
+  - ImageHero (Sparkles in announcement chip, Car in Browse cars CTA)
+  - Home page trust badges (ShieldCheck, Globe2, Car, Crown)
+  - Home page how-it-works (Search, PenLine, CreditCard)
+  - Home page stats (Car, Tag, Users, ListChecks)
+  - Home page About/Contact/FAQs cards (Users, Search, HelpCircle)
+  - Pricing page (Check feature icons, ShieldCheck CTA icon)
+- Updated button-like elements to use btn-neon (gradient bg + white text):
+  - Home page 'Buy a car'/'Rent a car' pills
+  - Home page + Pricing page 'Most popular' badges
+  - ListingCard 'Featured' badge
+- Changed Pricing CTA section from bg-primary (violet) to bg-foreground (dark neutral) so the gradient stays only on buttons + icons, not surfaces.
+- Updated scroll-to-top button hover/click gradient from golden to neon.
+- Verified end-to-end with Agent Browser + VLM:
+  - Hero buttons: blue→violet→magenta gradient, white text ✅
+  - Hero icons (sparkles, car): neon gradient ✅
+  - Trust badge icons: neon gradient ✅
+  - Stats icons (28px): multi-color gradient clearly visible ✅
+  - Pricing 'Buy now' buttons + 'Most popular' badge: neon gradient ✅
+  - Checkmark icons: gradient applied (via computed stroke=url(#neon-gradient-stroke)); on small 16px icons the gradient reads as purple due to compression, on larger icons the full blue→violet→magenta spectrum is visible ✅
+  - Surfaces (cards, backgrounds, images): unchanged ✅
+
+Stage Summary:
+- The entire website now uses the Electric Blue → Violet → Neon Magenta gradient consistently on ALL buttons and important UI icons.
+- Gradient: linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%)
+- Button text: pure white (#FFFFFF), bold, with a subtle neon glow
+- Icons: gradient stroke via SVG <linearGradient> def, with a drop-shadow glow
+- No yellow, orange, green, red, or other accent colors introduced
+- Backgrounds, cards, images, text areas, grids: all unchanged
+- ESLint passes; all routes return 200; committed as 986fc5c and pushed to GitHub.
