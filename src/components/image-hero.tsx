@@ -95,7 +95,7 @@ export function ImageHero({ tagline, announcement, saleCount, rentCount, userCou
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg" className="btn-gold shadow-lg shadow-amber-900/30">
-                <Link href="/cars-for-sale"><Car className="h-4 w-4 mr-1.5 icon-neon" /> Browse cars</Link>
+                <Link href="/cars-for-sale">Browse cars</Link>
               </Button>
               <Button
                 asChild

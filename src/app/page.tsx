@@ -102,8 +102,8 @@ export default async function HomePage() {
               { icon: Car, title: "Premium Ride", text: "Curated luxury and sports cars from verified sellers" },
               { icon: Crown, title: "Luxury Brands", text: "Porsche, Lamborghini, BMW, Mercedes and more" },
             ].map((b, i) => (
-              <div key={i} className="flex items-start gap-3">
-                <div className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
+              <div key={i} className="flex items-center gap-3">
+                <div className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
                   <b.icon className="h-4 w-4 icon-neon" />
                 </div>
                 <div className="min-w-0">

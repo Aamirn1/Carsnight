@@ -163,10 +163,18 @@ export function SiteHeader() {
               <Button
                 variant="ghost"
                 size="icon"
-                className={cn("lg:hidden", !scrolled && !isDark && "text-white hover:bg-white/10 hover:text-white")}
+                className={cn(
+                  "lg:hidden",
+                  // Over the transparent hero (light mode), use white. Otherwise
+                  // use the neon brand color (violet) so the burger reads as
+                  // part of the gradient identity. Added a subtle neon glow.
+                  !scrolled && !isDark
+                    ? "text-white hover:bg-white/10 hover:text-white"
+                    : "text-primary hover:bg-primary/10 hover:text-primary",
+                )}
                 aria-label="Open menu"
               >
-                <Menu className="h-5 w-5 icon-neon" />
+                <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
             <SheetContent side="right" hideClose className="w-[300px] sm:w-[360px] p-0">
