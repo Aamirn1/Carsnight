@@ -7,6 +7,7 @@ import { Providers } from "@/components/providers";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { ScrollToTop } from "@/components/scroll-to-top";
+import { ScrollToTopButton } from "@/components/scroll-to-top-button";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -110,6 +111,7 @@ export default function RootLayout({
           <SiteHeader />
           <main className="flex-1 flex flex-col">{children}</main>
           <SiteFooter />
+          <ScrollToTopButton />
           <Toaster />
         </Providers>
       </body>

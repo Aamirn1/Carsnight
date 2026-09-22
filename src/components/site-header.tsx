@@ -4,20 +4,20 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { Menu, Plus, LayoutDashboard, LogOut, ShieldCheck, User as UserIcon, Sparkles } from "lucide-react";
+import { useTheme } from "next-themes";
+import { Menu, X, Plus, LayoutDashboard, LogOut, ShieldCheck, User as UserIcon, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { BrandMark } from "@/components/brand-mark";
 import { cn } from "@/lib/utils";
 
-// Main nav links (desktop top bar + burger menu). Blog / About / Contact
-// are now shown in the desktop top bar too (per user request). "Cars for
-// Sale" renamed → "Buy Car", "Cars for Rent" renamed → "Rent Car".
+// Main nav links (desktop top bar + burger menu). "Buy Car" → "Buy",
+// "Rent Car" → "Rent" (word "Car" removed per user request).
 const NAV_LINKS = [
   { href: "/", label: "Home" },
-  { href: "/cars-for-sale", label: "Buy Car" },
-  { href: "/cars-for-rent", label: "Rent Car" },
+  { href: "/cars-for-sale", label: "Buy" },
+  { href: "/cars-for-rent", label: "Rent" },
   { href: "/pricing", label: "Plans" },
   { href: "/blog", label: "Blog" },
   { href: "/about", label: "About" },
@@ -30,6 +30,7 @@ const BURGER_LINKS = NAV_LINKS;
 export function SiteHeader() {
   const pathname = usePathname();
   const { data: session, status } = useSession();
+  const { resolvedTheme } = useTheme();
   const [open, setOpen] = useState(false);
   // On non-home pages the navbar is solid from the top. On the home page it
   // starts transparent over the dark hero and becomes solid after scrolling.
@@ -51,10 +52,9 @@ export function SiteHeader() {
   useEffect(() => {
     if (pathname !== "/") return;
     const compute = () => {
-      // The hero is exactly 100vh tall (no scroll-trigger zone anymore —
-      // we switched from a scroll-scrubbed video to a static image). We
-      // flip the navbar to solid 50px before the hero ends so it
-      // transitions in just as the first content section scrolls into view.
+      // The hero is exactly 100vh tall. We flip the navbar to solid 50px
+      // before the hero ends so it transitions in just as the first content
+      // section scrolls into view.
       const heroTrigger = window.innerHeight - 50;
       setScrolled(window.scrollY > heroTrigger);
     };
@@ -67,9 +67,27 @@ export function SiteHeader() {
     };
   }, [pathname]);
 
-  // When the navbar is transparent (over the hero), we use the light brand
-  // mark so the wordmark reads in white against the dark video.
-  const light = !scrolled;
+  // --- Light-mode logic (point 6) ---------------------------------------
+  // The hero image is dark (sunset + cars). So when the navbar is TRANSPARENT
+  // over the hero, both the logo text and the theme-toggle icon should be
+  // WHITE so they read against the dark hero — but ONLY in dark mode.
+  // Wait — the user said: "in light mode it must be white when transparent
+  // background appear then it should convert to black, same for logo text
+  // car color it should become white when transparent navbar appear in dark
+  // mode only".
+  //
+  // Interpretation:
+  //  - LIGHT mode: theme icon + logo "Cars" text are WHITE when navbar is
+  //    transparent (over the dark hero), and BLACK when navbar is solid
+  //    (light bg). This is the default behavior since the hero is always dark.
+  //  - DARK mode: the user wants the logo text to become WHITE when the
+  //    navbar is transparent. In dark mode the solid navbar has a dark bg
+  //    so the logo should stay white there too — meaning in dark mode the
+  //    logo is ALWAYS white. Only in light mode does it flip.
+  //
+  // So: `light` (use white wordmark) = transparent navbar OR dark mode.
+  const isDark = resolvedTheme === "dark";
+  const light = !scrolled || isDark;
 
   return (
     <header
@@ -106,7 +124,9 @@ export function SiteHeader() {
         </div>
 
         <div className="flex items-center gap-2">
-          <ThemeToggle />
+          {/* Theme toggle: passes `light` so the icon is white when the
+              navbar is transparent (and dark mode = always white). */}
+          <ThemeToggle light={light} />
           {isAuthed ? (
             <>
               <Button asChild size="sm" className="hidden sm:inline-flex bg-primary text-primary-foreground hover:bg-primary/90">
@@ -114,19 +134,19 @@ export function SiteHeader() {
                   <Plus className="h-4 w-4 mr-1" /> Post Ad
                 </Link>
               </Button>
-              <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
+              <Button asChild variant="ghost" size="sm" className={cn("hidden sm:inline-flex", !scrolled && !isDark && "text-white hover:bg-white/10 hover:text-white")}>
                 <Link href={isAdmin ? "/admin" : "/dashboard"}>
                   {isAdmin ? <ShieldCheck className="h-4 w-4 mr-1" /> : <LayoutDashboard className="h-4 w-4 mr-1" />}
                   {isAdmin ? "Admin" : "Dashboard"}
                 </Link>
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => signOut({ callbackUrl: "/" })} className="hidden sm:inline-flex">
+              <Button variant="ghost" size="sm" onClick={() => signOut({ callbackUrl: "/" })} className={cn("hidden sm:inline-flex", !scrolled && !isDark && "text-white hover:bg-white/10 hover:text-white")}>
                 <LogOut className="h-4 w-4 mr-1" /> Sign out
               </Button>
             </>
           ) : (
             <>
-              <Button asChild variant="ghost" size="sm" className={cn("hidden sm:inline-flex", !scrolled && "text-white hover:bg-white/10 hover:text-white")}>
+              <Button asChild variant="ghost" size="sm" className={cn("hidden sm:inline-flex", !scrolled && !isDark && "text-white hover:bg-white/10 hover:text-white")}>
                 <Link href="/signin">Sign in</Link>
               </Button>
               <Button asChild size="sm" className="hidden sm:inline-flex bg-primary text-primary-foreground hover:bg-primary/90">
@@ -143,7 +163,7 @@ export function SiteHeader() {
               <Button
                 variant="ghost"
                 size="icon"
-                className={cn("lg:hidden", !scrolled && "text-white hover:bg-white/10 hover:text-white")}
+                className={cn("lg:hidden", !scrolled && !isDark && "text-white hover:bg-white/10 hover:text-white")}
                 aria-label="Open menu"
               >
                 <Menu className="h-5 w-5" />
@@ -151,10 +171,16 @@ export function SiteHeader() {
             </SheetTrigger>
             <SheetContent side="right" hideClose className="w-[300px] sm:w-[360px] p-0">
               <div className="flex flex-col h-full">
-                {/* Header: brand mark only (no X close button — the user
-                    taps outside or uses the nav links to navigate). */}
+                {/* Header: brand mark (LARGER per user request) + a single
+                    X close button on the right (recovered — there were two,
+                    we removed both; now adding one back here). */}
                 <div className="flex items-center justify-between p-4 border-b border-border">
-                  <BrandMark size="sm" />
+                  <BrandMark size="md" />
+                  <SheetClose asChild>
+                    <Button variant="ghost" size="icon" aria-label="Close menu" className="text-foreground/70 hover:text-foreground hover:bg-muted">
+                      <X className="h-5 w-5" />
+                    </Button>
+                  </SheetClose>
                 </div>
 
                 {/* Navigation links (scrollable if long) */}

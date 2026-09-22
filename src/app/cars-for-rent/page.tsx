@@ -25,12 +25,12 @@ import { KeyRound, ChevronLeft, ChevronRight, SearchX, SlidersHorizontal, Calend
 export const revalidate = 60;
 
 export const metadata: Metadata = {
-  title: "Rent Car — Rent Luxury & Sport Cars Worldwide | Cars Night",
+  title: "Rent — Rent Luxury & Sport Cars Worldwide | Cars Night",
   description:
     "Rent your dream car for special events — weddings, photoshoots, weekends, and more. Filter rentals by country, city, daily price, make, and more on Cars Night.",
   alternates: { canonical: "/cars-for-rent" },
   openGraph: {
-    title: "Rent Car — Rent Luxury & Sport Cars Worldwide | Cars Night",
+    title: "Rent — Rent Luxury & Sport Cars Worldwide | Cars Night",
     description:
       "Rent your dream car for special events — weddings, photoshoots, weekends, and more. Filter rentals by country, city, daily price, and make.",
     url: "/cars-for-rent",
@@ -87,7 +87,7 @@ export default async function CarsForRentPage({ searchParams }: PageProps) {
       {
         "@type": "ListItem",
         position: 2,
-        name: "Rent Car",
+        name: "Rent",
         item: "https://carsnight.example.com/cars-for-rent",
       },
     ],
@@ -97,7 +97,7 @@ export default async function CarsForRentPage({ searchParams }: PageProps) {
   const itemListJsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: "Rent Car",
+    name: "Rent",
     numberOfItems: total,
     itemListElement: listings.map((l, i) => ({
       "@type": "ListItem",
@@ -121,7 +121,7 @@ export default async function CarsForRentPage({ searchParams }: PageProps) {
               </BreadcrumbItem>
               <BreadcrumbSeparator />
               <BreadcrumbItem>
-                <BreadcrumbPage>Rent Car</BreadcrumbPage>
+                <BreadcrumbPage>Rent</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -135,7 +135,7 @@ export default async function CarsForRentPage({ searchParams }: PageProps) {
             </Badge>
           </div>
           <h1 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            Rent Car
+            Rent
           </h1>
           <p className="mt-3 text-muted-foreground max-w-2xl text-sm sm:text-base">
             Rent your dream car for special events — weddings, photoshoots, weekends, and more.
