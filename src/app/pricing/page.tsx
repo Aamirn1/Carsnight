@@ -39,6 +39,12 @@ function featuresFor(name: string): string[] {
 
 export const dynamic = "force-dynamic";
 
+export const metadata = {
+  title: "Plans — Buy Listing Credits | Cars Night",
+  description: "Upgrade to a Pro Plan and post more car listings. Credits never expire. Pay with credit card or crypto (BTC, ETH, USDT). Plans from $5.",
+  alternates: { canonical: "/pricing" },
+};
+
 export default async function PricingPage() {
   const user = await getSessionUser();
   let quota: { freeRemaining: number; paidRemaining: number; total: number } | null = null;

@@ -175,7 +175,11 @@ export function SiteHeader() {
                     X close button on the right (recovered — there were two,
                     we removed both; now adding one back here). */}
                 <div className="flex items-center justify-between p-4 border-b border-border">
-                  <BrandMark size="md" />
+                  {/* In dark mode, the burger menu (bg-background = dark) needs
+                      the LIGHT wordmark (white Cars + gold Night) to be visible.
+                      In light mode, the burger menu (bg-background = light)
+                      needs the DARK wordmark. So `light` = isDark here. */}
+                  <BrandMark size="md" light={isDark} />
                   <SheetClose asChild>
                     <Button variant="ghost" size="icon" aria-label="Close menu" className="text-foreground/70 hover:text-foreground hover:bg-muted">
                       <X className="h-5 w-5" />

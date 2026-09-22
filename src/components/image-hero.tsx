@@ -90,8 +90,8 @@ export function ImageHero({ tagline, announcement, saleCount, rentCount, userCou
                 />
               </span>
             </h1>
-            <p className="mt-6 text-base sm:text-lg text-white/90 max-w-xl [text-shadow:0_1px_8px_rgba(0,0,0,0.6)]">
-              {tagline} Buy, sell, and rent cars across 20+ countries. Two free listings to start, then upgrade with Pro Plans from $5.
+            <p className="mt-6 text-base sm:text-lg text-white max-w-xl [text-shadow:0_1px_8px_rgba(0,0,0,0.6)]">
+              Post your car ad and reach premium buyers worldwide — list in minutes, sell faster, and rent your vehicle for special events.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg" className="btn-gold shadow-lg shadow-amber-900/30">

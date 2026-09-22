@@ -9,7 +9,7 @@ import { Typewriter } from "@/components/typewriter";
 import { ImageHero } from "@/components/image-hero";
 import {
   Car, ArrowRight, ShieldCheck, Globe2, Bitcoin, Sparkles,
-  Tag, TrendingUp, Users, ListChecks, Search, PenLine, CreditCard,
+  Tag, TrendingUp, Users, ListChecks, Search, PenLine, CreditCard, Crown, HelpCircle,
 } from "lucide-react";
 
 export const revalidate = 60;
@@ -46,7 +46,7 @@ export default async function HomePage() {
   const settings: Record<string, string> = {};
   for (const s of settingsRows) settings[s.key] = s.value;
   const tagline = settings.tagline || "Your global car marketplace, no gravity needed!";
-  const announcement = settings.announcement || "Crypto payments now accepted — pay with BTC, ETH, or USDT!";
+  const announcement = settings.announcement || "Buy your dream car — or rent one for your next special event";
 
   const featuredListings = featured.map(toPublicListing);
 
@@ -91,23 +91,26 @@ export default async function HomePage() {
         />
       </div>
 
-      {/* Trust badges */}
+      {/* Trust badges — descriptions hidden on mobile (only titles + icons
+          show) so the 4 badges fit cleanly without truncation. */}
       <section className="border-y bg-card/40">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { icon: ShieldCheck, title: "Secure", text: "OWASP best practices, hashed passwords, rate-limited APIs" },
               { icon: Globe2, title: "Global", text: "20+ countries with localized listings & filters" },
-              { icon: Bitcoin, title: "Crypto + Card", text: "Pay with BTC, ETH, USDT, or any credit card" },
-              { icon: Tag, title: "2 Free Ads", text: "Get started free — upgrade with Pro Plans from $5" },
+              { icon: Car, title: "Premium Ride", text: "Curated luxury and sports cars from verified sellers" },
+              { icon: Crown, title: "Luxury Brands", text: "Porsche, Lamborghini, BMW, Mercedes and more" },
             ].map((b, i) => (
               <div key={i} className="flex items-start gap-3">
                 <div className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
                   <b.icon className="h-4 w-4" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="font-semibold text-sm">{b.title}</div>
-                  <div className="text-xs text-muted-foreground line-clamp-2">{b.text}</div>
+                  {/* Description hidden on mobile (line-clamp + hidden sm:block)
+                      so the 4 badges fit cleanly without truncation. */}
+                  <div className="text-xs text-muted-foreground line-clamp-2 hidden sm:block">{b.text}</div>
                 </div>
               </div>
             ))}
@@ -278,6 +281,52 @@ export default async function HomePage() {
                 </Button>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* About / Contact / FAQs quick links — per user request, added just
+          below the Pro Plan pricing preview so visitors can learn more about
+          the company and get help without scrolling to the footer. */}
+      <section className="pb-16 sm:pb-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid sm:grid-cols-3 gap-4 sm:gap-6">
+            <Link href="/about" className="group rounded-2xl border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
+              <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                <Users className="h-5 w-5" />
+              </div>
+              <h3 className="mt-4 text-lg font-semibold">About Us</h3>
+              <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
+                Our mission, our story, and what makes Cars Night different from every other car marketplace.
+              </p>
+              <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                Learn more <ArrowRight className="h-3.5 w-3.5" />
+              </span>
+            </Link>
+            <Link href="/contact" className="group rounded-2xl border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
+              <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                <Search className="h-5 w-5" />
+              </div>
+              <h3 className="mt-4 text-lg font-semibold">Contact</h3>
+              <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
+                Questions, feedback, or partnership ideas? We reply within one business day.
+              </p>
+              <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                Get in touch <ArrowRight className="h-3.5 w-3.5" />
+              </span>
+            </Link>
+            <Link href="/faq" className="group rounded-2xl border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
+              <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                <HelpCircle className="h-5 w-5" />
+              </div>
+              <h3 className="mt-4 text-lg font-semibold">FAQs</h3>
+              <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
+                How listings work, free vs paid ads, crypto payments, security, and more.
+              </p>
+              <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
+                Read FAQs <ArrowRight className="h-3.5 w-3.5" />
+              </span>
+            </Link>
           </div>
         </div>
       </section>
