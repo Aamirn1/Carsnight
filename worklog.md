@@ -727,3 +727,30 @@ Stage Summary:
   5. Scroll animation reliable at high speed — adaptive lerp catches up within ~0.00s diff even on aggressive fast scrolls (verified in both directions). ✅
   6. Navbar stays transparent during the entire hero animation, becomes solid exactly when "Browse by your goal" section is reached (scrollY > innerHeight + 700 - 50). ✅
 - ESLint passes; all routes return 200; committed as f96f09a and pushed to GitHub.
+
+---
+Task ID: 19
+Agent: main (orchestrator)
+Task: Replace hero video with static high-quality image background (no black shade, original quality preserved)
+
+Work Log:
+- Copied the uploaded "ChatGPT Image Sep 22, 2026, 06_17_35 AM.png" (1672x941 PNG, 2.18MB, three luxury cars at sunset with city skyline) to public/hero-cars.png using `cp` (byte-for-byte copy, no re-encoding). Verified MD5 identical: a142ce706a7815d1eb35e1275242516c for both source and destination. Verified served file via curl has the same MD5 and same byte count (2,181,302 bytes) — image quality is 100% preserved.
+- Created src/components/image-hero.tsx — a new static image hero component:
+  - Full-viewport (h-screen min-h-[600px]) section with the image as a full-bleed background via next/image (fill, object-cover, priority, quality={100}).
+  - NO dark overlay/shade of any kind — the image is shown at full quality with vibrant sunset colors.
+  - Text readability maintained via per-element text-shadow on the headline ([text-shadow:0_2px_12px_rgba(0,0,0,0.55)]), description, and stats — no full-screen scrim.
+  - Content overlay (crypto chip, headline + typewriter, CTAs, stats) in the lower-left area (justify-end + pb-24).
+  - "Scroll to explore" hint at the bottom.
+- Updated src/app/page.tsx: replaced <VideoScrollHero> with <ImageHero> (same props). Kept the -mt-16 wrapper so the image fills the full viewport behind the transparent navbar.
+- Updated src/components/site-header.tsx: navbar scroll threshold changed from `window.innerHeight + 700 - 50` (the old video hero had a 700px scroll-trigger zone) to `window.innerHeight - 50` (the new image hero is exactly 100vh, no extra scroll zone). The navbar stays transparent over the hero and becomes solid just before the first content section ("Browse by your goal") scrolls into view.
+- Removed the now-unused hero components: src/components/scroll-frame-hero.tsx and src/components/video-scroll-hero.tsx (deleted from disk + git tracking).
+- .gitignore: added /public/hero-frames/ (240 unused JPGs from the earlier scroll-frame approach) and tool-results/ (dev artifacts). Removed the tool-results dev artifact from git tracking.
+- Committed as 30f5438 and pushed to GitHub.
+
+Stage Summary:
+- The hero video is completely removed. The home page now uses a static full-viewport image background (three luxury cars at sunset) at original quality.
+- NO black shade/overlay — the image is shown at full quality (verified: MD5 of served file == MD5 of original upload, byte count identical).
+- Text overlay (crypto chip, headline, CTAs, stats) remains in the lower-left area with per-element text-shadow for readability.
+- Navbar stays transparent over the hero, becomes solid when scrolling past it into "Browse by your goal".
+- Verified end-to-end with Agent Browser + VLM on desktop (1280x800) and mobile (390x844).
+- ESLint passes; all routes return 200.
