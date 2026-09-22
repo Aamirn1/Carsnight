@@ -128,7 +128,7 @@ export default async function PricingPage() {
                 >
                   {isPopular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <Badge className="bg-primary text-primary-foreground shadow-md">
+                      <Badge className="btn-neon text-white shadow-md">
                         <Crown className="h-3 w-3 mr-1" /> Most popular
                       </Badge>
                     </div>
@@ -157,7 +157,7 @@ export default async function PricingPage() {
                     <ul className="space-y-2.5 text-sm flex-1">
                       {features.map((f) => (
                         <li key={f} className="flex items-start gap-2">
-                          <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                          <Check className="h-4 w-4 icon-neon shrink-0 mt-0.5" />
                           <span className="text-foreground">{f}</span>
                         </li>
                       ))}
@@ -275,9 +275,10 @@ export default async function PricingPage() {
           </Card>
         </section>
 
-        {/* CTA */}
-        <section className="rounded-xl bg-primary text-primary-foreground p-6 sm:p-10 text-center">
-          <ShieldCheck className="h-8 w-8 mx-auto mb-3" />
+        {/* CTA — dark neutral background (NOT the neon gradient; gradients are
+            only for buttons + icons per the design system). */}
+        <section className="rounded-xl bg-foreground text-background p-6 sm:p-10 text-center">
+          <ShieldCheck className="h-8 w-8 icon-neon mx-auto mb-3" />
           <h2 className="text-2xl font-bold">Ready to sell or rent your car?</h2>
           <p className="text-sm opacity-90 mt-1">
             Post your first ad in minutes. 2 free listings included — no credit card required.

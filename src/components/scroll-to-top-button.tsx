@@ -50,7 +50,7 @@ export function ScrollToTopButton() {
       onMouseLeave={() => setHovering(false)}
       style={
         isGolden
-          ? { backgroundImage: "linear-gradient(135deg, #F5B82E 0%, #C98216 100%)" }
+          ? { backgroundImage: "linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%)" }
           : undefined
       }
       className={cn(

@@ -104,7 +104,7 @@ export default async function HomePage() {
             ].map((b, i) => (
               <div key={i} className="flex items-start gap-3">
                 <div className="mt-0.5 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary shrink-0">
-                  <b.icon className="h-4 w-4" />
+                  <b.icon className="h-4 w-4 icon-neon" />
                 </div>
                 <div className="min-w-0">
                   <div className="font-semibold text-sm">{b.title}</div>
@@ -137,7 +137,7 @@ export default async function HomePage() {
               <div className="absolute inset-0 flex flex-col justify-end p-6 text-white">
                 <h3 className="text-2xl font-bold">Find the perfect car to buy</h3>
                 <p className="mt-1 text-sm text-white/80 max-w-md">Browse {saleCount.toLocaleString()}+ verified cars for sale worldwide.</p>
-                <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary-foreground bg-primary rounded-md px-3 py-1.5 w-fit">
+                <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-white btn-neon rounded-md px-3 py-1.5 w-fit">
                   Buy a car <ArrowRight className="h-3.5 w-3.5" />
                 </span>
               </div>
@@ -150,7 +150,7 @@ export default async function HomePage() {
               <div className="absolute inset-0 flex flex-col justify-end p-6 text-white">
                 <h3 className="text-2xl font-bold">Rent your dream car for special events</h3>
                 <p className="mt-1 text-sm text-white/80 max-w-md">From a Tesla weekend to a Lamborghini for the day — {rentCount.toLocaleString()}+ rentals.</p>
-                <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary-foreground bg-primary rounded-md px-3 py-1.5 w-fit">
+                <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-white btn-neon rounded-md px-3 py-1.5 w-fit">
                   Rent a car <ArrowRight className="h-3.5 w-3.5" />
                 </span>
               </div>
@@ -199,7 +199,7 @@ export default async function HomePage() {
               <div key={i} className="group rounded-2xl border border-border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                    <s.icon className="h-5 w-5" />
+                    <s.icon className="h-5 w-5 icon-neon" />
                   </div>
                   <span className="text-3xl font-bold text-muted-foreground/40">{s.step}</span>
                 </div>
@@ -222,7 +222,7 @@ export default async function HomePage() {
               { icon: ListChecks, label: "For Rent", value: rentCount.toLocaleString() },
             ].map((s, i) => (
               <div key={i} className="rounded-2xl border bg-card p-6 shadow-sm">
-                <s.icon className="mx-auto h-7 w-7 text-primary" />
+                <s.icon className="mx-auto h-7 w-7 icon-neon" />
                 <div className="mt-2 text-3xl font-bold tracking-tight">{s.value}</div>
                 <div className="mt-1 text-sm text-muted-foreground">{s.label}</div>
               </div>
@@ -247,7 +247,7 @@ export default async function HomePage() {
                 { price: "$10", credits: "10 listings", popular: false },
               ].map((p, i) => (
                 <div key={i} className={`rounded-2xl border bg-card p-5 shadow-sm relative ${p.popular ? "border-primary" : ""}`}>
-                  {p.popular && <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-medium px-3 py-1 rounded-full shadow">Most popular</span>}
+                  {p.popular && <span className="absolute -top-3 left-1/2 -translate-x-1/2 btn-neon text-white text-xs font-medium px-3 py-1 rounded-full shadow">Most popular</span>}
                   <div className="text-3xl font-bold text-primary">{p.price}</div>
                   <div className="mt-1 text-sm text-muted-foreground">{p.credits}</div>
                 </div>
@@ -293,7 +293,7 @@ export default async function HomePage() {
           <div className="grid sm:grid-cols-3 gap-4 sm:gap-6">
             <Link href="/about" className="group rounded-2xl border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
               <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                <Users className="h-5 w-5" />
+                <Users className="h-5 w-5 icon-neon" />
               </div>
               <h3 className="mt-4 text-lg font-semibold">About Us</h3>
               <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
@@ -305,7 +305,7 @@ export default async function HomePage() {
             </Link>
             <Link href="/contact" className="group rounded-2xl border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
               <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                <Search className="h-5 w-5" />
+                <Search className="h-5 w-5 icon-neon" />
               </div>
               <h3 className="mt-4 text-lg font-semibold">Contact</h3>
               <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
@@ -317,7 +317,7 @@ export default async function HomePage() {
             </Link>
             <Link href="/faq" className="group rounded-2xl border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
               <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                <HelpCircle className="h-5 w-5" />
+                <HelpCircle className="h-5 w-5 icon-neon" />
               </div>
               <h3 className="mt-4 text-lg font-semibold">FAQs</h3>
               <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">

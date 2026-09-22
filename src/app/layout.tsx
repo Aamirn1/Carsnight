@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { ScrollToTop } from "@/components/scroll-to-top";
 import { ScrollToTopButton } from "@/components/scroll-to-top-button";
+import { NeonGradientDef } from "@/components/neon-gradient-def";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -108,6 +109,7 @@ export default function RootLayout({
       >
         <Providers>
           <ScrollToTop />
+          <NeonGradientDef />
           <SiteHeader />
           <main className="flex-1 flex flex-col">{children}</main>
           <SiteFooter />

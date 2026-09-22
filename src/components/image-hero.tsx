@@ -72,7 +72,7 @@ export function ImageHero({ tagline, announcement, saleCount, rentCount, userCou
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full">
           <div className="max-w-2xl text-white">
             <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md border border-white/25 px-3.5 py-1.5 text-xs sm:text-sm font-medium">
-              <Sparkles className="h-3.5 w-3.5 text-[#F5B82E]" /> {announcement}
+              <Sparkles className="h-3.5 w-3.5 icon-neon" /> {announcement}
             </div>
             <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] [text-shadow:0_2px_12px_rgba(0,0,0,0.55)]">
               Your global car
@@ -95,7 +95,7 @@ export function ImageHero({ tagline, announcement, saleCount, rentCount, userCou
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg" className="btn-gold shadow-lg shadow-amber-900/30">
-                <Link href="/cars-for-sale"><Car className="h-4 w-4 mr-1.5" /> Browse cars</Link>
+                <Link href="/cars-for-sale"><Car className="h-4 w-4 mr-1.5 icon-neon" /> Browse cars</Link>
               </Button>
               <Button
                 asChild

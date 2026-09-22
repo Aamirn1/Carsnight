@@ -36,7 +36,7 @@ export function ThemeToggle({ light = false }: ThemeToggleProps) {
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className={cn("h-9 w-9", light && !isDark && "text-white hover:bg-white/10 hover:text-white")}
     >
-      {mounted && isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      {mounted && isDark ? <Sun className="h-4 w-4 icon-neon" /> : <Moon className="h-4 w-4 icon-neon" />}
     </Button>
   );
 }

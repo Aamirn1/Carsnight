@@ -43,12 +43,15 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
-/* Cars Night - light palette with vibrant golden accent */
-/* Golden brand colors:
-   - Golden (primary):   #F5B82E (deep gold) → used as the --primary token
-   - Golden hover/soft:  #FFD15A (light gold)
-   - Button bg:          linear-gradient(135deg, #F5B82E 0%, #C98216 100%)
-   - Button hover bg:     linear-gradient(135deg, #FFD15A 0%, #F5B82E 100%)
+/* Cars Night - neon gradient accent (Electric Blue → Violet → Neon Magenta) */
+/* Brand neon gradient (applied ONLY to buttons + icons, NOT surfaces):
+   - #00A8FF  (electric blue)
+   - #6366F1  (indigo/violet)
+   - #8B5CF6  (violet)
+   - #D946EF  (neon magenta)
+   - Button bg:    linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%)
+   - Button hover: same gradient with slightly brighter glow
+   - Icons:        same gradient as fill/stroke
 */
 :root {
   --radius: 0.75rem;
@@ -58,8 +61,8 @@
   --card-foreground: oklch(0.18 0.02 280);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.18 0.02 280);
-  --primary: #C98216;                          /* deep gold (matches gradient end) */
-  --primary-foreground: oklch(0.18 0.02 280);  /* dark text on gold for readability */
+  --primary: #8B5CF6;                          /* violet (middle of the neon gradient) */
+  --primary-foreground: #FFFFFF;                /* pure white text on the neon gradient */
   --secondary: oklch(0.96 0.01 280);           /* light grey */
   --secondary-foreground: oklch(0.2 0.02 280);
   --muted: oklch(0.96 0.005 280);
@@ -69,30 +72,30 @@
   --destructive: oklch(0.6 0.25 25);
   --border: oklch(0.92 0.005 280);
   --input: oklch(0.94 0.005 280);
-  --ring: #C98216;                             /* matches primary */
-  --chart-1: #C98216;                           /* gold */
-  --chart-2: oklch(0.6 0.18 250);              /* blue */
-  --chart-3: oklch(0.65 0.15 160);             /* green */
-  --chart-4: oklch(0.7 0.2 80);                /* yellow */
+  --ring: #8B5CF6;                             /* matches primary (violet) */
+  --chart-1: #00A8FF;                           /* electric blue */
+  --chart-2: #6366F1;                           /* indigo */
+  --chart-3: #8B5CF6;                           /* violet */
+  --chart-4: #D946EF;                           /* neon magenta */
   --chart-5: oklch(0.55 0.2 300);              /* purple */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.18 0.02 280);
-  --sidebar-primary: #C98216;
-  --sidebar-primary-foreground: oklch(0.18 0.02 280);
+  --sidebar-primary: #8B5CF6;
+  --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: oklch(0.96 0.005 280);
   --sidebar-accent-foreground: oklch(0.2 0.02 280);
   --sidebar-border: oklch(0.92 0.005 280);
-  --sidebar-ring: #C98216;
+  --sidebar-ring: #8B5CF6;
 
-  /* Brand-specific tokens */
-  --brand-gold: #C98216;
-  --brand-gold-bright: #F5B82E;
-  --brand-gold-soft: #FFD15A;
+  /* Brand-specific tokens (kept for backwards compat with older refs) */
+  --brand-gold: #8B5CF6;
+  --brand-gold-bright: #D946EF;
+  --brand-gold-soft: #00A8FF;
   --brand-navy: oklch(0.25 0.04 270);
 
-  /* Brand gradients */
-  --brand-gradient: linear-gradient(135deg, #F5B82E 0%, #C98216 100%);
-  --brand-gradient-hover: linear-gradient(135deg, #FFD15A 0%, #F5B82E 100%);
+  /* Neon brand gradient (Electric Blue → Violet → Neon Magenta) */
+  --brand-gradient: linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%);
+  --brand-gradient-hover: linear-gradient(135deg, #3BB5FF 0%, #7577F5 40%, #9B6FFF 70%, #E55FF1 100%);
 }
 
 .dark {
@@ -102,8 +105,8 @@
   --card-foreground: oklch(0.97 0 0);
   --popover: oklch(0.21 0.02 270);
   --popover-foreground: oklch(0.97 0 0);
-  --primary: #F5B82E;                           /* brighter gold in dark mode */
-  --primary-foreground: oklch(0.16 0.015 270);
+  --primary: #8B5CF6;                           /* violet (neon gradient, same in dark mode) */
+  --primary-foreground: #FFFFFF;                /* pure white text on the neon gradient */
   --secondary: oklch(0.27 0.02 270);
   --secondary-foreground: oklch(0.97 0 0);
   --muted: oklch(0.27 0.02 270);
@@ -113,20 +116,20 @@
   --destructive: oklch(0.7 0.2 25);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 14%);
-  --ring: #F5B82E;
-  --chart-1: #F5B82E;
-  --chart-2: oklch(0.65 0.18 250);
-  --chart-3: oklch(0.7 0.15 160);
-  --chart-4: oklch(0.75 0.2 80);
+  --ring: #8B5CF6;
+  --chart-1: #00A8FF;
+  --chart-2: #6366F1;
+  --chart-3: #8B5CF6;
+  --chart-4: #D946EF;
   --chart-5: oklch(0.6 0.2 300);
   --sidebar: oklch(0.21 0.02 270);
   --sidebar-foreground: oklch(0.97 0 0);
-  --sidebar-primary: #F5B82E;
-  --sidebar-primary-foreground: oklch(0.16 0.015 270);
+  --sidebar-primary: #8B5CF6;
+  --sidebar-primary-foreground: #FFFFFF;
   --sidebar-accent: oklch(0.27 0.02 270);
   --sidebar-accent-foreground: oklch(0.97 0 0);
   --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: #F5B82E;
+  --sidebar-ring: #8B5CF6;
 }
 
 @layer base {
@@ -139,32 +142,68 @@
   }
   html { scroll-behavior: smooth; }
 
-  /* Golden gradient buttons — applies the brand gradient to all primary buttons.
-     Targets shadcn Button's default variant via [data-slot="button"] which has
-     the .bg-primary class, plus our explicit .btn-gold utility. */
+  /* Neon gradient buttons — applies the Electric Blue → Violet → Neon Magenta
+     gradient to all primary buttons. Targets shadcn Button's default variant
+     via [data-slot="button"] which has the .bg-primary class, plus our
+     explicit .btn-gold utility (kept for backwards compat). */
   [data-slot="button"].bg-primary,
   [data-slot="button"].btn-gold,
+  [data-slot="button"].btn-neon,
   button.bg-primary,
   a.bg-primary {
     background-image: var(--brand-gradient);
-    background-color: #C98216; /* fallback */
-    color: var(--primary-foreground);
+    background-color: #8B5CF6; /* fallback */
+    color: #FFFFFF; /* pure white text */
     border-color: transparent;
-    box-shadow: 0 2px 6px -1px rgba(201, 130, 22, 0.35);
+    font-weight: 600;
+    /* Subtle neon glow matching the gradient */
+    box-shadow: 0 2px 8px -1px rgba(99, 102, 241, 0.45), 0 0 0 1px rgba(139, 92, 246, 0.1);
   }
   [data-slot="button"].bg-primary:hover,
   [data-slot="button"].btn-gold:hover,
+  [data-slot="button"].btn-neon:hover,
   button.bg-primary:hover,
   a.bg-primary:hover {
     background-image: var(--brand-gradient-hover);
-    background-color: #F5B82E; /* fallback */
-    box-shadow: 0 4px 12px -2px rgba(245, 184, 46, 0.45);
+    background-color: #D946EF; /* fallback */
+    /* Stronger neon glow on hover */
+    box-shadow: 0 4px 16px -2px rgba(139, 92, 246, 0.6), 0 0 0 1px rgba(217, 70, 239, 0.2);
   }
 
-  /* Gradient border for outline buttons that should match the brand.
-     (Optional — keeps outline buttons with the warm ring tone.) */
-  [data-slot="button"]:hover:not(.bg-primary):not(.btn-gold):not(.ghost):not(.link):not(.bg-destructive) {
-    border-color: #C98216;
+  /* Outline / secondary buttons on hover pick up a subtle violet border to
+     match the neon identity (without applying the gradient to their bg). */
+  [data-slot="button"]:hover:not(.bg-primary):not(.btn-gold):not(.btn-neon):not(.ghost):not(.link):not(.bg-destructive) {
+    border-color: #8B5CF6;
+  }
+
+  /* --- Neon gradient icons -------------------------------------------------
+     Applies the Electric Blue → Violet → Neon Magenta gradient to SVG icons
+     (lucide-react). Lucide icons use stroke="currentColor", so we override
+     the stroke to reference the SVG <linearGradient> defined in
+     <NeonGradientDef /> (rendered once in the root layout).
+
+     Usage: add the `icon-neon` class to any lucide icon:
+       <Menu className="h-5 w-5 icon-neon" />
+     The icon's stroke becomes the neon gradient with a subtle glow.
+  */
+  .icon-neon {
+    /* For non-SVG elements (text icons, etc.) — not commonly used but kept
+       for completeness. */
+    color: #8B5CF6;
+  }
+  .icon-neon svg,
+  svg.icon-neon {
+    /* Override the lucide stroke to use the neon gradient defined in
+       <NeonGradientDef />. The gradient def is injected once globally. */
+    stroke: url(#neon-gradient-stroke) !important;
+    /* Subtle neon glow on the icon */
+    filter: drop-shadow(0 0 3px rgba(139, 92, 246, 0.45));
+  }
+  /* When the icon-neon class is on a parent (not the SVG itself), target the
+     child SVGs. */
+  .icon-neon > svg {
+    stroke: url(#neon-gradient-stroke) !important;
+    filter: drop-shadow(0 0 3px rgba(139, 92, 246, 0.45));
   }
 }
 
@@ -234,12 +273,13 @@
   .parallax-bg { background-attachment: scroll; }
 }
 
-/* Gradient text — golden brand gradient */
+/* Gradient text — neon brand gradient (Electric Blue → Violet → Magenta) */
 .gradient-text {
-  background: linear-gradient(135deg, #FFD15A 0%, #F5B82E 50%, #C98216 100%);
+  background: linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
+  -webkit-text-fill-color: transparent;
 }
 
 /* Glassmorphism panel */

@@ -32,7 +32,7 @@ export function ListingCard({ listing, priority = false }: Props) {
               {isRent ? "For Rent" : "For Sale"}
             </Badge>
             {listing.featured && (
-              <Badge className="bg-primary text-primary-foreground shadow">
+              <Badge className="btn-neon text-white shadow">
                 <Crown className="h-3 w-3 mr-1" /> Featured
               </Badge>
             )}
