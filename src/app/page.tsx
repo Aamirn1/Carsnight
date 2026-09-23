@@ -137,7 +137,7 @@ export default async function HomePage() {
               <div className="absolute inset-0 flex flex-col justify-end p-6 text-white">
                 <h3 className="text-2xl font-bold">Find the perfect car to buy</h3>
                 <p className="mt-1 text-sm text-white/80 max-w-md">Browse {saleCount.toLocaleString()}+ verified cars for sale worldwide.</p>
-                <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-white btn-neon rounded-md px-3 py-1.5 w-fit">
+                <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-white rounded-md px-3 py-1.5 w-fit" style={{ backgroundImage: "linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%)" }}>
                   Buy a car <ArrowRight className="h-3.5 w-3.5" />
                 </span>
               </div>
@@ -150,7 +150,7 @@ export default async function HomePage() {
               <div className="absolute inset-0 flex flex-col justify-end p-6 text-white">
                 <h3 className="text-2xl font-bold">Rent your dream car for special events</h3>
                 <p className="mt-1 text-sm text-white/80 max-w-md">From a Tesla weekend to a Lamborghini for the day — {rentCount.toLocaleString()}+ rentals.</p>
-                <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-white btn-neon rounded-md px-3 py-1.5 w-fit">
+                <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-white rounded-md px-3 py-1.5 w-fit" style={{ backgroundImage: "linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%)" }}>
                   Rent a car <ArrowRight className="h-3.5 w-3.5" />
                 </span>
               </div>

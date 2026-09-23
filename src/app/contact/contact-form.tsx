@@ -41,12 +41,11 @@ export function ContactForm() {
 
   return (
     <div className="flex flex-col">
-      {/* Hero — dark background with the hero cars image, no white bleed */}
+      {/* Hero — solid dark background (no overlay/white bleed) */}
       <section className="relative overflow-hidden bg-foreground">
         <div className="absolute inset-0">
-          <Image src="/hero-cars.png" alt="" fill priority sizes="100vw" className="object-cover opacity-30" />
+          <Image src="/hero-cars.png" alt="" fill priority sizes="100vw" className="object-cover opacity-20" />
         </div>
-        <div className="absolute inset-0 bg-foreground/80" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20 text-white">
           <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md border border-white/25 px-3.5 py-1.5 text-xs sm:text-sm font-medium">
             <Mail className="h-3.5 w-3.5 icon-neon" /> Contact Cars Night

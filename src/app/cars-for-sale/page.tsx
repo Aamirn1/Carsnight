@@ -109,28 +109,17 @@ export default async function CarsForSalePage({ searchParams }: PageProps) {
 
   return (
     <div className="flex flex-col">
-      {/* Hero header */}
-      <section className="border-b bg-gradient-to-b from-primary/5 to-background">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link href="/">Home</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Buy</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-
-          <h1 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            Find the perfect car to buy
+      {/* Hero — centered, matching the Plans page style */}
+      <section className="bg-gradient-to-b from-primary/5 to-transparent border-b border-border">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 text-center">
+          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 mb-4">
+            <Car className="h-3 w-3 mr-1" /> Buy
+          </Badge>
+          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight">
+            Find the <span className="gradient-text">perfect car to buy</span>
           </h1>
-          <p className="mt-3 text-muted-foreground max-w-2xl text-sm sm:text-base">
-            Filter by country, price, make and more — browse verified cars for sale worldwide.
+          <p className="mt-3 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
+            Filter by country, price, make, year, fuel, and more — browse verified cars for sale worldwide.
           </p>
         </div>
       </section>

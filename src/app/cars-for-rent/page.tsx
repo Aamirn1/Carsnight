@@ -109,37 +109,18 @@ export default async function CarsForRentPage({ searchParams }: PageProps) {
 
   return (
     <div className="flex flex-col">
-      {/* Hero header */}
-      <section className="border-b bg-gradient-to-b from-primary/5 to-background">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link href="/">Home</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Rent</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-
-          <h1 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            Rent your dream car for special events
+      {/* Hero — centered, matching the Plans page style */}
+      <section className="bg-gradient-to-b from-primary/5 to-transparent border-b border-border">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 text-center">
+          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 mb-4">
+            <KeyRound className="h-3 w-3 mr-1" /> Rent
+          </Badge>
+          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight">
+            Rent your <span className="gradient-text">dream car</span> for special events
           </h1>
-          <p className="mt-3 text-muted-foreground max-w-2xl text-sm sm:text-base">
+          <p className="mt-3 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
             Weddings, photoshoots, weekends, and more — filter by country, daily price, make, and availability.
           </p>
-          <div className="mt-4 flex flex-wrap items-center gap-4 text-xs sm:text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5">
-              <CalendarHeart className="h-4 w-4 text-primary" /> Daily / weekly / monthly
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Camera className="h-4 w-4 text-primary" /> Perfect for photoshoots & events
-            </span>
-          </div>
         </div>
       </section>
 

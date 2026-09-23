@@ -37,7 +37,7 @@ export function BrandMark({ className = "", size = "md", light = false }: BrandM
           Two variants ensure it reads on both dark and light backgrounds.
           The translate-y-[2px] nudge compensates for the brush script's tall
           ascenders which make the wordmark appear slightly above center. */}
-      <span className={`relative inline-flex ${wordmarkHeight} ${wordmarkWidth} items-center justify-center shrink-0 translate-y-[2px]`}>
+      <span className={`relative inline-flex ${wordmarkHeight} ${wordmarkWidth} items-center justify-center shrink-0 translate-y-[4px]`}>
         <Image
           src={wordmarkSrc}
           alt="Cars Night — luxury car marketplace"
