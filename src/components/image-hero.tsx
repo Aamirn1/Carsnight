@@ -71,7 +71,7 @@ export function ImageHero({ tagline, announcement, saleCount, rentCount, userCou
           Positioned ABOVE the background image (z-[1]) and BELOW the content
           overlay (z-10). pointer-events:none so it never interferes with
           buttons, links, or text selection. Respects prefers-reduced-motion. */}
-      <FallingStars count={25} />
+      <FallingStars count={60} />
 
       {/* Content overlay — headline, typewriter, CTAs, stats.
           Positioned in the lower-left area (justify-end + pb-24). */}

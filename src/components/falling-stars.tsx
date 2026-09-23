@@ -11,127 +11,191 @@ function useMounted(): boolean {
   );
 }
 
-// --- Star types -----------------------------------------------------------
+// ============================================================================
+// STAR TYPES
+// ============================================================================
+type StarType = "background" | "shooting";
+
 interface Star {
-  x: number;          // start x (px, relative to container)
-  y: number;          // start y (px)
+  type: StarType;
+  // Position (for background: static start; for shooting: start of travel)
+  x: number;
+  y: number;
+  // Travel (shooting stars only)
   length: number;     // travel distance (px)
-  angle: number;      // travel direction (radians, default ~135deg = upper-right to lower-left)
-  size: number;       // star diameter (px)
-  speed: number;      // px per second
-  delay: number;      // seconds before the star starts
-  duration: number;   // seconds for one fall
-  color: string;      // star color
-  trailColor: string; // trail color
-  trailLength: number;// trail length (px)
-  opacity: number;    // base opacity (0..1)
-  isShootingStar: boolean; // true = brighter with longer trail
+  angle: number;      // direction (radians) ~135° = upper-right → lower-left
+  // Visual
+  size: number;       // star core radius (px)
+  opacity: number;    // base opacity 0..1
+  color: string;      // star core color (hex)
+  glowColor: string;  // glow color (rgba)
+  trailColor: string; // trail color (rgba) — shooting stars only
+  trailLength: number;// trail length (px) — shooting stars only
+  // Animation
+  delay: number;      // seconds before first appearance
+  duration: number;   // seconds for one cycle (fade-in + move + fade-out)
+  // Background star gentle drift
+  driftX: number;      // px/s horizontal drift (background stars only)
+  driftY: number;      // px/s vertical drift (background stars only)
+  twinklePhase: number; // random phase offset for twinkling (background stars)
 }
 
-// Color palette — white, very light blue, subtle violet/cyan
-const STAR_COLORS = [
-  "#FFFFFF",
-  "#FFFFFF",
-  "#FFFFFF",
-  "#BFDBFE", // very light blue
-  "#C7D2FE", // very light indigo
-  "#DDD6FE", // very light violet
-  "#A5F3FC", // very light cyan
+// ============================================================================
+// COLOR PALETTE — PURPLE/VIOLET ONLY (no white, no blue, no other hues)
+// ============================================================================
+// Per spec: #8B5CF6 (neon violet), #A855F7 (bright purple), #6366F1 (blue-violet)
+// The brightest parts may become lighter lavender/violet due to glow, but
+// must still read as purple — never white.
+
+// Background star colors (subtle, mostly violet)
+const BG_COLORS = [
+  "#8B5CF6", // neon violet
+  "#8B5CF6", // weighted: most common
+  "#8B5CF6",
+  "#A855F7", // bright purple
+  "#A855F7",
+  "#6366F1", // blue-violet (subtle variation)
+  "#6366F1",
+  "#C4B5FD", // light lavender (for brighter tiny stars)
 ];
 
-const TRAIL_COLORS = [
-  "rgba(255,255,255,0.6)",
-  "rgba(255,255,255,0.6)",
-  "rgba(191,219,254,0.5)", // light blue
-  "rgba(199,210,254,0.5)", // light indigo
-  "rgba(221,214,254,0.5)", // light violet
-  "rgba(165,243,252,0.5)", // light cyan
+// Shooting star head colors (slightly brighter violet)
+const SHOOT_COLORS = [
+  "#A855F7", // bright purple
+  "#A855F7",
+  "#8B5CF6", // neon violet
+  "#C4B5FD", // light lavender (brightest, still purple)
 ];
 
-// --- Random helpers -------------------------------------------------------
+// Glow colors (rgba with alpha — soft, diffused)
+const BG_GLOW = [
+  "rgba(139,92,246,0.25)",
+  "rgba(168,85,247,0.25)",
+  "rgba(99,102,241,0.20)",
+  "rgba(196,181,253,0.30)",
+];
+
+const SHOOT_GLOW = [
+  "rgba(168,85,247,0.40)",
+  "rgba(139,92,246,0.40)",
+  "rgba(196,181,253,0.45)",
+];
+
+// Trail colors (rgba — tapered, fades to transparent)
+const SHOOT_TRAIL = [
+  "rgba(168,85,247,0.45)",
+  "rgba(139,92,246,0.40)",
+  "rgba(196,181,253,0.40)",
+];
+
+// ============================================================================
+// RANDOM HELPERS
+// ============================================================================
 function rand(min: number, max: number): number {
   return Math.random() * (max - min) + min;
 }
-
 function pick<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-function generateStar(width: number, height: number): Star {
-  // 85% are small subtle particles, 15% are brighter shooting stars
-  const isShootingStar = Math.random() < 0.15;
-
-  // Direction: diagonally from upper-right to lower-left (135deg ± 15deg)
-  const angle = rand(Math.PI * 0.65, Math.PI * 0.85); // ~117-153 deg
-
-  // Start position: mostly in the upper-right area, but also random across the top
-  // so stars fall throughout the hero (concentrated in the open area beneath/around the text)
-  const x = rand(width * 0.2, width * 1.1); // start from right side, some off-screen
-  const y = rand(-height * 0.1, height * 0.5); // start from top area
-
-  // Travel distance
-  const length = rand(height * 0.4, height * 0.9);
-
-  // Size
-  const size = isShootingStar ? rand(2, 3.5) : rand(1, 2);
-
-  // Speed (px/s) — shooting stars are faster
-  const speed = isShootingStar ? rand(120, 200) : rand(40, 90);
-
-  // Duration = length / speed
-  const duration = length / speed;
-
-  // Delay — randomized so stars don't sync
-  const delay = rand(0, 8);
-
-  // Trail length
-  const trailLength = isShootingStar ? rand(60, 120) : rand(15, 40);
-
-  // Opacity — shooting stars are brighter
-  const opacity = isShootingStar ? rand(0.7, 1) : rand(0.3, 0.6);
+// ============================================================================
+// STAR GENERATION
+// ============================================================================
+function generateBackgroundStar(width: number, height: number): Star {
+  // Tiny: 1-2px core, low opacity, random position across the hero
+  const size = rand(0.5, 1.2); // very small
+  const opacity = rand(0.15, 0.45); // subtle
+  const driftX = rand(-3, 3);     // gentle horizontal drift px/s
+  const driftY = rand(2, 8);      // gentle downward drift px/s
 
   return {
-    x, y, length, angle, size, speed, delay, duration,
-    color: pick(STAR_COLORS),
-    trailColor: pick(TRAIL_COLORS),
-    trailLength,
+    type: "background",
+    x: rand(0, width),
+    y: rand(0, height),
+    length: 0,
+    angle: 0,
+    size,
     opacity,
-    isShootingStar,
+    color: pick(BG_COLORS),
+    glowColor: pick(BG_GLOW),
+    trailColor: "",
+    trailLength: 0,
+    delay: rand(0, 6),
+    duration: rand(4, 9), // long gentle cycle
+    driftX,
+    driftY,
+    twinklePhase: rand(0, Math.PI * 2),
   };
 }
 
-// --- Component ------------------------------------------------------------
+function generateShootingStar(width: number, height: number): Star {
+  // Diagonal from upper-right to lower-left (~135° ± 10°)
+  const angle = rand(Math.PI * 0.70, Math.PI * 0.83); // ~126-150°
+  // Start from upper-right area, some off-screen
+  const x = rand(width * 0.3, width * 1.05);
+  const y = rand(-height * 0.05, height * 0.35);
+  // Travel distance
+  const length = rand(height * 0.3, height * 0.7);
+  // Speed: px/s — smooth easing, not too fast
+  const speed = rand(80, 160);
+  const duration = length / speed;
+  // Head size: 2-4px (small, not large)
+  const size = rand(1, 2.5);
+  // Trail: 30-80px, thin
+  const trailLength = rand(30, 80);
+  const opacity = rand(0.5, 0.85);
+
+  return {
+    type: "shooting",
+    x, y, length, angle,
+    size,
+    opacity,
+    color: pick(SHOOT_COLORS),
+    glowColor: pick(SHOOT_GLOW),
+    trailColor: pick(SHOOT_TRAIL),
+    trailLength,
+    delay: rand(1, 12), // randomized long delays so shooting stars are occasional
+    duration,
+    driftX: 0,
+    driftY: 0,
+    twinklePhase: 0,
+  };
+}
+
+// ============================================================================
+// EASING — smooth, cinematic (ease-out for deceleration feel)
+// ============================================================================
+function easeOutCubic(t: number): number {
+  return 1 - Math.pow(1 - t, 3);
+}
+
+// ============================================================================
+// COMPONENT
+// ============================================================================
 interface Props {
-  /** Number of stars to generate. Default 25 (sparse, elegant). */
+  /** Total number of stars. ~90-95% will be background, ~5-10% shooting. */
   count?: number;
 }
 
 /**
- * FallingStars — a smooth, cinematic falling-star animation layer for the
- * hero section. Renders a full-viewport canvas with GPU-accelerated CSS
- * transforms (translate3d + opacity) for 60 FPS. Stars fall diagonally from
- * upper-right to lower-left with randomized size, speed, trajectory, and
- * timing. Occasional brighter shooting stars have luminous trails.
+ * FallingStars — a subtle, premium, cinematic night-sky particle system.
  *
- * Implementation:
- * - Uses a single <canvas> for all stars (most efficient for many particles).
- * - Animates via requestAnimationFrame, drawing each star as a gradient dot
- *   with a fading trail line.
- * - Stars are generated with randomized parameters and recycled when they
- *   complete their fall (fade out → reset to a new random start).
- * - pointer-events: none → doesn't interfere with buttons, links, or text.
- * - Respects prefers-reduced-motion: if set, renders a few static stars
- *   instead of animating.
- *
- * Layering (in the parent):
- *   background image → falling-star canvas → existing hero content
- * The canvas is positioned absolute inset-0 z-[1] (above the bg image, below
- * the content at z-10).
+ * - ~90-95% tiny distant background stars (1-2px, low opacity, gentle drift,
+ *   soft purple/violet glow, slow twinkle fade in/out).
+ * - ~5-10% occasional shooting/falling stars (2-4px head, 30-80px tapered
+ *   trail, diagonal upper-right → lower-left, smooth easing, randomized
+ *   long delays so they appear occasionally not constantly).
+ * - Color palette: #8B5CF6 (neon violet), #A855F7 (bright purple), #6366F1
+ *   (blue-violet), #C4B5FD (light lavender). NO white, NO blue, NO other hues.
+ * - Canvas-based for 60 FPS. pointer-events: none. z-index: 1 (behind content
+ *   at z-10, above background image). Respects prefers-reduced-motion.
+ * - Responsive: adjusts star count and sizes for mobile.
  */
-export function FallingStars({ count = 25 }: Props) {
+export function FallingStars({ count = 60 }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const starsRef = useRef<Star[]>([]);
   const rafRef = useRef<number | null>(null);
+  const starsRef = useRef<Star[]>([]);
+  const sizeRef = useRef({ w: 0, h: 0, dpr: 1 });
   const mounted = useMounted();
 
   useEffect(() => {
@@ -141,8 +205,8 @@ export function FallingStars({ count = 25 }: Props) {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Check prefers-reduced-motion
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const isMobile = window.innerWidth < 768;
 
     // --- Canvas sizing (DPR-aware, capped at 2 for memory) ---
     const resize = () => {
@@ -152,21 +216,33 @@ export function FallingStars({ count = 25 }: Props) {
       canvas.width = Math.round(w * dpr);
       canvas.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      sizeRef.current = { w, h, dpr };
     };
     resize();
     window.addEventListener("resize", resize);
 
     // --- Initialize stars ---
-    const w = canvas.clientWidth;
-    const h = canvas.clientHeight;
-    const starCount = prefersReduced ? 5 : count; // very few static stars if reduced motion
-    starsRef.current = Array.from({ length: starCount }, () => generateStar(w, h));
+    // On mobile, reduce density for performance
+    const totalStars = prefersReduced ? 8 : isMobile ? Math.round(count * 0.6) : count;
+    // ~7% shooting stars (within the 5-10% spec)
+    const shootingCount = Math.max(2, Math.round(totalStars * 0.07));
+    const bgCount = totalStars - shootingCount;
+
+    const w = sizeRef.current.w;
+    const h = sizeRef.current.h;
+
+    starsRef.current = [
+      ...Array.from({ length: bgCount }, () => generateBackgroundStar(w, h)),
+      ...Array.from({ length: shootingCount }, () => generateShootingStar(w, h)),
+    ];
 
     if (prefersReduced) {
-      // Render static stars (no animation)
+      // Static stars only — no animation
       ctx.clearRect(0, 0, w, h);
       for (const star of starsRef.current) {
-        drawStar(ctx, star, 0, 1);
+        if (star.type === "background") {
+          drawBackgroundStar(ctx, star, star.x, star.y, star.opacity, 0);
+        }
       }
       return () => {
         window.removeEventListener("resize", resize);
@@ -176,33 +252,66 @@ export function FallingStars({ count = 25 }: Props) {
     // --- Animation loop ---
     let startTime = performance.now();
     const animate = (now: number) => {
-      const elapsed = (now - startTime) / 1000; // seconds
-      ctx.clearRect(0, 0, w, h);
+      const elapsed = (now - startTime) / 1000;
+      const cw = sizeRef.current.w;
+      const ch = sizeRef.current.h;
+      ctx.clearRect(0, 0, cw, ch);
 
-      for (let i = 0; i < starsRef.current.length; i++) {
-        const star = starsRef.current[i];
-        // Calculate progress for this star
-        const t = (elapsed - star.delay) % star.duration; // 0..duration
-        const progress = t / star.duration; // 0..1
+      for (const star of starsRef.current) {
+        if (star.type === "background") {
+          // --- Background star: gentle drift + twinkle ---
+          const cycleT = (elapsed + star.delay) % star.duration;
+          const progress = cycleT / star.duration; // 0..1
 
-        if (progress < 0) continue; // not started yet (within delay)
+          // Twinkle: fade in (0-20%), hold (20-70%), fade out (70-100%)
+          let alpha = star.opacity;
+          if (progress < 0.20) {
+            alpha *= progress / 0.20;
+          } else if (progress > 0.70) {
+            alpha *= (1 - progress) / 0.30;
+          }
 
-        // Position: interpolate from start along the angle
-        const distance = progress * star.length;
-        const dx = Math.cos(star.angle) * distance;
-        const dy = Math.sin(star.angle) * distance;
-        const x = star.x + dx;
-        const y = star.y + dy;
+          // Gentle drift (wrap around the canvas)
+          let dx = (star.driftX * elapsed) % cw;
+          let dy = (star.driftY * elapsed) % ch;
+          if (dx < 0) dx += cw;
+          if (dy < 0) dy += ch;
+          let x = (star.x + dx) % cw;
+          let y = (star.y + dy) % ch;
+          if (x < 0) x += cw;
+          if (y < 0) y += ch;
 
-        // Fade in (first 15%) and fade out (last 25%)
-        let alpha = star.opacity;
-        if (progress < 0.15) {
-          alpha *= progress / 0.15;
-        } else if (progress > 0.75) {
-          alpha *= (1 - progress) / 0.25;
+          // Subtle twinkle: vary opacity slightly with a sine wave
+          const twinkle = 0.85 + 0.15 * Math.sin(elapsed * 0.8 + star.twinklePhase);
+          alpha *= twinkle;
+
+          drawBackgroundStar(ctx, star, x, y, alpha, elapsed);
+        } else {
+          // --- Shooting star: diagonal travel with easing ---
+          const t = (elapsed - star.delay) % (star.duration + 4); // +4s gap between cycles
+          if (t < 0) continue;
+          if (t > star.duration) continue; // in the gap between cycles
+
+          const progress = t / star.duration; // 0..1
+          const eased = easeOutCubic(progress);
+
+          // Fade in (first 10%), fade out (last 20%)
+          let alpha = star.opacity;
+          if (progress < 0.10) {
+            alpha *= progress / 0.10;
+          } else if (progress > 0.80) {
+            alpha *= (1 - progress) / 0.20;
+          }
+
+          // Position
+          const distance = eased * star.length;
+          const dx = Math.cos(star.angle) * distance;
+          const dy = Math.sin(star.angle) * distance;
+          const x = star.x + dx;
+          const y = star.y + dy;
+
+          drawShootingStar(ctx, star, x, y, alpha);
         }
-
-        drawStar(ctx, star, x, y, alpha);
       }
 
       rafRef.current = requestAnimationFrame(animate);
@@ -226,8 +335,45 @@ export function FallingStars({ count = 25 }: Props) {
   );
 }
 
-// --- Drawing --------------------------------------------------------------
-function drawStar(
+// ============================================================================
+// DRAWING — BACKGROUND STARS (tiny, subtle, purple glow)
+// ============================================================================
+function drawBackgroundStar(
+  ctx: CanvasRenderingContext2D,
+  star: Star,
+  x: number,
+  y: number,
+  alpha: number,
+  _elapsed: number,
+) {
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  // Soft glow (radial gradient — very subtle, small radius)
+  const glowR = star.size * 3;
+  const grad = ctx.createRadialGradient(x, y, 0, x, y, glowR);
+  grad.addColorStop(0, star.glowColor);
+  grad.addColorStop(0.4, star.glowColor.replace(/[\d.]+\)$/, "0.12)"));
+  grad.addColorStop(1, "rgba(139,92,246,0)");
+
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.arc(x, y, glowR, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Tiny core dot (1-2px)
+  ctx.fillStyle = star.color;
+  ctx.beginPath();
+  ctx.arc(x, y, star.size, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+// ============================================================================
+// DRAWING — SHOOTING STARS (thin tapered trail, small head, purple)
+// ============================================================================
+function drawShootingStar(
   ctx: CanvasRenderingContext2D,
   star: Star,
   x: number,
@@ -237,42 +383,42 @@ function drawStar(
   ctx.save();
   ctx.globalAlpha = alpha;
 
-  // Draw the trail (a line from the star back along the angle)
+  // --- Trail: thin, tapered, fades to transparent ---
   const trailDx = Math.cos(star.angle) * star.trailLength;
   const trailDy = Math.sin(star.angle) * star.trailLength;
   const trailX = x - trailDx;
   const trailY = y - trailDy;
 
-  // Trail gradient (fade from star color → transparent)
+  // Trail gradient: star color at head → transparent at tail
   const trailGrad = ctx.createLinearGradient(x, y, trailX, trailY);
   trailGrad.addColorStop(0, star.trailColor);
-  trailGrad.addColorStop(1, "rgba(255,255,255,0)");
+  trailGrad.addColorStop(0.5, star.trailColor.replace(/[\d.]+\)$/, "0.15)"));
+  trailGrad.addColorStop(1, "rgba(139,92,246,0)");
 
   ctx.strokeStyle = trailGrad;
-  ctx.lineWidth = star.size * 0.5;
+  ctx.lineWidth = star.size * 0.6; // thin trail
   ctx.lineCap = "round";
   ctx.beginPath();
   ctx.moveTo(x, y);
   ctx.lineTo(trailX, trailY);
   ctx.stroke();
 
-  // Draw the star itself (a glowing dot)
-  // Use a radial gradient for the glow
-  const glowRadius = star.size * (star.isShootingStar ? 4 : 2.5);
-  const grad = ctx.createRadialGradient(x, y, 0, x, y, glowRadius);
+  // --- Head: small bright core with soft glow ---
+  const glowR = star.size * 3.5;
+  const grad = ctx.createRadialGradient(x, y, 0, x, y, glowR);
   grad.addColorStop(0, star.color);
-  grad.addColorStop(0.3, star.color);
-  grad.addColorStop(1, "rgba(255,255,255,0)");
+  grad.addColorStop(0.2, star.glowColor);
+  grad.addColorStop(1, "rgba(139,92,246,0)");
 
   ctx.fillStyle = grad;
   ctx.beginPath();
-  ctx.arc(x, y, glowRadius, 0, Math.PI * 2);
+  ctx.arc(x, y, glowR, 0, Math.PI * 2);
   ctx.fill();
 
-  // Core dot (bright center)
+  // Bright core (2-4px)
   ctx.fillStyle = star.color;
   ctx.beginPath();
-  ctx.arc(x, y, star.size * 0.5, 0, Math.PI * 2);
+  ctx.arc(x, y, star.size, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.restore();
