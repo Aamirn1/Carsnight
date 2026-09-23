@@ -1078,3 +1078,26 @@ Stage Summary:
   - Mobile: "tiny, subtle purple/violet stars visible in the darker areas"
   - Hero content unchanged: "background image unchanged, headline clearly readable, buttons visible, logo visible, stars behind the text"
 - ESLint passes; committed as 68bf96b and pushed to GitHub.
+
+---
+Task ID: 31
+Agent: main (orchestrator)
+Task: 6 fixes — star visibility, CTA image, dark-mode footer/plans/blog, Most Popular badge
+
+Work Log:
+1. Falling-star animation visibility: the stars were too faint (alpha 6-65 out of 255). Increased background star size (0.5-1.2px → 1-2.5px), opacity (0.15-0.45 → 0.4-0.8), glow radius (3× → 4×), and glow alpha values (0.25 → 0.5). Shooting star opacity (0.5-0.85 → 0.7-1.0), head size (1-2.5 → 1.5-3). Star count increased from 60 to 80. Verified: "purple/violet stars are clearly visible in the darker sky areas."
+2. Home CTA "Ready to find your next car?": replaced old hero-bg.png with hero-cars.png and increased opacity from 20% to 40%. Verified: "background image of the cars is visible behind the text."
+3. Dark mode footer logo: made SiteFooter a client component with useTheme + useMounted, passes light={isDark} to BrandMark → "Cars" is white in dark mode. Verified: "'Cars' in the footer's logo is white and clearly visible."
+4. Home pricing "Most Popular" badge: replaced the plain <span> with btn-neon class (which only works on shadcn Buttons, not <span>) with a proper <Badge> with inline neon gradient style + Crown icon, matching the Plans page design. Also added ring-2 ring-primary/30 to the popular card. Also fixed the Plans page badge to use inline gradient style instead of btn-neon. Verified: "badge uses blue-to-violet-to-magenta gradient with crown icon, matching the design."
+5. Plans page "Browse cars" button in dark mode: changed from text-primary-foreground/border-primary-foreground (white on white in dark mode) to text-background/border-background (dark text/border on the white CTA card background in dark mode). Verified: "button is visible with dark text and subtle border."
+6. Blog newsletter card in dark mode: replaced all hardcoded text-white/white/10/white/30 with text-background/background/10/background/30 so the card has black text, black-on-light input field, and readable colors in dark mode (where bg-foreground = white). Verified: "card background is white, text is black and highly readable, email input field has dark text on light gray background."
+
+Stage Summary:
+- All 6 user-requested fixes applied and verified end-to-end with Agent Browser + VLM:
+  1. Stars visible: ✅ "purple/violet stars clearly visible"
+  2. CTA image: ✅ "cars image visible behind text"
+  3. Dark mode footer: ✅ "'Cars' is white and clearly visible"
+  4. Most Popular badge: ✅ "neon gradient with crown icon, matching Plans page"
+  5. Plans CTA dark mode: ✅ "Browse cars button visible with dark text/border"
+  6. Blog newsletter dark mode: ✅ "white card, black text, readable"
+- ESLint passes; all routes return 200; committed as 17d7e4d and pushed to GitHub.
