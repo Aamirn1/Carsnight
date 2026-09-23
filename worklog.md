@@ -1031,3 +1031,24 @@ Stage Summary:
   - Animation confirmed: star positions are different between consecutive screenshots
   - Canvas: pointer-events:none, z-index:1, position:absolute — no interference with interactions
 - ESLint passes; committed as 9f9714e and pushed to GitHub.
+
+---
+Task ID: 29
+Agent: main (orchestrator)
+Task: 5 fixes — remove hero overlays, center wordmark, neon Night gradient, Buy/Rent buttons+hero redesign
+
+Work Log:
+1. Blog/About/Contact hero overlays removed: deleted the `bg-foreground/80` overlay div from all 3 heroes. The hero now uses a solid `bg-foreground` background with `hero-cars.png` at `opacity-20` (reduced from 30%) — no white/light bleed, clean dark background. Verified: "solid dark color with no white/light overlay, background image subtle with low opacity".
+2. Wordmark centered: increased `translate-y` from 3px to 4px in brand-mark.tsx. Verified: "the 'Cars Night' logo is vertically centered in the navbar".
+3. Wordmark 'Night' neon gradient: regenerated both PNGs using PIL with the EXACT neon button gradient (`linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%)`) applied column-by-column across "Night". Blue on the left ("nig"), magenta on the right ("ht"). This matches the Browse Cars button gradient exactly. Verified: "'Night' uses a blue-to-magenta gradient matching the 'Browse cars' button".
+4. 'Buy a car' / 'Rent a car' buttons: replaced the `btn-neon` class (which only works on shadcn `[data-slot="button"]` elements, not `<span>`) with inline `style={{ backgroundImage: 'linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%)' }}` so the neon gradient actually renders. Verified: "buttons use the same BLUE→VIOLET→MAGENTA gradient background as the Browse Cars button".
+5. Buy + Rent pages redesigned: removed the breadcrumb (Home > Buy / Home > Rent). Redesigned both heroes to match the Plans page style: centered layout with a Badge (Buy icon / Rent icon), H1 with gradient-text accent, and subtitle. Uses `bg-gradient-to-b from-primary/5 to-transparent border-b border-border`. Verified: "centered hero with badge, H1 with gradient text, subtitle — matches Plans page style; no breadcrumb".
+
+Stage Summary:
+- All 5 user-requested fixes applied and verified end-to-end with Agent Browser + VLM:
+  1. Blog/About/Contact heroes: no white overlay, solid dark bg ✅
+  2. Wordmark: vertically centered (translate-y-4px) ✅
+  3. Wordmark 'Night': exact neon button gradient (blue→violet→magenta) ✅
+  4. Buy/Rent buttons: neon gradient bg via inline style ✅
+  5. Buy/Rent pages: no breadcrumb, centered hero matching Plans page ✅
+- ESLint passes; all routes return 200; committed as ca7df2f and pushed to GitHub.
