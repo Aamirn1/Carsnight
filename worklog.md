@@ -1052,3 +1052,29 @@ Stage Summary:
   4. Buy/Rent buttons: neon gradient bg via inline style ✅
   5. Buy/Rent pages: no breadcrumb, centered hero matching Plans page ✅
 - ESLint passes; all routes return 200; committed as ca7df2f and pushed to GitHub.
+
+---
+Task ID: 30
+Agent: main (orchestrator)
+Task: Completely replace falling-star animation — purple/violet, tiny + sparse, per detailed spec
+
+Work Log:
+- Completely rewrote src/components/falling-stars.tsx per the detailed spec:
+  - Color palette: purple/violet ONLY — #8B5CF6 (neon violet), #A855F7 (bright purple), #6366F1 (blue-violet), #C4B5FD (light lavender). NO white, NO blue, NO other hues.
+  - 60 total stars: ~93% background (56), ~7% shooting (4).
+  - Background stars: 0.5-1.2px core, 15-45% opacity, soft purple glow (small radius, low intensity), gentle drift (2-8 px/s downward, ±3 px/s horizontal) with wrap-around, slow sine-wave twinkle with random phase, smooth fade-in/out. Randomized position, size, color, drift, delay (0-6s), duration (4-9s).
+  - Shooting stars: 1-2.5px head (small, not large balls), 30-80px thin tapered trail (fades to transparent), diagonal ~135° ± 10° (upper-right → lower-left), smooth ease-out cubic movement, fade-in (first 10%) + fade-out (last 20%), 4s gap between cycles + 1-12s random delay → occasional not constant, purple/violet head + trail.
+  - Performance: single canvas, single rAF loop → 60 FPS, GPU-friendly (no layout-triggering properties), DPR-aware (capped 2×), pointer-events: none, z-index 1.
+  - Mobile: 60% of star count for performance.
+  - Reduced motion: 8 static background stars, no shooting stars, no animation.
+- Updated ImageHero to use count={60} (was 25).
+- NO changes to anything else in the hero (background, text, buttons, logo, layout, colors, spacing all unchanged).
+
+Stage Summary:
+- Verified with Agent Browser + VLM:
+  - "tiny, subtle stars; purple/violet in color rather than white; small and sparse, fine points of light not large glowing circles; occasional thin shooting star with a visible trail"
+  - Animation confirmed (different positions between screenshots)
+  - "no large white glowing circles in either image"
+  - Mobile: "tiny, subtle purple/violet stars visible in the darker areas"
+  - Hero content unchanged: "background image unchanged, headline clearly readable, buttons visible, logo visible, stars behind the text"
+- ESLint passes; committed as 68bf96b and pushed to GitHub.
