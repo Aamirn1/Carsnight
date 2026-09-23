@@ -128,7 +128,7 @@ export default async function PricingPage() {
                 >
                   {isPopular && (
                     <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <Badge className="btn-neon text-white shadow-md">
+                      <Badge style={{ backgroundImage: "linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%)" }} className="text-white border-transparent shadow-md">
                         <Crown className="h-3 w-3 mr-1" /> Most popular
                       </Badge>
                     </div>
@@ -289,7 +289,7 @@ export default async function PricingPage() {
                 <Tag className="h-4 w-4" /> Post an ad
               </Link>
             </Button>
-            <Button asChild variant="outline" className="bg-transparent text-primary-foreground border-primary-foreground/30 hover:bg-primary-foreground/10 hover:text-primary-foreground">
+            <Button asChild variant="outline" className="bg-transparent text-background border-background/30 hover:bg-background/10 hover:text-background">
               <Link href="/cars-for-sale">Browse cars</Link>
             </Button>
           </div>

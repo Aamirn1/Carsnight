@@ -246,8 +246,14 @@ export default async function HomePage() {
                 { price: "$8", credits: "5 listings", popular: true },
                 { price: "$10", credits: "10 listings", popular: false },
               ].map((p, i) => (
-                <div key={i} className={`rounded-2xl border bg-card p-5 shadow-sm relative ${p.popular ? "border-primary" : ""}`}>
-                  {p.popular && <span className="absolute -top-3 left-1/2 -translate-x-1/2 btn-neon text-white text-xs font-medium px-3 py-1 rounded-full shadow">Most popular</span>}
+                <div key={i} className={`rounded-2xl border bg-card p-5 shadow-sm relative ${p.popular ? "border-primary ring-2 ring-primary/30" : ""}`}>
+                  {p.popular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                      <Badge style={{ backgroundImage: "linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%)" }} className="text-white border-transparent shadow-md">
+                        <Crown className="h-3 w-3 mr-1" /> Most popular
+                      </Badge>
+                    </div>
+                  )}
                   <div className="text-3xl font-bold text-primary">{p.price}</div>
                   <div className="mt-1 text-sm text-muted-foreground">{p.credits}</div>
                 </div>
@@ -264,8 +270,8 @@ export default async function HomePage() {
       <section className="py-14 sm:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="relative overflow-hidden rounded-3xl bg-foreground text-background p-10 sm:p-16 text-center">
-            <div className="absolute inset-0 opacity-20">
-              <Image src="/hero-bg.png" alt="" fill sizes="100vw" className="object-cover" />
+            <div className="absolute inset-0 opacity-40">
+              <Image src="/hero-cars.png" alt="" fill sizes="100vw" className="object-cover" />
             </div>
             <div className="relative z-10">
               <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">Ready to find your next car?</h2>

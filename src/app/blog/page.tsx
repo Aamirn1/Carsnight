@@ -218,10 +218,10 @@ export default function BlogPage() {
       {/* Newsletter CTA */}
       <section className="pb-16 sm:pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="rounded-3xl border bg-foreground p-8 sm:p-12 text-center text-white">
+          <div className="rounded-3xl border bg-foreground p-8 sm:p-12 text-center text-background">
             <Mail className="mx-auto h-8 w-8 icon-neon" />
             <h2 className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight">Get the best of Cars Night in your inbox</h2>
-            <p className="mt-2 text-white/75 max-w-xl mx-auto">
+            <p className="mt-2 text-background/75 max-w-xl mx-auto">
               Join 12,000+ car enthusiasts. Weekly market insights, new listings, and exclusive deals. No spam, ever.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
@@ -229,7 +229,7 @@ export default function BlogPage() {
                 type="email"
                 placeholder="you@example.com"
                 aria-label="Email address"
-                className="flex-1 rounded-md bg-white/10 border border-white/30 px-4 py-2.5 text-sm text-white placeholder:text-white/50 focus:outline-none focus:ring-2 focus:ring-primary"
+                className="flex-1 rounded-md bg-background/10 border border-background/30 px-4 py-2.5 text-sm text-background placeholder:text-background/50 focus:outline-none focus:ring-2 focus:ring-primary"
               />
               <Button size="lg" className="btn-gold">Subscribe</Button>
             </div>

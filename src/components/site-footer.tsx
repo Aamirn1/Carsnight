@@ -1,15 +1,31 @@
+"use client";
+
 import Link from "next/link";
+import { useTheme } from "next-themes";
+import { useSyncExternalStore } from "react";
 import { Car, Mail, Shield, Globe, Bitcoin } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
 
+// Mount-detection helper (no set-state-in-effect)
+function useMounted(): boolean {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+}
+
 export function SiteFooter() {
+  const { resolvedTheme } = useTheme();
+  const mounted = useMounted();
+  const isDark = mounted ? resolvedTheme === "dark" : false;
   const year = new Date().getFullYear();
   return (
     <footer className="mt-auto border-t border-border bg-card/40">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           <div className="col-span-2 md:col-span-1">
-            <BrandMark size="sm" />
+            <BrandMark size="sm" light={isDark} />
             <p className="mt-3 text-sm text-muted-foreground max-w-xs">
               Your global car marketplace — buy, sell, and rent cars worldwide with confidence.
             </p>

@@ -67,25 +67,25 @@ const SHOOT_COLORS = [
   "#C4B5FD", // light lavender (brightest, still purple)
 ];
 
-// Glow colors (rgba with alpha — soft, diffused)
+// Glow colors (rgba with alpha — soft, diffused, but visible)
 const BG_GLOW = [
-  "rgba(139,92,246,0.25)",
-  "rgba(168,85,247,0.25)",
-  "rgba(99,102,241,0.20)",
-  "rgba(196,181,253,0.30)",
+  "rgba(139,92,246,0.5)",
+  "rgba(168,85,247,0.5)",
+  "rgba(99,102,241,0.4)",
+  "rgba(196,181,253,0.6)",
 ];
 
 const SHOOT_GLOW = [
-  "rgba(168,85,247,0.40)",
-  "rgba(139,92,246,0.40)",
-  "rgba(196,181,253,0.45)",
+  "rgba(168,85,247,0.7)",
+  "rgba(139,92,246,0.7)",
+  "rgba(196,181,253,0.75)",
 ];
 
 // Trail colors (rgba — tapered, fades to transparent)
 const SHOOT_TRAIL = [
-  "rgba(168,85,247,0.45)",
-  "rgba(139,92,246,0.40)",
-  "rgba(196,181,253,0.40)",
+  "rgba(168,85,247,0.7)",
+  "rgba(139,92,246,0.65)",
+  "rgba(196,181,253,0.65)",
 ];
 
 // ============================================================================
@@ -102,9 +102,9 @@ function pick<T>(arr: T[]): T {
 // STAR GENERATION
 // ============================================================================
 function generateBackgroundStar(width: number, height: number): Star {
-  // Tiny: 1-2px core, low opacity, random position across the hero
-  const size = rand(0.5, 1.2); // very small
-  const opacity = rand(0.15, 0.45); // subtle
+  // Tiny: 1-3px core, moderate opacity (visible but subtle), random position
+  const size = rand(1, 2.5); // small but visible
+  const opacity = rand(0.4, 0.8); // visible enough to see against the dark hero
   const driftX = rand(-3, 3);     // gentle horizontal drift px/s
   const driftY = rand(2, 8);      // gentle downward drift px/s
 
@@ -140,10 +140,10 @@ function generateShootingStar(width: number, height: number): Star {
   const speed = rand(80, 160);
   const duration = length / speed;
   // Head size: 2-4px (small, not large)
-  const size = rand(1, 2.5);
+  const size = rand(1.5, 3);
   // Trail: 30-80px, thin
   const trailLength = rand(30, 80);
-  const opacity = rand(0.5, 0.85);
+  const opacity = rand(0.7, 1);
 
   return {
     type: "shooting",
@@ -349,11 +349,11 @@ function drawBackgroundStar(
   ctx.save();
   ctx.globalAlpha = alpha;
 
-  // Soft glow (radial gradient — very subtle, small radius)
-  const glowR = star.size * 3;
+  // Soft glow (radial gradient — subtle but visible)
+  const glowR = star.size * 4;
   const grad = ctx.createRadialGradient(x, y, 0, x, y, glowR);
   grad.addColorStop(0, star.glowColor);
-  grad.addColorStop(0.4, star.glowColor.replace(/[\d.]+\)$/, "0.12)"));
+  grad.addColorStop(0.3, star.glowColor.replace(/[\d.]+\)$/, "0.15)"));
   grad.addColorStop(1, "rgba(139,92,246,0)");
 
   ctx.fillStyle = grad;
