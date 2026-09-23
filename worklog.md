@@ -1000,3 +1000,34 @@ Stage Summary:
   5. Rent page: no standalone "Rent" + key icon, H1 = "Rent your dream car for special events" ✅
   6. Blog/About/Contact heroes: dark background, white text, neon gradient accents, no golden, no white bleed ✅
 - ESLint passes; all routes return 200; committed as 2243473 and pushed to GitHub.
+
+---
+Task ID: 28
+Agent: main (orchestrator)
+Task: Add smooth falling-stars / shooting-stars animation to the hero section
+
+Work Log:
+- Created src/components/falling-stars.tsx — a canvas-based particle system:
+  - 25 stars total: 85% small subtle particles + 15% brighter shooting stars
+  - Stars fall diagonally from upper-right to lower-left (~135deg ± 15deg)
+  - Each star has randomized: size (1-3.5px), speed (40-200 px/s), trajectory, start position, delay (0-8s), duration, opacity (0.3-1.0)
+  - Shooting stars have longer luminous trails (60-120px) with gradient fade
+  - Small particles have shorter trails (15-40px)
+  - Colors: white, very light blue (#BFDBFE), light indigo (#C7D2FE), light violet (#DDD6FE), light cyan (#A5F3FC) — matches the neon aesthetic
+  - Smooth fade-in (first 15%) + fade-out (last 25%) — no sudden appear/disappear
+  - Stars are recycled: after completing their fall, they reset via modulo in the progress calc
+  - GPU-accelerated: canvas 2D context, no top/left/width/height changes during animation
+  - DPR-aware canvas backing store (capped at 2× for memory)
+  - pointer-events: none → doesn't interfere with buttons, links, text selection
+  - z-index: 1 → above bg image, below content (z-10)
+  - Respects prefers-reduced-motion: renders 5 static stars instead of animating
+- Integrated into src/components/image-hero.tsx: added <FallingStars count={25} /> between the background <Image> elements and the content overlay div. No other changes to the hero.
+
+Stage Summary:
+- Falling-star animation added to the hero section without changing anything else (background, text, buttons, logo, layout, colors, spacing all unchanged).
+- Verified with Agent Browser + VLM:
+  - Desktop: "small, glowing star-like particles and subtle light streaks visible in the darker sky areas; text readable on top; layout unchanged"
+  - Mobile: "small glowing stars/particles visible in the darker sky areas; layout unchanged"
+  - Animation confirmed: star positions are different between consecutive screenshots
+  - Canvas: pointer-events:none, z-index:1, position:absolute — no interference with interactions
+- ESLint passes; committed as 9f9714e and pushed to GitHub.
