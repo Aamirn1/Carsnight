@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Typewriter } from "@/components/typewriter";
+import { FallingStars } from "@/components/falling-stars";
 import { Sparkles, Car, ChevronDown } from "lucide-react";
 
 interface Props {
@@ -65,6 +66,12 @@ export function ImageHero({ tagline, announcement, saleCount, rentCount, userCou
       {/* NO black shade / gradient overlay — the image is shown at full
           quality. Text readability is handled by per-element text-shadow
           on the headline / description / stats below. */}
+
+      {/* Falling-star animation layer — smooth, cinematic night-sky effect.
+          Positioned ABOVE the background image (z-[1]) and BELOW the content
+          overlay (z-10). pointer-events:none so it never interferes with
+          buttons, links, or text selection. Respects prefers-reduced-motion. */}
+      <FallingStars count={25} />
 
       {/* Content overlay — headline, typewriter, CTAs, stats.
           Positioned in the lower-left area (justify-end + pb-24). */}
