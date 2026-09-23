@@ -968,3 +968,35 @@ Stage Summary:
 - Logo vertically centered in the navbar via translate-y-[2px] nudge
 - Both wordmark variants (light/dark) are now identical
 - ESLint passes; committed as 9b76b11 and pushed to GitHub.
+
+---
+Task ID: 27
+Agent: main (orchestrator)
+Task: 6 fixes — wordmark lines+colors, hero chip mobile, Buy/Rent headings, Blog/About/Contact heroes
+
+Work Log:
+1. Removed lines before/after wordmark: the brush script had an entry stroke (vertical line before 'C') at cols 2-3 and a tail flick (line after 't') at the right edge. Trimming: detected the main text body (starts col 20, ends col 403) and cropped to that range with 2px padding, then further trimmed the tapering tail at the alpha-1500 threshold → final wordmark 366×148. Both edges now clean (VLM confirmed).
+2. Light-mode wordmark colors: created two variants:
+   - brand-wordmark-dark.png: BLACK "Cars" (#141418) + purple→blue gradient "Night" (for light backgrounds — solid navbar, burger, footer in light mode)
+   - brand-wordmark-light.png: WHITE "Cars" + same gradient "Night" (for dark backgrounds — transparent navbar over hero, dark mode)
+   Fixed BrandMark slot dimensions: was h-11 w-178px (aspect 4:1) but the wordmark is now 366×148 (aspect 2.47:1) → object-contain left lots of empty space making the text tiny. Updated to h-12 w-118px (md), h-9 w-88px (sm), h-16 w-158px (lg) matching the 2.47:1 aspect. Text now fills the slot properly.
+3. Hero announcement chip on mobile: reduced from text-xs sm:text-sm to text-[10px] sm:text-xs md:text-sm, added whitespace-nowrap + overflow-hidden + smaller padding (px-2.5 py-1) + smaller icon (h-3 w-3) so the full line fits in one row on mobile (390px). VLM confirmed: "displayed entirely on a single line".
+4. Buy page: removed the standalone "Buy" heading + Car icon + "Buy" badge at the top. H1 is now "Find the perfect car to buy" with subtitle "Filter by country, price, make and more — browse verified cars for sale worldwide."
+5. Rent page: removed the standalone "Rent" heading + KeyRound icon + "Rent" badge. H1 is now "Rent your dream car for special events" with subtitle "Weddings, photoshoots, weekends, and more — filter by country, daily price, make, and availability."
+6. Blog/About/Contact hero sections: the old heroes used hero-bg.png (a light car showroom image) at 25-30% opacity with gradient overlays (from-foreground/50 via-foreground/70 to-foreground) which in light mode let the white image bleed through. Also used golden text-[#F5B82E] for icons and accent text.
+   Fixed all 3 heroes:
+   - Replaced hero-bg.png with hero-cars.png (the new hero image) at 30% opacity + bg-foreground/80 solid overlay → no white bleed, clean dark background.
+   - Replaced all text-[#F5B82E] (golden) with: white text, gradient-text (neon blue→violet→magenta) for accent text, and icon-neon for icons.
+   - Blog hero: "The Cars Night Blog" icon → icon-neon; newsletter Mail icon → icon-neon.
+   - About hero: "About Cars Night" icon → icon-neon; "human car marketplace" → gradient-text.
+   - Contact hero: "Contact Cars Night" icon → icon-neon; "We're here to help" → gradient-text. Added Image import (was missing).
+
+Stage Summary:
+- All 6 user-requested fixes applied and verified end-to-end with Agent Browser + VLM:
+  1. Wordmark: no lines before/after, both edges clean ✅
+  2. Light mode: "Cars" black on solid navbar/burger/footer, white on transparent navbar ✅
+  3. Hero chip: fits in one row on mobile ✅
+  4. Buy page: no standalone "Buy" + car icon, H1 = "Find the perfect car to buy" ✅
+  5. Rent page: no standalone "Rent" + key icon, H1 = "Rent your dream car for special events" ✅
+  6. Blog/About/Contact heroes: dark background, white text, neon gradient accents, no golden, no white bleed ✅
+- ESLint passes; all routes return 200; committed as 2243473 and pushed to GitHub.
