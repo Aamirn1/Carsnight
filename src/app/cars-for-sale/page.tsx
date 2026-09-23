@@ -126,19 +126,11 @@ export default async function CarsForSalePage({ searchParams }: PageProps) {
             </BreadcrumbList>
           </Breadcrumb>
 
-          <div className="mt-5 flex items-center gap-2">
-            <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <Car className="h-5 w-5" />
-            </div>
-            <Badge variant="outline" className="text-primary border-primary/30">
-              Buy
-            </Badge>
-          </div>
           <h1 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            Buy
+            Find the perfect car to buy
           </h1>
           <p className="mt-3 text-muted-foreground max-w-2xl text-sm sm:text-base">
-            Find the perfect car to buy — filter by country, price, make and more.
+            Filter by country, price, make and more — browse verified cars for sale worldwide.
           </p>
         </div>
       </section>

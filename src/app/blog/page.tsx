@@ -99,15 +99,15 @@ export default function BlogPage() {
 
   return (
     <div className="flex flex-col">
-      {/* Header hero */}
+      {/* Header hero — dark background with the hero cars image, no white bleed */}
       <section className="relative overflow-hidden bg-foreground">
-        <div className="absolute inset-0 opacity-25">
-          <Image src="/hero-bg.png" alt="" fill priority sizes="100vw" className="object-cover" />
+        <div className="absolute inset-0">
+          <Image src="/hero-cars.png" alt="" fill priority sizes="100vw" className="object-cover opacity-30" />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-foreground/60 to-foreground" />
+        <div className="absolute inset-0 bg-foreground/80" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-white">
           <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md border border-white/25 px-3.5 py-1.5 text-xs sm:text-sm font-medium">
-            <BookOpen className="h-3.5 w-3.5 text-[#F5B82E]" /> The Cars Night Blog
+            <BookOpen className="h-3.5 w-3.5 icon-neon" /> The Cars Night Blog
           </div>
           <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] max-w-3xl">
             Insider guides, market trends & car reviews
@@ -220,7 +220,7 @@ export default function BlogPage() {
       <section className="pb-16 sm:pb-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="rounded-3xl border bg-foreground p-8 sm:p-12 text-center text-white">
-            <Mail className="mx-auto h-8 w-8 text-[#F5B82E]" />
+            <Mail className="mx-auto h-8 w-8 icon-neon" />
             <h2 className="mt-3 text-2xl sm:text-3xl font-bold tracking-tight">Get the best of Cars Night in your inbox</h2>
             <p className="mt-2 text-white/75 max-w-xl mx-auto">
               Join 12,000+ car enthusiasts. Weekly market insights, new listings, and exclusive deals. No spam, ever.

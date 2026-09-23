@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,19 +41,19 @@ export function ContactForm() {
 
   return (
     <div className="flex flex-col">
-      {/* Hero */}
+      {/* Hero — dark background with the hero cars image, no white bleed */}
       <section className="relative overflow-hidden bg-foreground">
-        <div className="absolute inset-0 opacity-25">
-          <div className="absolute -top-24 -left-24 h-72 w-72 rounded-full bg-primary/30 blur-3xl" />
-          <div className="absolute top-1/3 -right-24 h-80 w-80 rounded-full bg-[#F5B82E]/20 blur-3xl" />
+        <div className="absolute inset-0">
+          <Image src="/hero-cars.png" alt="" fill priority sizes="100vw" className="object-cover opacity-30" />
         </div>
+        <div className="absolute inset-0 bg-foreground/80" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20 text-white">
           <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md border border-white/25 px-3.5 py-1.5 text-xs sm:text-sm font-medium">
-            <Mail className="h-3.5 w-3.5 text-[#F5B82E]" /> Contact Cars Night
+            <Mail className="h-3.5 w-3.5 icon-neon" /> Contact Cars Night
           </div>
           <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] max-w-3xl">
             Let&apos;s talk.
-            <span className="block text-[#F5B82E]">We&apos;re here to help.</span>
+            <span className="block gradient-text">We&apos;re here to help.</span>
           </h1>
           <p className="mt-5 text-base sm:text-lg text-white/80 max-w-2xl">
             Questions, feedback, partnership ideas, or just want to say hi? We typically reply within one business day.

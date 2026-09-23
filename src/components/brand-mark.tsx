@@ -23,11 +23,11 @@ interface BrandMarkProps {
  * solid on inner pages).
  */
 export function BrandMark({ className = "", size = "md", light = false }: BrandMarkProps) {
-  // Wordmark image (683×168 → ~4:1 aspect). Fixed height, width scales.
-  // Sizes are a bit larger now that the wordmark is the sole brand element
-  // (no car icon beside it).
-  const wordmarkHeight = size === "sm" ? "h-7" : size === "lg" ? "h-14" : "h-11";
-  const wordmarkWidth = size === "sm" ? "w-[113px]" : size === "lg" ? "w-[226px]" : "w-[178px]";
+  // Wordmark image is 366×148 → aspect ~2.47:1. Slot dimensions match this
+  // aspect so object-contain fills the slot without leaving empty space.
+  // Height is the controlling dimension; width = height × 2.47.
+  const wordmarkHeight = size === "sm" ? "h-9" : size === "lg" ? "h-16" : "h-12";
+  const wordmarkWidth = size === "sm" ? "w-[88px]" : size === "lg" ? "w-[158px]" : "w-[118px]";
 
   const wordmarkSrc = light ? "/brand-wordmark-light.png" : "/brand-wordmark-dark.png";
 
@@ -42,7 +42,7 @@ export function BrandMark({ className = "", size = "md", light = false }: BrandM
           src={wordmarkSrc}
           alt="Cars Night — luxury car marketplace"
           fill
-          sizes="(max-width: 768px) 113px, 178px"
+          sizes="(max-width: 768px) 88px, 118px"
           className="object-contain"
           priority
         />

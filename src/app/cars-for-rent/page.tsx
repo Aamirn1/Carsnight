@@ -126,19 +126,11 @@ export default async function CarsForRentPage({ searchParams }: PageProps) {
             </BreadcrumbList>
           </Breadcrumb>
 
-          <div className="mt-5 flex items-center gap-2">
-            <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              <KeyRound className="h-5 w-5" />
-            </div>
-            <Badge variant="outline" className="text-primary border-primary/30">
-              Rent
-            </Badge>
-          </div>
           <h1 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight">
-            Rent
+            Rent your dream car for special events
           </h1>
           <p className="mt-3 text-muted-foreground max-w-2xl text-sm sm:text-base">
-            Rent your dream car for special events — weddings, photoshoots, weekends, and more.
+            Weddings, photoshoots, weekends, and more — filter by country, daily price, make, and availability.
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-4 text-xs sm:text-sm text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">

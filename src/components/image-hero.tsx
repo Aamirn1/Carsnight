@@ -71,8 +71,8 @@ export function ImageHero({ tagline, announcement, saleCount, rentCount, userCou
       <div className="relative z-10 h-full flex flex-col justify-end pb-24 md:pb-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full">
           <div className="max-w-2xl text-white">
-            <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md border border-white/25 px-3.5 py-1.5 text-xs sm:text-sm font-medium">
-              <Sparkles className="h-3.5 w-3.5 icon-neon" /> {announcement}
+            <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/25 px-2.5 py-1 text-[10px] sm:text-xs md:text-sm font-medium whitespace-nowrap overflow-hidden">
+              <Sparkles className="h-3 w-3 icon-neon shrink-0" /> {announcement}
             </div>
             <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] [text-shadow:0_2px_12px_rgba(0,0,0,0.55)]">
               Your global car

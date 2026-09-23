@@ -39,19 +39,19 @@ const TIMELINE = [
 export default function AboutPage() {
   return (
     <div className="flex flex-col">
-      {/* Hero */}
+      {/* Hero — dark background with the hero cars image, no white bleed */}
       <section className="relative overflow-hidden bg-foreground">
-        <div className="absolute inset-0 opacity-30">
-          <Image src="/hero-bg.png" alt="" fill priority sizes="100vw" className="object-cover" />
+        <div className="absolute inset-0">
+          <Image src="/hero-cars.png" alt="" fill priority sizes="100vw" className="object-cover opacity-30" />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-foreground/50 via-foreground/70 to-foreground" />
+        <div className="absolute inset-0 bg-foreground/80" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-white">
           <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md border border-white/25 px-3.5 py-1.5 text-xs sm:text-sm font-medium">
-            <Sparkles className="h-3.5 w-3.5 text-[#F5B82E]" /> About Cars Night
+            <Sparkles className="h-3.5 w-3.5 icon-neon" /> About Cars Night
           </div>
           <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] max-w-3xl">
             We&apos;re building the world&apos;s most
-            <span className="block text-[#F5B82E]">human car marketplace</span>
+            <span className="block gradient-text">human car marketplace</span>
           </h1>
           <p className="mt-5 text-base sm:text-lg text-white/80 max-w-2xl">
             Cars Night exists to make car transactions effortless, secure, and global — whether you&apos;re buying your first car, selling a supercar, or renting a Tesla for the weekend.
