@@ -8,9 +8,11 @@ import { ListingCard } from "@/components/listing-card";
 import { Typewriter } from "@/components/typewriter";
 import { ImageHero } from "@/components/image-hero";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { ContactFormSection } from "@/components/contact-form-section";
 import {
   Car, ArrowRight, ShieldCheck, Globe2, Bitcoin, Sparkles,
   Tag, TrendingUp, Users, ListChecks, Search, PenLine, CreditCard, Crown, HelpCircle,
+  Target, Heart, Rocket,
 } from "lucide-react";
 
 export const revalidate = 60;
@@ -267,30 +269,114 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-14 sm:py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="relative overflow-hidden rounded-3xl bg-foreground text-background p-10 sm:p-16 text-center">
-            <div className="absolute inset-0 opacity-40">
-              <Image src="/hero-cars.png" alt="" fill sizes="100vw" className="object-cover" />
-            </div>
-            <div className="relative z-10">
-              <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">Ready to find your next car?</h2>
-              <p className="mt-4 text-background/80 max-w-2xl mx-auto">
-                Join Cars Night today, post up to 2 free ads, and reach buyers and renters worldwide.
-              </p>
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-                <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  <Link href="/signup"><Sparkles className="h-4 w-4 mr-1" /> Get started free</Link>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="bg-transparent border-background/30 text-background hover:bg-background/10 hover:text-background">
-                  <Link href="/cars-for-sale">Browse cars <ArrowRight className="h-4 w-4 ml-1" /></Link>
-                </Button>
+      {/* About Us section — same content as the About page, below Pro Plans */}
+      <section className="border-y bg-card/40">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {[
+              { value: "20+", label: "Countries" },
+              { value: "14+", label: "Active listings" },
+              { value: "5+", label: "Verified sellers" },
+              { value: "100%", label: "Secure payments" },
+            ].map((s, i) => (
+              <div key={i} className="text-center">
+                <div className="text-4xl sm:text-5xl font-bold tracking-tight text-primary">{s.value}</div>
+                <div className="mt-1 text-sm text-muted-foreground">{s.label}</div>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 sm:py-20">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <Badge variant="outline" className="mb-3 text-primary border-primary/30"><Target className="h-3 w-3 mr-1" /> Our Mission</Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">A car marketplace that respects your time, money, and trust</h2>
+          </div>
+          <div className="mt-10 grid sm:grid-cols-2 gap-6">
+            {[
+              { icon: Globe2, title: "Global by default", text: "Buyers and sellers across 20+ countries, with localized listings tuned to your country and city." },
+              { icon: Bitcoin, title: "Crypto-native", text: "Pay with Bitcoin, Ethereum, or USDT — no bank fees, no chargebacks, instant settlement worldwide." },
+              { icon: ShieldCheck, title: "Secure by design", text: "OWASP-aligned security, hashed passwords, rate-limited APIs, and audit logs for every admin action." },
+              { icon: Tag, title: "Fair pricing", text: "Two free ads for everyone. Upgrade with a one-time Pro Plan purchase from $5. Credits never expire." },
+            ].map((v, i) => (
+              <div key={i} className="group rounded-2xl border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
+                <div className="flex items-start gap-4">
+                  <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors shrink-0">
+                    <v.icon className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-lg">{v.title}</h3>
+                    <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{v.text}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 sm:py-20 bg-card/30">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <Badge variant="outline" className="mb-3 text-primary border-primary/30"><Rocket className="h-3 w-3 mr-1" /> Our Story</Badge>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">From a simple idea to a global marketplace</h2>
+          </div>
+          <div className="relative">
+            <div className="absolute left-4 sm:left-1/2 sm:-translate-x-1/2 top-0 bottom-0 w-px bg-border" />
+            <div className="space-y-10">
+              {[
+                { year: "2025", title: "The idea", text: "Cars Night was born from a simple frustration: buying a car online was fragmented, unsafe, and deeply local. We set out to fix that." },
+                { year: "2026", title: "Launch", text: "We opened to early users in 5 countries — the US, UK, Pakistan, Japan, and the UAE — with crypto payments from day one." },
+                { year: "2026+", title: "Where we're going", text: "Expanding to 50+ countries, AI-powered vehicle inspections, virtual test drives, and a mobile app — all while keeping the experience premium and human." },
+              ].map((t, i) => (
+                <div key={i} className={`relative flex sm:items-center ${i % 2 === 0 ? "sm:flex-row" : "sm:flex-row-reverse"}`}>
+                  <div className="hidden sm:block sm:w-1/2" />
+                  <div className="absolute left-4 sm:left-1/2 sm:-translate-x-1/2 top-10 sm:top-1/2 sm:-translate-y-1/2 w-3 h-3 rounded-full bg-primary ring-4 ring-background z-10" />
+                  <div className={`pl-12 sm:pl-0 sm:w-1/2 sm:px-8 ${i % 2 === 0 ? "sm:text-right" : "sm:text-left"}`}>
+                    <div className="rounded-2xl border bg-card p-6 shadow-sm">
+                      <div className="text-2xl font-bold text-primary">{t.year}</div>
+                      <h3 className="mt-1 font-semibold text-lg">{t.title}</h3>
+                      <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{t.text}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
+
+      <section className="py-16 sm:py-20">
+        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
+          <Badge variant="outline" className="mb-3 text-primary border-primary/30"><Heart className="h-3 w-3 mr-1" /> What Makes Us Different</Badge>
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">Built for car people, by car people</h2>
+          <p className="mt-4 text-muted-foreground max-w-2xl mx-auto">
+            We&apos;re a small, obsessive team of car enthusiasts and engineers. We&apos;ve bought cars the painful way — and we&apos;re building the marketplace we wish existed. Every decision starts with a simple question: would we use this ourselves?
+          </p>
+          <div className="mt-12 grid sm:grid-cols-3 gap-6 text-left">
+            <div className="rounded-2xl border bg-card p-6 shadow-sm">
+              <Users className="h-6 w-6 text-primary" />
+              <h3 className="mt-3 font-semibold">Humans, not bots</h3>
+              <p className="mt-1 text-sm text-muted-foreground">Every listing is reviewed by a real person. No spam, no fake dealers, no AI-generated inventory.</p>
+            </div>
+            <div className="rounded-2xl border bg-card p-6 shadow-sm">
+              <Car className="h-6 w-6 text-primary" />
+              <h3 className="mt-3 font-semibold">Cars first</h3>
+              <p className="mt-1 text-sm text-muted-foreground">The car is the hero. Our cinematic hero, large listing photos, and minimal UI keep the spotlight where it belongs.</p>
+            </div>
+            <div className="rounded-2xl border bg-card p-6 shadow-sm">
+              <ShieldCheck className="h-6 w-6 text-primary" />
+              <h3 className="mt-3 font-semibold">Security is a feature</h3>
+              <p className="mt-1 text-sm text-muted-foreground">Hashed passwords, rate limits, audit logs, crypto escrow. We invest in security so you don&apos;t have to worry.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Contact section — same form as the Contact page, below About Us */}
+      <ContactFormSection />
 
       {/* About / Contact / FAQs section — redesigned as a section (not cards)
           with an Accordion FAQ, matching the Plans page FAQ design. */}
@@ -366,6 +452,31 @@ export default async function HomePage() {
               </AccordionContent>
             </AccordionItem>
           </Accordion>
+        </div>
+      </section>
+
+      {/* CTA — moved to just above the footer (end of page) */}
+      <section className="py-14 sm:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="relative overflow-hidden rounded-3xl bg-foreground text-background p-10 sm:p-16 text-center">
+            <div className="absolute inset-0 opacity-40">
+              <Image src="/hero-cars.png" alt="" fill sizes="100vw" className="object-cover" />
+            </div>
+            <div className="relative z-10">
+              <h2 className="text-3xl sm:text-5xl font-bold tracking-tight">Ready to find your next car?</h2>
+              <p className="mt-4 text-background/80 max-w-2xl mx-auto">
+                Join Cars Night today, post up to 2 free ads, and reach buyers and renters worldwide.
+              </p>
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
+                  <Link href="/signup"><Sparkles className="h-4 w-4 mr-1" /> Get started free</Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="bg-transparent border-background/30 text-background hover:bg-background/10 hover:text-background">
+                  <Link href="/cars-for-sale">Browse cars <ArrowRight className="h-4 w-4 ml-1" /></Link>
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
