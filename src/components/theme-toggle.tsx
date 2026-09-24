@@ -35,16 +35,17 @@ export function ThemeToggle({ light = false }: ThemeToggleProps) {
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className={cn(
         "h-9 w-9",
-        // When transparent over the dark hero (light mode), use white so the
-        // icon reads against the dark hero. Otherwise use the neon brand
-        // color (violet #8B5CF6 = --primary) so it matches the gradient
-        // identity. Use !important to override ghost button defaults.
+        // When transparent over the dark hero (light mode), use white.
+        // Otherwise use the neon button gradient via the icon-neon class
+        // (which applies the SVG gradient stroke via NeonGradientDef).
         light && !isDark
           ? "text-white hover:bg-white/10 hover:text-white"
-          : "!text-primary hover:bg-primary/10",
+          : "hover:bg-primary/10",
       )}
     >
-      {mounted && isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      {mounted && isDark
+        ? <Sun className="h-4 w-4" />
+        : <Moon className={cn("h-4 w-4", !light && !isDark && "icon-neon")} />}
     </Button>
   );
 }

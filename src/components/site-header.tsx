@@ -181,11 +181,11 @@ export function SiteHeader() {
                   "lg:hidden",
                   !scrolled && !isDark
                     ? "text-white hover:bg-white/10 hover:text-white"
-                    : "!text-primary hover:bg-primary/10",
+                    : "hover:bg-primary/10",
                 )}
                 aria-label="Open menu"
               >
-                <Menu className="h-5 w-5" />
+                <Menu className={cn("h-5 w-5", !(!scrolled && !isDark) && "icon-neon")} />
               </Button>
             </SheetTrigger>
             <SheetContent side="right" hideClose className="w-[300px] sm:w-[360px] p-0">
