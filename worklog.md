@@ -1128,3 +1128,26 @@ Stage Summary:
   6. "Cars" is white in dark mode (no flash) ✅
   7. Timeline dots aligned with year text ✅
 - ESLint passes; all routes return 200; committed as 4d2e29a and pushed to GitHub.
+
+---
+Task ID: 33
+Agent: main (orchestrator)
+Task: 6 fixes — FAQ accordion, search bars, transparent nav for Blog/About/Contact, icon fixes, light default
+
+Work Log:
+1. Home page About/Contact/FAQs: replaced the card-based section with an Accordion FAQ section (7 expandable items: "What is Cars Night?", "What's your mission?", "How do I contact support?", "How many free listings do I get?", "Which payment methods do you accept?", "Is the platform secure?", "Where can I find more FAQs?") matching the Plans page FAQ design. Added Accordion imports.
+2. Buy + Rent pages: added a search bar above the filters with a Search icon, placeholder text, and a form that submits to the page URL with the `q` parameter. Integrates with the existing filter system.
+3. Plans page "Browse cars" button: increased border opacity from background/30 to background/60 for better visibility in dark mode.
+4. Navbar icons on inner pages (light mode): used `!text-primary` (important) on the theme toggle and burger buttons to override the ghost button's default text color that was making the icons invisible.
+5. Blog/About/Contact pages: navbar now starts transparent over the dark hero (like the home page) and becomes solid on scroll. Added these pages to the `darkHeroPages` array in the `scrolled` state initialization and the scroll effect.
+6. Light mode set as default: disabled `enableSystem` in the ThemeProvider so the site always starts in light mode regardless of OS preference.
+
+Stage Summary:
+- All 6 user-requested fixes applied and verified:
+  1. FAQ accordion section ✅ (7 expandable items, matching Plans page)
+  2. Search bars on Buy + Rent pages ✅ (with Search icon, placeholder, form submission)
+  3. Plans "Browse cars" border ✅ (background/60 = more visible in dark mode)
+  4. Navbar icons visible ✅ (Cars black, moon icon violet/purple on solid navbar)
+  5. Blog/About/Contact transparent navbar ✅ (transparent over hero, solid on scroll)
+  6. Light mode default ✅ (enableSystem disabled)
+- ESLint passes; all routes return 200; committed as fa62ee6 and pushed to GitHub.
