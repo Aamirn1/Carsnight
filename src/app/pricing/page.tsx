@@ -289,7 +289,7 @@ export default async function PricingPage() {
                 <Tag className="h-4 w-4" /> Post an ad
               </Link>
             </Button>
-            <Button asChild variant="outline" className="bg-transparent text-background border-background/30 hover:bg-background/10 hover:text-background">
+            <Button asChild variant="outline" className="bg-transparent text-background border-background/60 hover:bg-background/10 hover:text-background">
               <Link href="/cars-for-sale">Browse cars</Link>
             </Button>
           </div>

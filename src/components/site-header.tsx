@@ -34,7 +34,12 @@ export function SiteHeader() {
   // starts transparent over the dark hero and becomes solid after scrolling.
   // We initialize based on the pathname so SSR + first paint are correct,
   // then update via the scroll listener (no set-state-in-effect).
-  const [scrolled, setScrolled] = useState(pathname !== "/");
+  const [scrolled, setScrolled] = useState(() => {
+    // Pages with a dark hero — navbar starts transparent and becomes solid
+    // on scroll (just like the home page). All other pages: solid from top.
+    const darkHeroPages = ["/", "/blog", "/about", "/contact"];
+    return !darkHeroPages.includes(pathname);
+  });
 
   const isAdmin = (session?.user as any)?.role === "ADMIN";
   const isAuthed = status === "authenticated" && !!session?.user;
@@ -59,17 +64,17 @@ export function SiteHeader() {
   );
 
   // --- Transparent-over-hero behaviour ----------------------------------
-  // On the home page, the navbar stays TRANSPARENT over the full-viewport
-  // image hero (100vh tall) and becomes solid (with a light background +
-  // border + blur) when the user scrolls past the hero into the first
-  // content section ("Browse by your goal"). On every other page, the
-  // navbar is solid from the top.
+  // On pages with a dark hero (home, blog, about, contact), the navbar stays
+  // TRANSPARENT over the dark hero and becomes solid (with a light background
+  // + border + blur) when the user scrolls past the hero. On all other pages,
+  // the navbar is solid from the top.
   useEffect(() => {
-    if (pathname !== "/") return;
+    const darkHeroPages = ["/", "/blog", "/about", "/contact"];
+    if (!darkHeroPages.includes(pathname)) return;
     const compute = () => {
-      // The hero is exactly 100vh tall. We flip the navbar to solid 50px
-      // before the hero ends so it transitions in just as the first content
-      // section scrolls into view.
+      // The hero is roughly 100vh tall (home) or ~50vh (blog/about/contact).
+      // We flip the navbar to solid 50px before the hero ends so it
+      // transitions in just as the first content section scrolls into view.
       const heroTrigger = window.innerHeight - 50;
       setScrolled(window.scrollY > heroTrigger);
     };
@@ -179,12 +184,9 @@ export function SiteHeader() {
                 size="icon"
                 className={cn(
                   "lg:hidden",
-                  // Over the transparent hero (light mode), use white. Otherwise
-                  // use the neon brand color (violet) so the burger reads as
-                  // part of the gradient identity. Added a subtle neon glow.
                   !scrolled && !isDark
                     ? "text-white hover:bg-white/10 hover:text-white"
-                    : "text-primary hover:bg-primary/10 hover:text-primary",
+                    : "!text-primary hover:bg-primary/10",
                 )}
                 aria-label="Open menu"
               >

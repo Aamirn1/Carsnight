@@ -20,7 +20,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { KeyRound, ChevronLeft, ChevronRight, SearchX, SlidersHorizontal, CalendarHeart, Camera } from "lucide-react";
+import { KeyRound, ChevronLeft, ChevronRight, Search, SearchX, SlidersHorizontal, CalendarHeart, Camera } from "lucide-react";
 
 export const revalidate = 60;
 
@@ -126,6 +126,25 @@ export default async function CarsForRentPage({ searchParams }: PageProps) {
 
       {/* Browse layout */}
       <section className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+        {/* Search bar — above filters on all viewports */}
+        <div className="mb-6">
+          <form
+            className="relative max-w-xl mx-auto"
+            action="/cars-for-rent"
+            method="GET"
+          >
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              name="q"
+              placeholder="Search by make, model, or keyword (e.g. Lamborghini, Tesla, BMW)..."
+              defaultValue={typeof sp.q === "string" ? sp.q : ""}
+              className="w-full rounded-xl border border-border bg-card pl-10 pr-4 py-3 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+              aria-label="Search cars"
+            />
+          </form>
+        </div>
+
         <div className="grid lg:grid-cols-[280px_1fr] gap-6 lg:gap-8">
           {/* Sidebar (desktop) */}
           <aside className="hidden lg:block">

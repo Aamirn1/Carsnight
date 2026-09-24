@@ -38,10 +38,10 @@ export function ThemeToggle({ light = false }: ThemeToggleProps) {
         // When transparent over the dark hero (light mode), use white so the
         // icon reads against the dark hero. Otherwise use the neon brand
         // color (violet #8B5CF6 = --primary) so it matches the gradient
-        // identity without the SVG-stroke-gradient complexity.
+        // identity. Use !important to override ghost button defaults.
         light && !isDark
           ? "text-white hover:bg-white/10 hover:text-white"
-          : "text-primary hover:bg-primary/10 hover:text-primary",
+          : "!text-primary hover:bg-primary/10",
       )}
     >
       {mounted && isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}

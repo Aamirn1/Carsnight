@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { ListingCard } from "@/components/listing-card";
 import { Typewriter } from "@/components/typewriter";
 import { ImageHero } from "@/components/image-hero";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import {
   Car, ArrowRight, ShieldCheck, Globe2, Bitcoin, Sparkles,
   Tag, TrendingUp, Users, ListChecks, Search, PenLine, CreditCard, Crown, HelpCircle,
@@ -291,49 +292,80 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* About / Contact / FAQs quick links — per user request, added just
-          below the Pro Plan pricing preview so visitors can learn more about
-          the company and get help without scrolling to the footer. */}
-      <section className="pb-16 sm:pb-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid sm:grid-cols-3 gap-4 sm:gap-6">
-            <Link href="/about" className="group rounded-2xl border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
-              <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                <Users className="h-5 w-5 icon-neon" />
-              </div>
-              <h3 className="mt-4 text-lg font-semibold">About Us</h3>
-              <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
-                Our mission, our story, and what makes Cars Night different from every other car marketplace.
-              </p>
-              <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
-                Learn more <ArrowRight className="h-3.5 w-3.5" />
-              </span>
-            </Link>
-            <Link href="/contact" className="group rounded-2xl border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
-              <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                <Search className="h-5 w-5 icon-neon" />
-              </div>
-              <h3 className="mt-4 text-lg font-semibold">Contact</h3>
-              <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
-                Questions, feedback, or partnership ideas? We reply within one business day.
-              </p>
-              <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
-                Get in touch <ArrowRight className="h-3.5 w-3.5" />
-              </span>
-            </Link>
-            <Link href="/faq" className="group rounded-2xl border bg-card p-6 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
-              <div className="inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                <HelpCircle className="h-5 w-5 icon-neon" />
-              </div>
-              <h3 className="mt-4 text-lg font-semibold">FAQs</h3>
-              <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
-                How listings work, free vs paid ads, crypto payments, security, and more.
-              </p>
-              <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
-                Read FAQs <ArrowRight className="h-3.5 w-3.5" />
-              </span>
-            </Link>
+      {/* About / Contact / FAQs section — redesigned as a section (not cards)
+          with an Accordion FAQ, matching the Plans page FAQ design. */}
+      <section className="py-14 sm:py-16">
+        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-10">
+            <Badge variant="outline" className="mb-3 text-primary border-primary/30"><HelpCircle className="h-3 w-3 mr-1" /> About · Contact · FAQs</Badge>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Learn more about Cars Night</h2>
+            <p className="mt-2 text-sm text-muted-foreground">Everything you need to know about our marketplace, team, and how to get help.</p>
           </div>
+
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="about">
+              <AccordionTrigger>What is Cars Night?</AccordionTrigger>
+              <AccordionContent>
+                Cars Night is a global car marketplace for buying, selling, and renting vehicles.
+                We connect buyers, sellers, and renters across 20+ countries with a secure,
+                SEO-optimized platform. Post up to 2 free ads, upgrade with Pro Plans from $5,
+                and pay with credit card or crypto.{" "}
+                <Link href="/about" className="text-primary hover:underline font-medium">Learn more about us →</Link>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="mission">
+              <AccordionTrigger>What&apos;s your mission?</AccordionTrigger>
+              <AccordionContent>
+                We exist to make car transactions effortless, secure, and global — whether you&apos;re
+                buying your first car, selling a supercar, or renting a Tesla for the weekend. We
+                believe in fair pricing, crypto-native payments, and a human-first marketplace.{" "}
+                <Link href="/about" className="text-primary hover:underline font-medium">Read our story →</Link>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="contact">
+              <AccordionTrigger>How do I contact support?</AccordionTrigger>
+              <AccordionContent>
+                Email us at <Link href="mailto:support@carsnight.com" className="text-primary hover:underline font-medium">support@carsnight.com</Link>{" "}
+                — we typically reply within one business day. For urgent payment issues, you can also
+                call +1 (555) 016-2026 (Mon–Fri, 9am–6pm UTC).{" "}
+                <Link href="/contact" className="text-primary hover:underline font-medium">Get in touch →</Link>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="free">
+              <AccordionTrigger>How many free listings do I get?</AccordionTrigger>
+              <AccordionContent>
+                Every user gets 2 free listings to start. They can be used for cars for sale or for rent.
+                When you run out, you can purchase a Pro Plan for more credits. Credits never expire.{" "}
+                <Link href="/pricing" className="text-primary hover:underline font-medium">See plans →</Link>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="payments">
+              <AccordionTrigger>Which payment methods do you accept?</AccordionTrigger>
+              <AccordionContent>
+                We accept credit/debit cards (Visa, Mastercard) and cryptocurrency: Bitcoin (BTC),
+                Ethereum (ETH), and Tether (USDT). Both options are processed instantly and credits
+                appear in your dashboard right away.{" "}
+                <Link href="/pricing" className="text-primary hover:underline font-medium">See plans →</Link>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="security">
+              <AccordionTrigger>Is the platform secure?</AccordionTrigger>
+              <AccordionContent>
+                Yes. We follow OWASP best practices: hashed passwords (bcrypt), HTTP-only session cookies,
+                rate-limited APIs, strict input validation, parameterized queries, and audit logs for
+                every admin action. We never store credit card numbers or private keys.{" "}
+                <Link href="/about" className="text-primary hover:underline font-medium">Learn more →</Link>
+              </AccordionContent>
+            </AccordionItem>
+            <AccordionItem value="more-faqs">
+              <AccordionTrigger>Where can I find more FAQs?</AccordionTrigger>
+              <AccordionContent>
+                For the full FAQ list — including how listings work, crypto payment details, refunds,
+                and account management — visit our dedicated FAQ page.{" "}
+                <Link href="/faq" className="text-primary hover:underline font-medium">Read all FAQs →</Link>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
         </div>
       </section>
 
