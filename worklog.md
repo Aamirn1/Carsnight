@@ -1151,3 +1151,23 @@ Stage Summary:
   5. Blog/About/Contact transparent navbar ✅ (transparent over hero, solid on scroll)
   6. Light mode default ✅ (enableSystem disabled)
 - ESLint passes; all routes return 200; committed as fa62ee6 and pushed to GitHub.
+
+---
+Task ID: 34
+Agent: main (orchestrator)
+Task: 5 fixes — Blog/About/Contact light heroes, navbar first-load colors, timeline dots, star trails
+
+Work Log:
+1. Blog/About/Contact heroes redesigned: replaced dark bg-foreground + Image overlay + white text with light gradient (from-primary/5 to-transparent), centered, badge + H1 with gradient-text + subtitle — matching Plans/Buy/Rent pages exactly. Removed unused Image imports.
+2. About timeline dots: moved from top-7 (28px) to top-10 (40px) to align with the year text center (card p-6 = 24px padding + text-2xl line-height ~32px → center at ~40px). Added z-10 so dots appear above the card border. Verified: "purple dots aligned with the year text (2025, 2026, 2026+)".
+3. Falling star trails: increased from 30-80px to 60-150px for more visible shooting star trails.
+4 & 5. Navbar icon colors on first load: root cause was Blog/About/Contact being in the darkHeroPages list → scrolled=false → light=true → white icons (Cars white, moon white, burger white). After hydration, since isDark=false (light mode) and scrolled stays false (transparent navbar), light stays true → icons remain white even after refresh. Fixed by removing Blog/About/Contact from darkHeroPages — now only home page (pathname !== "/") has transparent navbar. All other pages have scrolled=true → light=false → dark logo + violet icons from the first render. No refresh needed. Verified on /cars-for-sale: "Cars logo text is black, moon icon is violet/purple" on first load.
+
+Stage Summary:
+- All 5 user-requested fixes applied and verified:
+  1. Blog/About/Contact heroes: light gradient, centered, matching Plans/Buy/Rent ✅
+  2. Timeline dots: aligned with year text (top-10 = 40px) ✅
+  3. Star trails: 60-150px (was 30-80px) ✅
+  4. Buy/Rent/Plans navbar: correct colors on first load (no refresh) ✅
+  5. Blog/About/Contact navbar: correct colors on first load (no refresh) ✅
+- ESLint passes; all routes return 200; committed as 998238f and pushed to GitHub.
