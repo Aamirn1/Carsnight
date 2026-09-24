@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, MessageSquare, MapPin, Send, Loader2, Phone, Clock, Twitter, Instagram, Linkedin } from "lucide-react";
 
@@ -41,20 +41,16 @@ export function ContactForm() {
 
   return (
     <div className="flex flex-col">
-      {/* Hero — solid dark background (no overlay/white bleed) */}
-      <section className="relative overflow-hidden bg-foreground">
-        <div className="absolute inset-0">
-          <Image src="/hero-cars.png" alt="" fill priority sizes="100vw" className="object-cover opacity-20" />
-        </div>
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-20 text-white">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md border border-white/25 px-3.5 py-1.5 text-xs sm:text-sm font-medium">
-            <Mail className="h-3.5 w-3.5 icon-neon" /> Contact Cars Night
-          </div>
-          <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] max-w-3xl">
-            Let&apos;s talk.
-            <span className="block gradient-text">We&apos;re here to help.</span>
+      {/* Hero — centered, light gradient, matching Plans/Buy/Rent pages */}
+      <section className="bg-gradient-to-b from-primary/5 to-transparent border-b border-border">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 text-center">
+          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 mb-4">
+            <Mail className="h-3 w-3 mr-1" /> Contact
+          </Badge>
+          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight">
+            Let&apos;s talk. <span className="gradient-text">We&apos;re here to help.</span>
           </h1>
-          <p className="mt-5 text-base sm:text-lg text-white/80 max-w-2xl">
+          <p className="mt-3 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
             Questions, feedback, partnership ideas, or just want to say hi? We typically reply within one business day.
           </p>
         </div>

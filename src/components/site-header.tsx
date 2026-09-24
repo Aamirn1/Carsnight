@@ -35,10 +35,10 @@ export function SiteHeader() {
   // We initialize based on the pathname so SSR + first paint are correct,
   // then update via the scroll listener (no set-state-in-effect).
   const [scrolled, setScrolled] = useState(() => {
-    // Pages with a dark hero — navbar starts transparent and becomes solid
-    // on scroll (just like the home page). All other pages: solid from top.
-    const darkHeroPages = ["/", "/blog", "/about", "/contact"];
-    return !darkHeroPages.includes(pathname);
+    // Only the home page has a dark hero — navbar starts transparent there.
+    // All other pages (including Blog/About/Contact which now have light
+    // gradient heroes matching Plans/Buy/Rent): solid from the top.
+    return pathname !== "/";
   });
 
   const isAdmin = (session?.user as any)?.role === "ADMIN";
@@ -64,17 +64,12 @@ export function SiteHeader() {
   );
 
   // --- Transparent-over-hero behaviour ----------------------------------
-  // On pages with a dark hero (home, blog, about, contact), the navbar stays
-  // TRANSPARENT over the dark hero and becomes solid (with a light background
-  // + border + blur) when the user scrolls past the hero. On all other pages,
-  // the navbar is solid from the top.
+  // Only the home page has a dark hero. The navbar stays transparent over
+  // it and becomes solid when the user scrolls past. All other pages have
+  // a solid navbar from the top.
   useEffect(() => {
-    const darkHeroPages = ["/", "/blog", "/about", "/contact"];
-    if (!darkHeroPages.includes(pathname)) return;
+    if (pathname !== "/") return;
     const compute = () => {
-      // The hero is roughly 100vh tall (home) or ~50vh (blog/about/contact).
-      // We flip the navbar to solid 50px before the hero ends so it
-      // transitions in just as the first content section scrolls into view.
       const heroTrigger = window.innerHeight - 50;
       setScrolled(window.scrollY > heroTrigger);
     };

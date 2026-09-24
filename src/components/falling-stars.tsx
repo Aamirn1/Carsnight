@@ -141,8 +141,8 @@ function generateShootingStar(width: number, height: number): Star {
   const duration = length / speed;
   // Head size: 2-4px (small, not large)
   const size = rand(1.5, 3);
-  // Trail: 30-80px, thin
-  const trailLength = rand(30, 80);
+  // Trail: 60-150px, thin (longer for more visible trails)
+  const trailLength = rand(60, 150);
   const opacity = rand(0.7, 1);
 
   return {

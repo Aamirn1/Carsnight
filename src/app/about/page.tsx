@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import type { Metadata } from "next";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -39,30 +38,18 @@ const TIMELINE = [
 export default function AboutPage() {
   return (
     <div className="flex flex-col">
-      {/* Hero — solid dark background (no overlay/white bleed) */}
-      <section className="relative overflow-hidden bg-foreground">
-        <div className="absolute inset-0">
-          <Image src="/hero-cars.png" alt="" fill priority sizes="100vw" className="object-cover opacity-20" />
-        </div>
-        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-white">
-          <div className="inline-flex items-center gap-2 rounded-full bg-white/10 backdrop-blur-md border border-white/25 px-3.5 py-1.5 text-xs sm:text-sm font-medium">
-            <Sparkles className="h-3.5 w-3.5 icon-neon" /> About Cars Night
-          </div>
-          <h1 className="mt-6 text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.1] max-w-3xl">
-            We&apos;re building the world&apos;s most
-            <span className="block gradient-text">human car marketplace</span>
+      {/* Hero — centered, light gradient, matching Plans/Buy/Rent pages */}
+      <section className="bg-gradient-to-b from-primary/5 to-transparent border-b border-border">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 text-center">
+          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 mb-4">
+            <Sparkles className="h-3 w-3 mr-1" /> About
+          </Badge>
+          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight">
+            We&apos;re building the world&apos;s most <span className="gradient-text">human car marketplace</span>
           </h1>
-          <p className="mt-5 text-base sm:text-lg text-white/80 max-w-2xl">
+          <p className="mt-3 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
             Cars Night exists to make car transactions effortless, secure, and global — whether you&apos;re buying your first car, selling a supercar, or renting a Tesla for the weekend.
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Button asChild size="lg" className="btn-gold">
-              <Link href="/signup"><Sparkles className="h-4 w-4 mr-1" /> Join free</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="bg-white/10 backdrop-blur-md border-white/30 text-white hover:bg-white/20 hover:text-white">
-              <Link href="/contact">Get in touch</Link>
-            </Button>
-          </div>
         </div>
       </section>
 
@@ -119,12 +106,12 @@ export default function AboutPage() {
               {TIMELINE.map((t, i) => (
                 <div key={i} className={`relative flex sm:items-center ${i % 2 === 0 ? "sm:flex-row" : "sm:flex-row-reverse"}`}>
                   <div className="hidden sm:block sm:w-1/2" />
-                  {/* Dot — aligned with the year text (top of the card). On
-                      mobile it's at left-4 (16px) aligned with the card's
-                      year text which starts at pl-12 (48px) — the dot sits
-                      on the vertical line at the same vertical position as
-                      the year. On desktop it's centered on the line. */}
-                  <div className="absolute left-4 sm:left-1/2 sm:-translate-x-1/2 top-7 sm:top-1/2 sm:-translate-y-1/2 w-3 h-3 rounded-full bg-primary ring-4 ring-background" />
+                  {/* Dot — aligned with the year text. On mobile the card has
+                      p-6 (24px padding) + text-2xl year (line-height ~32px),
+                      so the year center is at ~40px from the card top. The
+                      dot at top-10 (40px) aligns with it. On desktop it's
+                      centered on the line (top-1/2 -translate-y-1/2). */}
+                  <div className="absolute left-4 sm:left-1/2 sm:-translate-x-1/2 top-10 sm:top-1/2 sm:-translate-y-1/2 w-3 h-3 rounded-full bg-primary ring-4 ring-background z-10" />
                   <div className={`pl-12 sm:pl-0 sm:w-1/2 sm:px-8 ${i % 2 === 0 ? "sm:text-right" : "sm:text-left"}`}>
                     <div className="rounded-2xl border bg-card p-6 shadow-sm">
                       <div className="text-2xl font-bold text-primary">{t.year}</div>
