@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
-import { useTheme } from "next-themes";
 import { Menu, X, Plus, LayoutDashboard, LogOut, ShieldCheck, User as UserIcon, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetClose } from "@/components/ui/sheet";
@@ -30,7 +29,6 @@ const BURGER_LINKS = NAV_LINKS;
 export function SiteHeader() {
   const pathname = usePathname();
   const { data: session, status } = useSession();
-  const { resolvedTheme } = useTheme();
   const [open, setOpen] = useState(false);
   // On non-home pages the navbar is solid from the top. On the home page it
   // starts transparent over the dark hero and becomes solid after scrolling.
@@ -42,6 +40,23 @@ export function SiteHeader() {
   const isAuthed = status === "authenticated" && !!session?.user;
 
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+
+  // --- Dark-mode detection ---
+  // resolvedTheme from useTheme() returns undefined during SSR and initial
+  // hydration. This caused the "Cars" wordmark to flash between black and
+  // white on inner pages in dark mode (server renders black, client flips
+  // to white after hydration). We use useSyncExternalStore to check the
+  // document element's class list — which next-themes sets before React
+  // hydrates — so the dark-mode state is correct from the first client
+  // render with no flash.
+  const isDark = useSyncExternalStore(
+    () => () => {},
+    () => {
+      if (typeof document === "undefined") return false;
+      return document.documentElement.classList.contains("dark");
+    },
+    () => false, // server snapshot: not dark (SSR can't know theme)
+  );
 
   // --- Transparent-over-hero behaviour ----------------------------------
   // On the home page, the navbar stays TRANSPARENT over the full-viewport
@@ -86,7 +101,6 @@ export function SiteHeader() {
   //    logo is ALWAYS white. Only in light mode does it flip.
   //
   // So: `light` (use white wordmark) = transparent navbar OR dark mode.
-  const isDark = resolvedTheme === "dark";
   const light = !scrolled || isDark;
 
   return (

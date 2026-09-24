@@ -11,11 +11,10 @@ import {
   Loader2,
   ArrowRight,
   ArrowLeft,
-  ShieldCheck,
   Sparkles,
   Bitcoin,
   Globe2,
-  HelpCircle,
+  ShieldCheck,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -30,12 +29,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { BrandMark } from "@/components/brand-mark";
 
 const MARKETING_POINTS = [
   {
@@ -146,9 +139,15 @@ export default function SignInPage() {
         {/* Form card */}
         <div className="w-full max-w-md mx-auto md:max-w-none">
           <Card className="glass-panel shadow-xl border-border/60">
-            <CardHeader className="space-y-3 items-center text-center">
-              <BrandMark size="md" />
-              <div className="space-y-1">
+            <CardHeader className="space-y-3">
+              {/* Back to home — top-left of the card */}
+              <Link
+                href="/"
+                className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors self-start"
+              >
+                <ArrowLeft className="h-4 w-4" /> Back to home
+              </Link>
+              <div className="space-y-1 text-center">
                 <CardTitle className="text-2xl flex items-center justify-center gap-2">
                   <LogIn className="h-5 w-5 text-primary" /> Sign in
                 </CardTitle>
@@ -220,21 +219,6 @@ export default function SignInPage() {
                       Remember me
                     </Label>
                   </div>
-
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button
-                        type="button"
-                        className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                        aria-label="Admin sign-in hint"
-                      >
-                        <HelpCircle className="h-3.5 w-3.5" /> Admin?
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="max-w-[240px]">
-                      Administrators are auto-detected by email. Use your admin credentials here — your role is detected automatically.
-                    </TooltipContent>
-                  </Tooltip>
                 </div>
 
                 <Button
@@ -252,14 +236,6 @@ export default function SignInPage() {
                     </>
                   )}
                 </Button>
-
-                {/* Mobile-only back-to-home */}
-                <Link
-                  href="/"
-                  className="md:hidden inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors justify-center"
-                >
-                  <ArrowLeft className="h-4 w-4" /> Back to home
-                </Link>
               </CardContent>
 
               <CardFooter className="flex flex-col gap-3 border-t pt-6">

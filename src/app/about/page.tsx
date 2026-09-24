@@ -119,7 +119,12 @@ export default function AboutPage() {
               {TIMELINE.map((t, i) => (
                 <div key={i} className={`relative flex sm:items-center ${i % 2 === 0 ? "sm:flex-row" : "sm:flex-row-reverse"}`}>
                   <div className="hidden sm:block sm:w-1/2" />
-                  <div className="absolute left-4 sm:left-1/2 sm:-translate-x-1/2 w-3 h-3 rounded-full bg-primary ring-4 ring-background" />
+                  {/* Dot — aligned with the year text (top of the card). On
+                      mobile it's at left-4 (16px) aligned with the card's
+                      year text which starts at pl-12 (48px) — the dot sits
+                      on the vertical line at the same vertical position as
+                      the year. On desktop it's centered on the line. */}
+                  <div className="absolute left-4 sm:left-1/2 sm:-translate-x-1/2 top-7 sm:top-1/2 sm:-translate-y-1/2 w-3 h-3 rounded-full bg-primary ring-4 ring-background" />
                   <div className={`pl-12 sm:pl-0 sm:w-1/2 sm:px-8 ${i % 2 === 0 ? "sm:text-right" : "sm:text-left"}`}>
                     <div className="rounded-2xl border bg-card p-6 shadow-sm">
                       <div className="text-2xl font-bold text-primary">{t.year}</div>

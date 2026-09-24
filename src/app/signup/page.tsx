@@ -30,7 +30,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { BrandMark } from "@/components/brand-mark";
 import { CountryCitySelect } from "@/components/country-city-select";
 import { useToast } from "@/hooks/use-toast";
 
@@ -219,9 +218,15 @@ export default function SignUpPage() {
         {/* Form card */}
         <div className="w-full max-w-md mx-auto md:max-w-none">
           <Card className="glass-panel shadow-xl border-border/60">
-            <CardHeader className="space-y-3 items-center text-center">
-              <BrandMark size="md" />
-              <div className="space-y-1">
+            <CardHeader className="space-y-3">
+              {/* Back to home — top-left of the card */}
+              <Link
+                href="/"
+                className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors self-start"
+              >
+                <ArrowLeft className="h-4 w-4" /> Back to home
+              </Link>
+              <div className="space-y-1 text-center">
                 <CardTitle className="text-2xl flex items-center justify-center gap-2">
                   <UserPlus className="h-5 w-5 text-primary" /> Create your account
                 </CardTitle>
@@ -311,7 +316,6 @@ export default function SignUpPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label>Country &amp; City</Label>
                   <CountryCitySelect
                     country={country}
                     city={city}
@@ -374,17 +378,12 @@ export default function SignUpPage() {
                     </>
                   )}
                 </Button>
-
-                {/* Mobile-only back-to-home */}
-                <Link
-                  href="/"
-                  className="md:hidden inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors justify-center"
-                >
-                  <ArrowLeft className="h-4 w-4" /> Back to home
-                </Link>
               </CardContent>
 
               <CardFooter className="flex flex-col gap-3 border-t pt-6">
+                <p className="text-xs text-muted-foreground text-center w-full">
+                  By creating an account you agree to our Terms &amp; Privacy Policy.
+                </p>
                 <p className="text-sm text-muted-foreground text-center w-full">
                   Already have an account?{" "}
                   <Link
@@ -393,9 +392,6 @@ export default function SignUpPage() {
                   >
                     Sign in <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
-                </p>
-                <p className="text-xs text-muted-foreground text-center w-full">
-                  By creating an account you agree to our Terms &amp; Privacy Policy.
                 </p>
               </CardFooter>
             </form>

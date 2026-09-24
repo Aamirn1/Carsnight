@@ -1,24 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useTheme } from "next-themes";
 import { useSyncExternalStore } from "react";
 import { Car, Mail, Shield, Globe, Bitcoin } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
 
-// Mount-detection helper (no set-state-in-effect)
-function useMounted(): boolean {
-  return useSyncExternalStore(
+export function SiteFooter() {
+  // Use useSyncExternalStore to check the document element's class list
+  // (set by next-themes before React hydrates) so dark-mode detection is
+  // correct from the first client render with no flash.
+  const isDark = useSyncExternalStore(
     () => () => {},
-    () => true,
+    () => {
+      if (typeof document === "undefined") return false;
+      return document.documentElement.classList.contains("dark");
+    },
     () => false,
   );
-}
-
-export function SiteFooter() {
-  const { resolvedTheme } = useTheme();
-  const mounted = useMounted();
-  const isDark = mounted ? resolvedTheme === "dark" : false;
   const year = new Date().getFullYear();
   return (
     <footer className="mt-auto border-t border-border bg-card/40">
