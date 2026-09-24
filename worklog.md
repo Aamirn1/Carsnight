@@ -1101,3 +1101,30 @@ Stage Summary:
   5. Plans CTA dark mode: ✅ "Browse cars button visible with dark text/border"
   6. Blog newsletter dark mode: ✅ "white card, black text, readable"
 - ESLint passes; all routes return 200; committed as 17d7e4d and pushed to GitHub.
+
+---
+Task ID: 32
+Agent: main (orchestrator)
+Task: 7 fixes — undo logo colors, signin/signup UI, dark-mode logo flash, About timeline dots
+
+Work Log:
+0. Undo text logo colors: verified the wordmark PNGs were NOT changed in the last push (MD5 identical between commit ca7df2f and current). The "Car" color issue was a CSS bug (see point 6).
+1. Removed logo from signin/signup: removed <BrandMark> from both card headers + removed the BrandMark import.
+2. Moved "Back to home" to card top-left: added a Link with ArrowLeft at the top of the CardHeader in both signin and signup (replaces the sidebar link + the mobile-only bottom link).
+3. Removed "? Admin?" from signin: removed the Tooltip + HelpCircle button next to "Remember me" + removed the Tooltip and HelpCircle imports.
+4. Removed "Country & City" heading from signup: removed the <Label>Country & City</Label> that was above the CountryCitySelect component.
+5. Moved "By creating an account..." above "Already have an account?": swapped the order of the two <p> elements in the CardFooter of the signup form.
+6. Fixed "Cars" logo color flash in dark mode: the issue was that `useTheme().resolvedTheme` returns `undefined` during SSR and initial hydration, causing `isDark` to be `false` on the server → the dark wordmark (black "Cars") renders first, then flips to white after hydration. Replaced with `useSyncExternalStore` checking `document.documentElement.classList.contains("dark")` (set by next-themes before React hydrates) → correct from first client render with no flash. Applied to both SiteHeader and SiteFooter. Removed the duplicate `const isDark = resolvedTheme === "dark"` that was also causing a build error.
+7. About timeline dots: aligned the purple dots with the year text by adding `top-7 sm:top-1/2 sm:-translate-y-1/2` to the dot's className (was just `left-4 sm:left-1/2 sm:-translate-x-1/2` with no vertical positioning, so the dot was at the top of the row, not aligned with the year text inside the card).
+
+Stage Summary:
+- All 7 user-requested fixes applied and verified with Agent Browser + VLM:
+  0. Logo colors unchanged (confirmed via MD5).
+  1. No logo in signin/signup cards ✅
+  2. "Back to home" at card top-left ✅
+  3. No "? Admin?" near "Remember me" ✅
+  4. No "Country & City" heading in signup ✅
+  5. Terms text above "Already have an account?" ✅
+  6. "Cars" is white in dark mode (no flash) ✅
+  7. Timeline dots aligned with year text ✅
+- ESLint passes; all routes return 200; committed as 4d2e29a and pushed to GitHub.
