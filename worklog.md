@@ -1171,3 +1171,40 @@ Stage Summary:
   4. Buy/Rent/Plans navbar: correct colors on first load (no refresh) ✅
   5. Blog/About/Contact navbar: correct colors on first load (no refresh) ✅
 - ESLint passes; all routes return 200; committed as 998238f and pushed to GitHub.
+
+---
+Task ID: 35
+Agent: main (orchestrator)
+Task: Restructure home page — About Us + Contact below pricing, CTA at bottom
+
+Work Log:
+1. Moved the "Ready to find your next car?" CTA card from just below the pricing preview to the very bottom of the page (just above the footer, after the FAQ accordion section).
+2. Added the full About Us page content just below the Pro Plans pricing preview:
+   - Stats section (20+ Countries, 14+ Active listings, 5+ Verified sellers, 100% Secure payments)
+   - Our Mission section with 4 value cards (Global by default, Crypto-native, Secure by design, Fair pricing)
+   - Our Story timeline (2025 The idea, 2026 Launch, 2026+ Where we're going) with purple dots aligned with year text (top-10)
+   - What Makes Us Different section with 3 cards (Humans not bots, Cars first, Security is a feature)
+3. Added the Contact form section just below the About Us section:
+   - Created a new ContactFormSection client component (src/components/contact-form-section.tsx) so the form (with useState, useToast) works within the server-rendered home page
+   - The form has: "Get in touch" heading with Badge, form card (name, email, topic selector pills, message textarea, Send button), sidebar (Headquarters card, Follow Cars Night social links, report listing card)
+4. Added Target, Heart, Rocket to lucide imports for the About sections.
+
+New home page section order:
+1. Hero (image + falling stars + overlay)
+2. Trust badges
+3. Categories (Buy/Rent)
+4. Featured listings
+5. How it works
+6. Stats
+7. Pricing preview (Pro Plans)
+8. About Us (stats + mission + timeline + what makes us different)
+9. Contact form section
+10. FAQ accordion
+11. CTA "Ready to find your next car?" (just above footer)
+
+Stage Summary:
+- Verified with Agent Browser + VLM:
+  - About Us section below pricing ✅ (stats, mission, timeline, what makes us different)
+  - Contact form below About Us ✅ ("Get in touch" heading, form with name/email/topic/message, sidebar)
+  - CTA at the very bottom just above footer ✅ ("at the very bottom of page content, immediately preceding the footer")
+- ESLint passes; all routes return 200; committed as 1b736f3 and pushed to GitHub.
