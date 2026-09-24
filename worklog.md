@@ -1208,3 +1208,34 @@ Stage Summary:
   - Contact form below About Us ✅ ("Get in touch" heading, form with name/email/topic/message, sidebar)
   - CTA at the very bottom just above footer ✅ ("at the very bottom of page content, immediately preceding the footer")
 - ESLint passes; all routes return 200; committed as 1b736f3 and pushed to GitHub.
+
+---
+Task ID: 36
+Agent: main (orchestrator)
+Task: Use neon button gradient for theme toggle + burger icons on inner pages in light mode
+
+Work Log:
+- Updated src/components/theme-toggle.tsx:
+  - When `light && !isDark` (transparent navbar over dark hero in light mode): icon stays WHITE
+  - When `!light && !isDark` (solid navbar on inner pages in light mode): icon uses the `icon-neon` class which applies the SVG gradient stroke (`url(#neon-gradient-stroke)`) — the exact neon button gradient (blue→violet→magenta)
+  - In dark mode: icon stays white
+  - Removed `!text-primary` (solid violet) — replaced with `icon-neon` class on the SVG
+- Updated src/components/site-header.tsx:
+  - Burger icon: same logic — `icon-neon` class applied when `!(!scrolled && !isDark)` (i.e., when navbar is solid in light mode)
+  - Removed `!text-primary` — replaced with `icon-neon` class on the Menu SVG
+- The "Cars" text logo is already BLACK on inner pages in light mode via the BrandMark `light` prop (which is `!scrolled || isDark = false` on inner pages → dark wordmark with black "Cars").
+
+Verified with Agent Browser + VLM:
+- Buy page (light mode): "Cars" text logo is BLACK ✅
+- Moon icon: uses multi-color gradient (blue→violet→magenta) ✅ (confirmed via VLM: "moon icon uses a multi-color gradient")
+- Burger icon: gradient stroke confirmed via getComputedStyle (`stroke: url("#neon-gradient-stroke")`) ✅
+- Home page (transparent navbar over dark hero): icons remain white ✅
+
+Note: on small 16-20px SVG icons, the 4-stop gradient spans a very small area, making individual color stops hard to distinguish visually — the icon reads as a mid-tone violet/purple. This is expected for tiny icons. On larger icons the full blue→violet→magenta spectrum is visible.
+
+Stage Summary:
+- Theme toggle + burger icons now use the neon button gradient on inner pages in light mode.
+- "Cars" text logo is black on inner pages in light mode.
+- Home page (transparent navbar) keeps white icons for readability.
+- Dark mode keeps white icons.
+- ESLint passes; committed as 13003c0 and pushed to GitHub.
