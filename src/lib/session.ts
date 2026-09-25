@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { getSupabase, hasSupabase } from "@/lib/supabase-server";
 
 export type SessionUser = {
   id: string;
@@ -24,9 +25,6 @@ export async function getSessionUser(): Promise<SessionUser | null> {
       city: (session.user as any).city,
     };
   } catch {
-    // If the session can't be resolved (e.g., DB not available on Vercel
-    // serverless, or NextAuth misconfigured), gracefully return null so the
-    // page renders for guests instead of throwing a 500.
     return null;
   }
 }
@@ -44,27 +42,50 @@ export async function requireAdmin(): Promise<SessionUser> {
 }
 
 export async function getUserWithCredits(userId: string) {
+  if (hasSupabase()) {
+    try {
+      const supabase = getSupabase();
+      const { data } = await supabase
+        .from("User")
+        .select("id, email, name, role, country, city, freePostsUsed, listingCredits, banned")
+        .eq("id", userId)
+        .limit(1);
+      return data?.[0] ?? null;
+    } catch {
+      return null;
+    }
+  }
   return db.user.findUnique({
     where: { id: userId },
     select: {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-      country: true,
-      city: true,
-      freePostsUsed: true,
-      listingCredits: true,
-      banned: true,
+      id: true, email: true, name: true, role: true, country: true, city: true,
+      freePostsUsed: true, listingCredits: true, banned: true,
     },
   });
 }
 
-// Returns remaining listing capacity info for a user. Returns zeros on DB
-// error so callers don't throw (important for Vercel serverless where the
-// DB connection can fail transiently).
 export async function getUserQuota(userId: string) {
   try {
+    if (hasSupabase()) {
+      const supabase = getSupabase();
+      const { data } = await supabase
+        .from("User")
+        .select("freePostsUsed, listingCredits")
+        .eq("id", userId)
+        .limit(1);
+      const u = data?.[0];
+      if (!u) return { freeRemaining: 0, paidRemaining: 0, total: 0, freeUsed: 0, freeLimit: 2 };
+      const FREE_LIMIT = 2;
+      const freeRemaining = Math.max(0, FREE_LIMIT - u.freePostsUsed);
+      return {
+        freeRemaining,
+        paidRemaining: u.listingCredits,
+        total: freeRemaining + u.listingCredits,
+        freeUsed: u.freePostsUsed,
+        freeLimit: FREE_LIMIT,
+      };
+    }
+
     const u = await db.user.findUnique({
       where: { id: userId },
       select: { freePostsUsed: true, listingCredits: true },
