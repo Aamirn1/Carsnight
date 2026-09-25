@@ -187,25 +187,26 @@
      The icon's stroke becomes the neon gradient with a subtle glow.
   */
   .icon-neon {
-    /* Override lucide's stroke + color so the gradient renders even when
-       the parent button sets a text color (e.g. the ghost button's
-       default text-foreground). Without this, the button's color
-       propagates to currentColor which can override the gradient. */
-    color: transparent !important;
-    -webkit-text-fill-color: transparent !important;
+    /* Use a solid violet as the icon color. On small 16-20px icons, the
+       SVG gradient (4 stops across 16px) compresses to a single mid-tone
+       that's indistinguishable from a solid color. Using a solid violet
+       is more reliable across browsers and screenshot engines, and
+       visually matches the gradient on small icons. */
+    color: #8B5CF6 !important;
+    -webkit-text-fill-color: #8B5CF6 !important;
   }
   .icon-neon svg,
   svg.icon-neon {
-    /* Override the lucide stroke to use the neon gradient defined in
-       <NeonGradientDef />. The gradient def is injected once globally. */
-    stroke: url(#neon-gradient-stroke) !important;
+    /* Try the gradient stroke first; if it doesn't render, the solid
+       violet color above serves as fallback via currentColor. */
+    stroke: url(#neon-gradient-stroke), #8B5CF6 !important;
+    color: #8B5CF6 !important;
     /* Subtle neon glow on the icon */
     filter: drop-shadow(0 0 3px rgba(139, 92, 246, 0.45));
   }
-  /* When the icon-neon class is on a parent (not the SVG itself), target the
-     child SVGs. */
   .icon-neon > svg {
-    stroke: url(#neon-gradient-stroke) !important;
+    stroke: url(#neon-gradient-stroke), #8B5CF6 !important;
+    color: #8B5CF6 !important;
     filter: drop-shadow(0 0 3px rgba(139, 92, 246, 0.45));
   }
 }
