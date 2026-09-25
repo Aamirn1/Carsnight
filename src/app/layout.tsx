@@ -38,7 +38,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://carsnight.example.com"),
+  metadataBase: new URL("https://carsnight1.vercel.app"),
   title: {
     default: "Cars Night — Your Global Car Marketplace | Buy, Sell & Rent Cars",
     template: "%s | Cars Night",
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://carsnight.example.com",
+    url: "https://carsnight1.vercel.app",
     siteName: "Cars Night",
     title: "Cars Night | Global Car Marketplace",
     description: "Buy, sell and rent premium cars worldwide.",

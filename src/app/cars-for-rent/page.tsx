@@ -83,12 +83,12 @@ export default async function CarsForRentPage({ searchParams }: PageProps) {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: "https://carsnight.example.com/" },
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://carsnight1.vercel.app/" },
       {
         "@type": "ListItem",
         position: 2,
         name: "Rent",
-        item: "https://carsnight.example.com/cars-for-rent",
+        item: "https://carsnight1.vercel.app/cars-for-rent",
       },
     ],
   };
@@ -102,7 +102,7 @@ export default async function CarsForRentPage({ searchParams }: PageProps) {
     itemListElement: listings.map((l, i) => ({
       "@type": "ListItem",
       position: i + 1 + (currentPage - 1) * pageSize,
-      url: `https://carsnight.example.com/listing/${l.slug}`,
+      url: `https://carsnight1.vercel.app/listing/${l.slug}`,
       name: l.title,
     })),
   };

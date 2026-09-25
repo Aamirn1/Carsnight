@@ -56,7 +56,7 @@ async function getListing(slug: string) {
   }
 }
 
-const SITE_BASE = "https://carsnight.example.com";
+const SITE_BASE = "https://carsnight1.vercel.app";
 
 export async function generateMetadata({
   params,
