@@ -1239,3 +1239,24 @@ Stage Summary:
 - Home page (transparent navbar) keeps white icons for readability.
 - Dark mode keeps white icons.
 - ESLint passes; committed as 13003c0 and pushed to GitHub.
+
+---
+Task ID: 37
+Agent: main (orchestrator)
+Task: Fix burger icon visibility in dark mode + footer logo color in dark mode
+
+Work Log:
+1. Burger icon: in dark mode, the button was using the `icon-neon` gradient stroke which rendered as a faint violet on the dark navbar — essentially invisible. Fixed: the button now uses `text-white` in dark mode (and on the transparent home page navbar in light mode). The `icon-neon` gradient class is only applied on solid navbars in light mode. The condition is:
+   - `(!scrolled && !isDark) || isDark` → `text-white` (no icon-neon)
+   - Otherwise → `hover:bg-primary/10` + `icon-neon` on the SVG
+   Verified: dark mode = "hamburger icon is visible, and it is white" ✅; light mode = "hamburger icon is visible and it is black" ✅
+
+2. Theme toggle icon: same fix — in dark mode, the button was using the `icon-neon` gradient which was invisible on the dark navbar. Fixed: white when `(light && !isDark) || isDark`; gradient otherwise. Verified via computed styles: dark mode stroke = `rgb(255, 255, 255)` (white) ✅.
+
+3. Footer logo: verified that 'Cars' is already white in dark mode via the `useSyncExternalStore` dark-mode detection + `BrandMark light={isDark}` in SiteFooter. No change needed. Verified: "'Cars' in the footer logo is white and clearly visible against the dark background" ✅.
+
+Stage Summary:
+- All 2 user-reported issues fixed:
+  1. Burger icon: visible in both light (gradient/black) and dark (white) modes ✅
+  2. Footer logo: 'Cars' white in dark mode ✅
+- ESLint passes; committed as c7e050b and pushed to GitHub.
