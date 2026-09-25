@@ -57,14 +57,16 @@ export const authOptions: NextAuthOptions = {
 
             const isAdmin = user.role === "ADMIN" || email === ADMIN_EMAIL;
             if (isAdmin && user.role !== "ADMIN") {
-              await supabase.from("User").update({ role: "ADMIN" }).eq("id", user.id).catch(() => null);
+              try { await supabase.from("User").update({ role: "ADMIN" }).eq("id", user.id); } catch {}
             }
 
-            await supabase.from("AuditLog").insert({
-              userId: user.id,
-              action: "LOGIN_SUCCESS",
-              details: isAdmin ? "admin" : "user",
-            }).catch(() => null);
+            try {
+              await supabase.from("AuditLog").insert({
+                userId: user.id,
+                action: "LOGIN_SUCCESS",
+                details: isAdmin ? "admin" : "user",
+              });
+            } catch {}
 
             return {
               id: user.id,
