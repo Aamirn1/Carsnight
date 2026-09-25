@@ -55,8 +55,13 @@ export const metadata: Metadata = {
   applicationName: "Cars Night",
   icons: {
     icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-16.png", type: "image/png", sizes: "16x16" },
+      { url: "/favicon-32.png", type: "image/png", sizes: "32x32" },
+      { url: "/favicon-48.png", type: "image/png", sizes: "48x48" },
       { url: "/favicon-64.png", type: "image/png", sizes: "64x64" },
-      { url: "/logo-mark.png", type: "image/png", sizes: "256x256" },
+      { url: "/favicon-96.png", type: "image/png", sizes: "96x96" },
+      { url: "/favicon-128.png", type: "image/png", sizes: "128x128" },
     ],
     apple: "/apple-icon.png",
   },
