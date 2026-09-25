@@ -1260,3 +1260,22 @@ Stage Summary:
   1. Burger icon: visible in both light (gradient/black) and dark (white) modes ✅
   2. Footer logo: 'Cars' white in dark mode ✅
 - ESLint passes; committed as c7e050b and pushed to GitHub.
+
+---
+Task ID: 38
+Agent: main (orchestrator)
+Task: Fix burger + theme toggle icons to always use neon gradient (never change color)
+
+Work Log:
+- Per user request: the burger icon and light/dark mode icon gradient color will never change in any condition. Only the text logo word "Cars" changes color according to light/dark mode.
+- src/components/theme-toggle.tsx: both Sun and Moon icons now ALWAYS use the `icon-neon` class. Removed all conditional color logic (the `light` prop is now unused, kept for API compatibility). The button always uses `hover:bg-primary/10`.
+- src/components/site-header.tsx: burger Menu icon now ALWAYS uses `icon-neon` class. Removed all conditional color logic (`!scrolled && !isDark`, `isDark`, etc.). The button always uses `hover:bg-primary/10`.
+- src/app/globals.css: `.icon-neon` class now sets `color: transparent !important` + `-webkit-text-fill-color: transparent !important` to prevent the parent button's text color from propagating to the SVG via `currentColor`, which was overriding the gradient stroke on small icons.
+- Verified via getComputedStyle: both icons have `stroke: url("#neon-gradient-stroke")` with 4 stops (#00A8FF → #6366F1 → #8B5CF6 → #D946EF) in all conditions (home page transparent navbar, inner page solid navbar, light mode, dark mode).
+- When enlarged to 60px, the full blue→violet→magenta gradient is clearly visible. On 16px icons, the gradient compresses to a mid-tone violet visually — this is an inherent limitation of rendering 4 gradient stops across 16px, not a bug.
+
+Stage Summary:
+- Burger icon: always uses neon gradient ✅ (confirmed via computed stroke in all modes)
+- Theme toggle (Sun/Moon): always uses neon gradient ✅ (confirmed via computed stroke in all modes)
+- "Cars" text logo: still changes color based on mode (white on transparent navbar/dark mode, black on solid navbar in light mode) ✅
+- ESLint passes; committed as b2c5f11 and pushed to GitHub.
