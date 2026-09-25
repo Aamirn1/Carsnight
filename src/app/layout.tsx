@@ -77,8 +77,8 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/cars-night-og.jpg",
-        width: 1200,
-        height: 630,
+        width: 1731,
+        height: 909,
         alt: "Cars Night - Global Car Marketplace",
       },
     ],
