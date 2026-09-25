@@ -6,22 +6,21 @@ import { useSyncExternalStore } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-// Mount-detection helper that doesn't trigger `react-hooks/set-state-in-effect`.
+// Mount-detection helper (no set-state-in-effect)
 function useMounted(): boolean {
   return useSyncExternalStore(
-    () => () => {}, // never changes after mount
-    () => true, // client snapshot: mounted
-    () => false, // server snapshot: not mounted
+    () => () => {},
+    () => true,
+    () => false,
   );
 }
 
 interface ThemeToggleProps {
-  /** When true, renders the icon in white (for transparent navbar over the
-      dark hero in light mode). When false, uses the neon brand color. */
+  /** Unused now — kept for API compatibility. Icons always use the gradient. */
   light?: boolean;
 }
 
-export function ThemeToggle({ light = false }: ThemeToggleProps) {
+export function ThemeToggle({ light: _light = false }: ThemeToggleProps) {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const mounted = useMounted();
 
@@ -33,18 +32,13 @@ export function ThemeToggle({ light = false }: ThemeToggleProps) {
       size="icon"
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className={cn(
-        "h-9 w-9",
-        // White when: transparent navbar over dark hero (light mode) OR dark mode
-        // Gradient (via icon-neon) when: solid navbar in light mode
-        (light && !isDark) || isDark
-          ? "text-white hover:bg-white/10 hover:text-white"
-          : "hover:bg-primary/10",
-      )}
+      className="h-9 w-9 hover:bg-primary/10"
     >
+      {/* Always use the neon gradient — never changes color regardless of
+          light/dark mode or transparent/solid navbar. */}
       {mounted && isDark
-        ? <Sun className="h-4 w-4" />
-        : <Moon className={cn("h-4 w-4", !light && !isDark && "icon-neon")} />}
+        ? <Sun className="h-4 w-4 icon-neon" />
+        : <Moon className="h-4 w-4 icon-neon" />}
     </Button>
   );
 }

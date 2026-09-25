@@ -187,9 +187,12 @@
      The icon's stroke becomes the neon gradient with a subtle glow.
   */
   .icon-neon {
-    /* For non-SVG elements (text icons, etc.) — not commonly used but kept
-       for completeness. */
-    color: #8B5CF6;
+    /* Override lucide's stroke + color so the gradient renders even when
+       the parent button sets a text color (e.g. the ghost button's
+       default text-foreground). Without this, the button's color
+       propagates to currentColor which can override the gradient. */
+    color: transparent !important;
+    -webkit-text-fill-color: transparent !important;
   }
   .icon-neon svg,
   svg.icon-neon {
