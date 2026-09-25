@@ -1279,3 +1279,45 @@ Stage Summary:
 - Theme toggle (Sun/Moon): always uses neon gradient ✅ (confirmed via computed stroke in all modes)
 - "Cars" text logo: still changes color based on mode (white on transparent navbar/dark mode, black on solid navbar in light mode) ✅
 - ESLint passes; committed as b2c5f11 and pushed to GitHub.
+
+---
+Task ID: 39
+Agent: main (orchestrator)
+Task: Connect Supabase database — install packages, client helpers, middleware, SQL migration, Prisma PostgreSQL
+
+Work Log:
+- Installed @supabase/supabase-js and @supabase/ssr packages via bun add.
+- Added env variables to .env, .env.local, and .env.example:
+  - NEXT_PUBLIC_SUPABASE_URL=https://romhqgmsoabzowwvuvvp.supabase.co
+  - NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=sb_publishable_8zGylLGhKA-jWJ2KOpHS0g_VDeDDcaL
+  - DATABASE_URL placeholder for Supabase PostgreSQL connection
+- Created 3 Supabase client helper files per user's spec:
+  - src/utils/supabase/server.ts (server-side, uses cookies)
+  - src/utils/supabase/client.ts (browser-side)
+  - src/utils/supabase/middleware.ts (middleware session refresh)
+- Created src/middleware.ts (Next.js middleware entry point)
+- Created scripts/supabase-migration.sql with all 6 tables:
+  - User (id, email, name, passwordHash, role, country, city, phone, avatarUrl, freePostsUsed, listingCredits, banned, createdAt, updatedAt)
+  - Listing (id, title, description, category, price, currency, make, model, year, mileage, fuelType, transmission, bodyType, color, country, city, rentalPeriod, images, status, paidType, featured, slug, userId, views, createdAt, updatedAt)
+  - Plan (id, name, price, currency, credits, description, active, createdAt)
+  - Transaction (id, userId, planId, amount, currency, paymentMethod, cryptoWallet, status, credits, createdAt)
+  - Setting (id, key, value)
+  - AuditLog (id, userId, action, details, ip, createdAt)
+  - All indexes (category+status+country+city, userId, slug, action)
+  - Updated_at triggers for User and Listing
+  - Seed data: 3 Plans, 5 Settings, admin user
+  - RLS policies: Plans/Settings readable by all; Listings approved readable by all; Users/Transactions/AuditLogs server-side only
+- Updated prisma/schema.prisma: provider changed from "sqlite" to "postgresql" so Prisma can connect to Supabase's PostgreSQL.
+- Updated .gitignore to allow .env.local to be committed (contains Supabase public keys — safe to commit, no secrets).
+
+To activate the database:
+1. Run scripts/supabase-migration.sql in the Supabase SQL Editor (Dashboard > SQL > New Query)
+2. Replace PASSWORD in .env DATABASE_URL with the actual Supabase database password (Settings > Database)
+3. Run 'bun run db:push' to sync Prisma with PostgreSQL
+4. Run 'bun run scripts/seed.ts' to seed sample data
+
+Stage Summary:
+- Supabase packages installed, client helpers + middleware created, env vars added.
+- SQL migration creates all 6 tables with indexes, triggers, seed data, and RLS.
+- Prisma schema updated to PostgreSQL provider.
+- ESLint passes; committed as 680dd44 and pushed to GitHub.
