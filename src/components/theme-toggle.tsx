@@ -16,11 +16,15 @@ function useMounted(): boolean {
 }
 
 interface ThemeToggleProps {
-  /** Unused now — kept for API compatibility. Icons always use the gradient. */
-  light?: boolean;
+  /**
+   * Controls the icon color:
+   * - "white"  → solid white (for transparent navbar over dark hero, or dark mode)
+   * - "gradient" → neon gradient (for solid navbar in light mode)
+   */
+  variant: "white" | "gradient";
 }
 
-export function ThemeToggle({ light: _light = false }: ThemeToggleProps) {
+export function ThemeToggle({ variant }: ThemeToggleProps) {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const mounted = useMounted();
 
@@ -32,13 +36,16 @@ export function ThemeToggle({ light: _light = false }: ThemeToggleProps) {
       size="icon"
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className="h-9 w-9 hover:bg-primary/10"
+      className={cn(
+        "h-9 w-9",
+        variant === "white"
+          ? "text-white hover:bg-white/10 hover:text-white"
+          : "hover:bg-primary/10",
+      )}
     >
-      {/* Always use the neon gradient — never changes color regardless of
-          light/dark mode or transparent/solid navbar. */}
       {mounted && isDark
-        ? <Sun className="h-4 w-4 icon-neon" />
-        : <Moon className="h-4 w-4 icon-neon" />}
+        ? <Sun className={cn("h-4 w-4", variant === "gradient" && "icon-neon")} />
+        : <Moon className={cn("h-4 w-4", variant === "gradient" && "icon-neon")} />}
     </Button>
   );
 }
