@@ -17,6 +17,7 @@ export default function manifest(): MetadataRoute.Manifest {
       { src: "/favicon-64.png", sizes: "64x64", type: "image/png", purpose: "any" },
       { src: "/favicon-96.png", sizes: "96x96", type: "image/png", purpose: "any" },
       { src: "/favicon-128.png", sizes: "128x128", type: "image/png", purpose: "any" },
+      { src: "/favicon-256.png", sizes: "256x256", type: "image/png", purpose: "any" },
       { src: "/apple-icon.png", sizes: "180x180", type: "image/png", purpose: "any" },
     ],
     categories: ["shopping", "auto"],
