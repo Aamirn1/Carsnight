@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { getSupabase, hasSupabase } from "@/lib/supabase-server";
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "amir03115794492@gmail.com";
 
@@ -33,40 +34,72 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
         const email = credentials.email.trim().toLowerCase();
-        // Rate-limit-style guard: look up user
+
+        // --- Use Supabase if configured, otherwise Prisma ---
+        if (hasSupabase()) {
+          try {
+            const supabase = getSupabase();
+            const { data: users, error } = await supabase
+              .from("User")
+              .select("*")
+              .eq("email", email)
+              .limit(1);
+
+            if (error || !users || users.length === 0) {
+              return null; // Generic error (no enumeration)
+            }
+
+            const user = users[0];
+            if (user.banned) return null;
+
+            const valid = await bcrypt.compare(credentials.password, user.passwordHash);
+            if (!valid) return null;
+
+            const isAdmin = user.role === "ADMIN" || email === ADMIN_EMAIL;
+            if (isAdmin && user.role !== "ADMIN") {
+              await supabase.from("User").update({ role: "ADMIN" }).eq("id", user.id).catch(() => null);
+            }
+
+            await supabase.from("AuditLog").insert({
+              userId: user.id,
+              action: "LOGIN_SUCCESS",
+              details: isAdmin ? "admin" : "user",
+            }).catch(() => null);
+
+            return {
+              id: user.id,
+              email: user.email,
+              name: user.name ?? user.email,
+              role: isAdmin ? "ADMIN" : "USER",
+              country: user.country ?? "",
+              city: user.city ?? "",
+            } as any;
+          } catch {
+            return null;
+          }
+        }
+
+        // --- Prisma fallback (local dev with SQLite) ---
         const user = await db.user.findUnique({ where: { email } });
-        if (!user) {
-          // Generic error (no enumeration)
-          return null;
-        }
-        if (user.banned) {
-          return null;
-        }
+        if (!user) return null;
+        if (user.banned) return null;
+
         const valid = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!valid) {
-          // log failed login attempt
           await db.auditLog.create({
-            data: {
-              userId: user.id,
-              action: "LOGIN_FAILED",
-              details: "Invalid password",
-            },
+            data: { userId: user.id, action: "LOGIN_FAILED", details: "Invalid password" },
           }).catch(() => null);
           return null;
         }
-        // Determine role: admin if email matches OR role field is ADMIN
+
         const isAdmin = user.role === "ADMIN" || email === ADMIN_EMAIL;
-        // ensure admin role persisted
         if (isAdmin && user.role !== "ADMIN") {
           await db.user.update({ where: { id: user.id }, data: { role: "ADMIN" } }).catch(() => null);
         }
         await db.auditLog.create({
-          data: {
-            userId: user.id,
-            action: "LOGIN_SUCCESS",
-            details: isAdmin ? "admin" : "user",
-          },
+          data: { userId: user.id, action: "LOGIN_SUCCESS", details: isAdmin ? "admin" : "user" },
         }).catch(() => null);
+
         return {
           id: user.id,
           email: user.email,
@@ -101,9 +134,6 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: "/signin",
   },
-  // trustHost lets next-auth use the request's Host header instead of
-  // requiring NEXTAUTH_URL. This is the recommended setting for Vercel and
-  // other serverless platforms where the URL varies per deployment.
   trustHost: true,
   secret: process.env.NEXTAUTH_SECRET,
 };
