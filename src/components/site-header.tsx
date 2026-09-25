@@ -181,11 +181,18 @@ export function SiteHeader() {
                   "lg:hidden",
                   !scrolled && !isDark
                     ? "text-white hover:bg-white/10 hover:text-white"
-                    : "hover:bg-primary/10",
+                    : isDark
+                      ? "text-white hover:bg-white/10 hover:text-white"
+                      : "hover:bg-primary/10",
                 )}
                 aria-label="Open menu"
               >
-                <Menu className={cn("h-5 w-5", !(!scrolled && !isDark) && "icon-neon")} />
+                <Menu className={cn(
+                  "h-5 w-5",
+                  // In light mode on solid navbar: use neon gradient
+                  // In dark mode OR on transparent navbar: use white
+                  (!scrolled && !isDark) || isDark ? "" : "icon-neon",
+                )} />
               </Button>
             </SheetTrigger>
             <SheetContent side="right" hideClose className="w-[300px] sm:w-[360px] p-0">

@@ -35,10 +35,9 @@ export function ThemeToggle({ light = false }: ThemeToggleProps) {
       onClick={() => setTheme(isDark ? "light" : "dark")}
       className={cn(
         "h-9 w-9",
-        // When transparent over the dark hero (light mode), use white.
-        // Otherwise use the neon button gradient via the icon-neon class
-        // (which applies the SVG gradient stroke via NeonGradientDef).
-        light && !isDark
+        // White when: transparent navbar over dark hero (light mode) OR dark mode
+        // Gradient (via icon-neon) when: solid navbar in light mode
+        (light && !isDark) || isDark
           ? "text-white hover:bg-white/10 hover:text-white"
           : "hover:bg-primary/10",
       )}
