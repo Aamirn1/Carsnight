@@ -1321,3 +1321,48 @@ Stage Summary:
 - SQL migration creates all 6 tables with indexes, triggers, seed data, and RLS.
 - Prisma schema updated to PostgreSQL provider.
 - ESLint passes; committed as 680dd44 and pushed to GitHub.
+
+---
+Task ID: 40
+Agent: main (orchestrator)
+Task: Definitive navbar color logic — all conditions, both modes, no refresh needed
+
+Work Log:
+Complete rewrite of navbar color logic. The core problem was complex conditional
+logic that kept breaking across pushes. Simplified to two state values that drive
+all color decisions:
+
+  isTransparent = isHome && !scrolled (only home page has transparent navbar)
+  isDark = useSyncExternalStore(document.documentElement.classList.contains("dark"))
+
+LIGHT MODE:
+  - Home hero (transparent): icons WHITE, 'Cars' WHITE ✅ verified
+  - Home scrolled (solid): icons GRADIENT, 'Cars' BLACK ✅ verified
+  - Other pages (solid): icons GRADIENT, 'Cars' BLACK ✅ verified
+  - Footer + burger menu: 'Cars' BLACK ✅ (footer uses light={isDark}, burger uses light={isDark})
+
+DARK MODE:
+  - Home hero (transparent): icons WHITE, 'Cars' WHITE ✅ verified
+  - Home scrolled (solid): icons WHITE, 'Cars' WHITE ✅ verified
+  - Other pages (solid): icons WHITE, 'Cars' WHITE ✅ verified
+  - Footer + burger menu: 'Cars' WHITE ✅ verified
+
+Logic:
+  iconVariant = "white" when (isTransparent && !isDark) || isDark
+             = "gradient" when !(isTransparent || isDark)
+  logoLight = isTransparent || isDark
+  navTextWhite = isTransparent || isDark
+
+Files changed:
+- src/components/theme-toggle.tsx: rewritten to accept variant prop ("white" | "gradient")
+- src/components/site-header.tsx: rewritten to compute iconVariant + logoLight from
+  isTransparent + isDark. Clean, simple logic with no nested ternaries.
+- src/components/site-footer.tsx: unchanged (already correct)
+- src/components/brand-mark.tsx: unchanged (already correct)
+
+No refresh needed: useSyncExternalStore reads document.documentElement.classList
+which next-themes sets BEFORE React hydrates, so dark-mode state is correct from
+the first client render.
+
+All 8 verification checks passed via Agent Browser + VLM.
+ESLint passes; committed as d78c957 and pushed to GitHub.
