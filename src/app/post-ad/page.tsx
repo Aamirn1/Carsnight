@@ -1,8 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSessionUser, getUserQuota } from "@/lib/session";
-import { hasSupabase } from "@/lib/supabase-server";
-import { getSupabase } from "@/lib/supabase-server";
-import { findListings, sbListingToPublic } from "@/lib/sb";
+import { hasSupabase, getSupabase } from "@/lib/supabase-server";
+import { sbListingToPublic } from "@/lib/sb";
 import { toPublicListing, type PublicListing } from "@/lib/constants";
 import { db } from "@/lib/db";
 import { PostAdForm } from "@/components/post-ad-form";
