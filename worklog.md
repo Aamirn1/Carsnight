@@ -1388,3 +1388,48 @@ Stage Summary:
 - Post Ad page no longer crashes the client when an authenticated user opens it.
 - The `emptyForm()` helper now correctly receives the user's profile country/city as arguments, so the form is pre-filled with the user's country and city on first render.
 - ESLint passes; fix ready to commit and push to GitHub.
+
+---
+Task ID: 42
+Agent: main (orchestrator)
+Task: Post-ad page STILL showing "Application error: a client-side exception has occurred" on production (carsnight1.vercel.app) after previous fix
+
+Work Log:
+1. Diagnosed why the previous fix (Task 41) didn't reach production:
+   - `git log origin/main` showed remote HEAD = 08298e0 (a merge commit BEFORE my fix).
+   - `git log HEAD..origin/main` was empty; `git log origin/main..HEAD` showed commit c25c70d (my Task 41 fix) was local-only.
+   - Conclusion: my Task 41 fix was committed locally but NEVER pushed to GitHub, so Vercel kept building the old buggy code.
+
+2. Verified the fix actually works locally via Agent Browser (subagent):
+   - Signed in via /signin, redirected to /dashboard successfully.
+   - Visited /post-ad as an authenticated user (no ?edit=).
+   - Page rendered the full PostAdForm (category radio, country=Pakistan read-only from profile, city=Rawalpindi, all inputs, live preview, tips sidebar) — NO console errors, NO hydration errors, NO client-side exception.
+   - Clicked "Publish ad" with empty form → validation toast fired, page stayed on /post-ad (no crash).
+   - `GET /post-ad 200 in 921ms` in dev log — clean compile, clean render.
+
+3. Sub-agent audited the entire PostAdForm component for any OTHER potential client-side error sources:
+   - All imports verified to exist in their source modules.
+   - All hooks (useRouter, useToast, useState x3, useMemo) called unconditionally at the top of the component, before the early `if (editError) return` — hook order is stable.
+   - The useMemo at line 282 has correct [form] deps.
+   - Parent page (src/app/post-ad/page.tsx) passes all 5 required props; userCountry/userCity use `|| ""` fallback so they're always strings; quota has a try/catch with a valid default.
+   - No OTHER module-scope references to component props found.
+   - Found 2 dead imports (cosmetic, not runtime errors):
+     * `useEffect` in post-ad-form.tsx line 3 (unused after country-removal refactor)
+     * `findListings` in post-ad/page.tsx line 5 (only sbListingToPublic is used)
+
+4. Cleanup commit (5892c9a):
+   - Removed `useEffect` from post-ad-form.tsx imports.
+   - Removed `findListings` from post-ad/page.tsx imports; consolidated duplicate hasSupabase/getSupabase imports.
+   - `bun run lint` passes cleanly.
+   - Dev server recompiled /post-ad (307 redirect for unauthenticated, expected) and /signin (200) — no errors.
+
+5. Pushed to GitHub: ❌ FAILED — `git push origin main` → "fatal: could not read Username for 'https://github.com'". This sandbox has no stored GitHub credentials (no credential helper, no ~/.git-credentials, no ~/.netrc, no SSH keys, no gh CLI, no GITHUB_TOKEN env var). Previous commits (e.g. 08298e0) were pushed from outside this sandbox by the user.
+
+Stage Summary:
+- The post-ad client-side error fix is COMPLETE and VERIFIED locally — authenticated users can open /post-ad and see the full form with no "Application error" overlay.
+- The fix lives in local commit 5892c9a (which includes the Task 41 fix c25c70d plus the dead-import cleanup).
+- The user MUST push commit 5892c9a to GitHub from their local machine (where GitHub credentials are configured) so Vercel rebuilds and the deployed carsnight1.vercel.app gets the fix.
+- Push command for the user: `git push origin main` (from their local machine after pulling this commit).
+- Non-blocking observations from the audit (NOT the cause of the error):
+  * `NEXTAUTH_SECRET` is missing from .env.local locally — causes [next-auth][warn][NO_SECRET] in dev. Production (Vercel) should have it set as an env var. Not related to the post-ad client-side error.
+  * `DATABASE_URL=file:/home/z/my-project/db/custom.db` in .env conflicts with the postgresql provider in prisma/schema.prisma — causes /api/me 500. Not related to the post-ad client-side error (post-ad uses Supabase directly, not Prisma).
