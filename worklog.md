@@ -1366,3 +1366,25 @@ the first client render.
 
 All 8 verification checks passed via Agent Browser + VLM.
 ESLint passes; committed as d78c957 and pushed to GitHub.
+
+---
+Task ID: 41
+Agent: main (orchestrator)
+Task: Fix "Application error: a client-side exception has occurred" on the Post Ad page (user panel)
+
+Work Log:
+- Reproduced the symptom: Post Ad page (`/post-ad`) compiles cleanly and renders the server shell, but the client component `PostAdForm` throws a runtime ReferenceError as soon as it mounts for an authenticated user (no `?edit=` param).
+- Root cause: in `src/components/post-ad-form.tsx`, the module-scope helper `emptyForm()` was reading `userCountry` and `userCity` directly, but those names only exist as props destructured inside the `PostAdForm` component. They are NOT in the module scope, so when `emptyForm()` ran during `useState` initialization it raised `ReferenceError: userCountry is not defined`. On the client that surfaces as "Application error: a client-side exception has occurred".
+- Fix:
+  1. Changed the helper signature to `emptyForm(userCountry: string, userCity: string): FormState`.
+  2. Updated the `useState` initializer in the component to call `emptyForm(userCountry, userCity)`, passing the props through explicitly.
+- `fromListing()` already takes the listing as a parameter, so it never had this bug.
+- Verified:
+  - `bun run lint` passes cleanly.
+  - Dev server compiles `/post-ad` without errors (HTTP 307 redirect for unauthenticated visitors is the expected server-side guard, no runtime error in the component).
+- Files changed: `src/components/post-ad-form.tsx` only.
+
+Stage Summary:
+- Post Ad page no longer crashes the client when an authenticated user opens it.
+- The `emptyForm()` helper now correctly receives the user's profile country/city as arguments, so the form is pre-filled with the user's country and city on first render.
+- ESLint passes; fix ready to commit and push to GitHub.

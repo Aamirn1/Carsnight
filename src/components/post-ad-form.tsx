@@ -89,7 +89,7 @@ interface FormState {
 
 const CURRENT_YEAR = new Date().getFullYear();
 
-function emptyForm(): FormState {
+function emptyForm(userCountry: string, userCity: string): FormState {
   return {
     category: "SALE",
     title: "",
@@ -135,7 +135,7 @@ export function PostAdForm({ initialListing, editError, quota, userCountry, user
   const router = useRouter();
   const { toast } = useToast();
   const [form, setForm] = useState<FormState>(
-    initialListing ? fromListing(initialListing) : emptyForm()
+    initialListing ? fromListing(initialListing) : emptyForm(userCountry, userCity)
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
