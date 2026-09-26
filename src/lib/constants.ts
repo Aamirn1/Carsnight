@@ -10,7 +10,7 @@ export const RENTAL_PERIODS = ["day", "week", "month"] as const;
 export const CURRENCIES = ["USD", "EUR", "GBP", "PKR", "AED", "JPY"] as const;
 
 export const FREE_LISTING_LIMIT = 2;
-export const MAX_IMAGES = 5;
+export const MAX_IMAGES = 4;
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB
 
 // Countries -> cities (a curated subset for the demo; production would use a full dataset)

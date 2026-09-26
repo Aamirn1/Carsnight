@@ -2,6 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { db } from "@/lib/db";
 import { toPublicListing } from "@/lib/constants";
+import { getSessionUser } from "@/lib/session";
+import { hasSupabase } from "@/lib/supabase-server";
+import { findListings, countListings, countUsers, findSettings, sbListingToPublic } from "@/lib/sb";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ListingCard } from "@/components/listing-card";
@@ -21,37 +24,59 @@ export const revalidate = 60;
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
+  // Get the logged-in user to filter listings by their country
+  let userCountry: string | undefined;
+  try {
+    const sessionUser = await getSessionUser();
+    if (sessionUser?.country) userCountry = sessionUser.country;
+  } catch {}
+
   // Fetch featured listings + counts + public settings.
-  // Wrapped in try/catch so the build succeeds even when the database is
-  // not yet configured (e.g., first Vercel deploy before env vars are set).
-  // At runtime with a configured DB, real data is served via ISR.
+  // Uses Supabase if configured, falls back to Prisma (SQLite).
   let featured: any[] = [];
   let saleCount = 0;
   let rentCount = 0;
   let userCount = 0;
-  let settingsRows: any[] = [];
+  let settingsRows: Record<string, string> = {};
+
   try {
-    [featured, saleCount, rentCount, userCount, settingsRows] = await Promise.all([
-      db.listing.findMany({
-        where: { status: "APPROVED", featured: true },
-        orderBy: { createdAt: "desc" },
-        take: 8,
-        include: { user: { select: { id: true, name: true, email: true } } },
-      }),
-      db.listing.count({ where: { status: "APPROVED", category: "SALE" } }),
-      db.listing.count({ where: { status: "APPROVED", category: "RENT" } }),
-      db.user.count(),
-      db.setting.findMany({ where: { key: { in: ["site_name", "tagline", "announcement", "contact_email"] } } }),
-    ]);
+    if (hasSupabase()) {
+      const sbFeatured = await findListings({ status: "APPROVED", featured: true, limit: 8, orderBy: "createdAt_desc" });
+      featured = sbFeatured.map(sbListingToPublic);
+      // Count by category — filter by user's country if logged in
+      saleCount = await countListings({ status: "APPROVED", category: "SALE", country: userCountry });
+      rentCount = await countListings({ status: "APPROVED", category: "RENT", country: userCountry });
+      userCount = await countUsers();
+      settingsRows = await findSettings(["site_name", "tagline", "announcement", "contact_email"]);
+    } else {
+      const [f, sc, rc, uc, sr] = await Promise.all([
+        db.listing.findMany({
+          where: { status: "APPROVED", featured: true, ...(userCountry ? { country: userCountry } : {}) },
+          orderBy: { createdAt: "desc" },
+          take: 8,
+          include: { user: { select: { id: true, name: true, email: true } } },
+        }),
+        db.listing.count({ where: { status: "APPROVED", category: "SALE", ...(userCountry ? { country: userCountry } : {}) } }),
+        db.listing.count({ where: { status: "APPROVED", category: "RENT", ...(userCountry ? { country: userCountry } : {}) } }),
+        db.user.count(),
+        db.setting.findMany({ where: { key: { in: ["site_name", "tagline", "announcement", "contact_email"] } } }),
+      ]);
+      featured = f.map(toPublicListing);
+      saleCount = sc;
+      rentCount = rc;
+      userCount = uc;
+      const sMap: Record<string, string> = {};
+      sr.forEach((s: any) => sMap[s.key] = s.value);
+      settingsRows = sMap;
+    }
   } catch {
     // DB not available — use fallback values so the page renders.
   }
-  const settings: Record<string, string> = {};
-  for (const s of settingsRows) settings[s.key] = s.value;
+  const settings = settingsRows;
   const tagline = settings.tagline || "Your global car marketplace, no gravity needed!";
   const announcement = settings.announcement || "Buy your dream car — or rent one for your next special event";
 
-  const featuredListings = featured.map(toPublicListing);
+  const featuredListings = featured;
 
   // JSON-LD for SEO
   const orgJsonLd = {
@@ -383,7 +408,7 @@ export default async function HomePage() {
       <section className="py-14 sm:py-16">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
-            <Badge variant="outline" className="mb-3 text-primary border-primary/30"><HelpCircle className="h-3 w-3 mr-1" /> About · Contact · FAQs</Badge>
+            <Badge variant="outline" className="mb-3 text-primary border-primary/30"><HelpCircle className="h-3 w-3 mr-1" /> FAQs</Badge>
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Learn more about Cars Night</h2>
             <p className="mt-2 text-sm text-muted-foreground">Everything you need to know about our marketplace, team, and how to get help.</p>
           </div>

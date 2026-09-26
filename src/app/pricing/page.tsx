@@ -14,6 +14,8 @@ import {
 import { db } from "@/lib/db";
 import { getSessionUser, getUserQuota } from "@/lib/session";
 import { formatPrice, FREE_LISTING_LIMIT } from "@/lib/constants";
+import { hasSupabase } from "@/lib/supabase-server";
+import { findPlans } from "@/lib/sb";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -59,12 +61,13 @@ export default async function PricingPage() {
 
   let plans: any[] = [];
   try {
-    plans = await db.plan.findMany({
-      where: { active: true },
-      orderBy: { price: "asc" },
-    });
+    if (hasSupabase()) {
+      plans = await findPlans();
+    } else {
+      plans = await db.plan.findMany({ where: { active: true }, orderBy: { price: "asc" } });
+    }
+    if (plans.length === 0) throw new Error("no plans");
   } catch {
-    // DB not available — fall back to static plan definitions.
     plans = [
       { id: "fallback-starter", name: "Starter", price: 5, currency: "USD", credits: 3, description: "3 extra listings" },
       { id: "fallback-pro", name: "Pro", price: 8, currency: "USD", credits: 5, description: "5 extra listings" },

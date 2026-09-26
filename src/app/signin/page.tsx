@@ -93,8 +93,16 @@ export default function SignInPage() {
         // fall back to dashboard if /api/me fails — session is still valid
       }
 
-      router.push(role === "ADMIN" ? "/admin" : "/dashboard");
-      router.refresh();
+      try {
+        router.push(role === "ADMIN" ? "/admin" : "/dashboard");
+        router.refresh();
+      } catch {
+        // If router.push throws (e.g., server-side exception during navigation),
+        // fall back to a hard redirect via window.location
+        if (typeof window !== "undefined") {
+          window.location.href = role === "ADMIN" ? "/admin" : "/dashboard";
+        }
+      }
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { db } from "@/lib/db";
 import { toPublicListing, type PublicListing } from "@/lib/constants";
+import { getSessionUser } from "@/lib/session";
 import {
   buildBrowseClause,
   buildBrowseQuery,
@@ -53,6 +54,13 @@ export default async function CarsForSalePage({ searchParams }: PageProps) {
   const sp = await searchParams;
   const q = buildBrowseQuery(sp, CATEGORY);
   const { where, orderBy } = buildBrowseClause(q);
+  // Filter by user's country if logged in
+  try {
+    const sessionUser = await getSessionUser();
+    if (sessionUser?.country) {
+      (where as any).country = sessionUser.country;
+    }
+  } catch {}
   const page = q.page ?? 1;
   const pageSize = q.pageSize ?? BROWSE_PAGE_SIZE;
   const skip = (page - 1) * pageSize;

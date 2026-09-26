@@ -171,8 +171,14 @@ export default function SignUpPage() {
         title: "Account created!",
         description: "Welcome to Cars Night.",
       });
-      router.push("/dashboard");
-      router.refresh();
+      try {
+        router.push("/dashboard");
+        router.refresh();
+      } catch {
+        if (typeof window !== "undefined") {
+          window.location.href = "/dashboard";
+        }
+      }
     } catch {
       setFormError("Something went wrong. Please try again.");
       await refreshCaptcha();

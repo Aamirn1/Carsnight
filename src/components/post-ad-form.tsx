@@ -38,9 +38,11 @@ import {
   RadioGroupItem,
 } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
-import { CountryCitySelect } from "@/components/country-city-select";
+// CountryCitySelect removed — country is auto-filled from user profile
 import { ImageUpload } from "@/components/image-upload";
 import {
+  COUNTRIES,
+  citiesOf,
   FUEL_TYPES,
   TRANSMISSIONS,
   BODY_TYPES,
@@ -62,6 +64,8 @@ interface Props {
   initialListing: PublicListing | null;
   editError: string | null;
   quota: QuotaInfo;
+  userCountry: string;
+  userCity: string;
 }
 
 interface FormState {
@@ -97,8 +101,8 @@ function emptyForm(): FormState {
     transmission: "",
     bodyType: "",
     color: "",
-    country: "",
-    city: "",
+    country: userCountry || "",
+    city: userCity || "",
     price: "",
     rentalPeriod: "day",
     description: "",
@@ -127,7 +131,7 @@ function fromListing(l: PublicListing): FormState {
   };
 }
 
-export function PostAdForm({ initialListing, editError, quota }: Props) {
+export function PostAdForm({ initialListing, editError, quota, userCountry, userCity }: Props) {
   const router = useRouter();
   const { toast } = useToast();
   const [form, setForm] = useState<FormState>(
@@ -550,7 +554,7 @@ export function PostAdForm({ initialListing, editError, quota }: Props) {
             </CardContent>
           </Card>
 
-          {/* Location */}
+          {/* Location — country is auto-filled from user's signup, only city is selectable */}
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
@@ -558,20 +562,35 @@ export function PostAdForm({ initialListing, editError, quota }: Props) {
               </CardTitle>
               <CardDescription>Where is the car located?</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div id="field-country">
-                <CountryCitySelect
-                  country={form.country}
-                  city={form.city}
-                  onCountryChange={(c) => {
-                    set("country", c);
-                  }}
-                  onCityChange={(c) => set("city", c)}
-                  idPrefix="postad"
-                />
-                {errors.country && <p className="text-xs text-destructive mt-2">{errors.country}</p>}
-                {errors.city && !errors.country && <p className="text-xs text-destructive mt-2">{errors.city}</p>}
+            <CardContent className="space-y-3">
+              {/* Country — read-only, from user's signup */}
+              <div className="space-y-1.5">
+                <Label className="text-sm font-medium">Country</Label>
+                <div className="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm">
+                  <MapPin className="h-3.5 w-3.5 text-primary" />
+                  <span className="font-medium">{form.country || "Not set"}</span>
+                  <span className="text-xs text-muted-foreground ml-auto">(from your profile)</span>
+                </div>
               </div>
+              {/* City — selectable, only cities from the user's country */}
+              <div className="space-y-1.5">
+                <Label htmlFor="postad-city" className="text-sm font-medium">City</Label>
+                <Select
+                  value={form.city || "__none__"}
+                  onValueChange={(c) => set("city", c === "__none__" ? "" : c)}
+                >
+                  <SelectTrigger id="postad-city" className="w-full">
+                    <SelectValue placeholder={form.country ? "Select your city" : "No country set"} />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-72">
+                    <SelectItem value="__none__">Select city</SelectItem>
+                    {COUNTRIES.includes(form.country) && citiesOf(form.country).map((c) => (
+                      <SelectItem key={c} value={c}>{c}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {errors.city && <p className="text-xs text-destructive">{errors.city}</p>}
             </CardContent>
           </Card>
 
