@@ -74,11 +74,13 @@ export async function POST(req: Request) {
       }
 
       // Log registration (best-effort, ignore RLS errors)
-      await supabase.from("AuditLog").insert({
-        userId: user.id,
-        action: "USER_REGISTER",
-        details: country,
-      }).catch(() => null);
+      try {
+        await supabase.from("AuditLog").insert({
+          userId: user.id,
+          action: "USER_REGISTER",
+          details: country,
+        });
+      } catch {}
 
       return NextResponse.json({ ok: true, user }, { status: 201 });
     } catch (e: any) {

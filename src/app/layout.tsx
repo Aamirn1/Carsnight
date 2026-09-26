@@ -38,7 +38,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://carsnight.example.com"),
+  metadataBase: new URL("https://carsnight1.vercel.app"),
   title: {
     default: "Cars Night — Your Global Car Marketplace | Buy, Sell & Rent Cars",
     template: "%s | Cars Night",
@@ -55,28 +55,39 @@ export const metadata: Metadata = {
   applicationName: "Cars Night",
   icons: {
     icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-16.png", type: "image/png", sizes: "16x16" },
+      { url: "/favicon-32.png", type: "image/png", sizes: "32x32" },
+      { url: "/favicon-48.png", type: "image/png", sizes: "48x48" },
       { url: "/favicon-64.png", type: "image/png", sizes: "64x64" },
-      { url: "/logo-mark.png", type: "image/png", sizes: "256x256" },
+      { url: "/favicon-96.png", type: "image/png", sizes: "96x96" },
+      { url: "/favicon-128.png", type: "image/png", sizes: "128x128" },
+      { url: "/favicon-256.png", type: "image/png", sizes: "256x256" },
     ],
     apple: "/apple-icon.png",
+    shortcut: "/favicon.ico",
   },
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://carsnight.example.com",
+    url: "https://carsnight1.vercel.app",
     siteName: "Cars Night",
-    title: "Cars Night — Your Global Car Marketplace",
-    description: "Buy, sell, and rent cars worldwide. 2 free listings, crypto payments, secure & SEO-optimized.",
+    title: "Cars Night | Global Car Marketplace",
+    description: "Buy, sell and rent premium cars worldwide.",
     images: [
-      { url: "/logo-full.png", width: 600, height: 300, alt: "Cars Night logo" },
-      { url: "/hero-bg.png", width: 1344, height: 768, alt: "Cars Night marketplace" },
+      {
+        url: "/cars-night-og.jpg",
+        width: 1731,
+        height: 909,
+        alt: "Cars Night - Global Car Marketplace",
+      },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Cars Night — Your Global Car Marketplace",
-    description: "Buy, sell, and rent cars worldwide. 2 free listings, crypto payments, secure & SEO-optimized.",
-    images: ["/hero-bg.png"],
+    title: "Cars Night | Global Car Marketplace",
+    description: "Buy, sell and rent premium cars worldwide.",
+    images: ["/cars-night-og.jpg"],
   },
   manifest: undefined,
   robots: {

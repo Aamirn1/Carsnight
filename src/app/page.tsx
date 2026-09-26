@@ -83,8 +83,8 @@ export default async function HomePage() {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "Cars Night",
-    url: "https://carsnight.example.com",
-    logo: "https://carsnight.example.com/logo.png",
+    url: "https://carsnight1.vercel.app",
+    logo: "https://carsnight1.vercel.app/logo.png",
     description: "Global car marketplace to buy, sell, and rent vehicles with crypto and card payments.",
     sameAs: ["https://twitter.com/carsnight", "https://instagram.com/carsnight"],
   };
@@ -92,10 +92,10 @@ export default async function HomePage() {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "Cars Night",
-    url: "https://carsnight.example.com",
+    url: "https://carsnight1.vercel.app",
     potentialAction: {
       "@type": "SearchAction",
-      target: "https://carsnight.example.com/cars-for-sale?q={search_term_string}",
+      target: "https://carsnight1.vercel.app/cars-for-sale?q={search_term_string}",
       "query-input": "required name=search_term_string",
     },
   };

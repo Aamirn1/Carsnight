@@ -150,15 +150,24 @@ export default function SignUpPage() {
         return;
       }
 
-      // Auto sign-in on success
-      const signed = await signIn("credentials", {
-        email: email.trim().toLowerCase(),
-        password,
-        redirect: false,
-      });
+      // Auto sign-in on success (best-effort — if it fails, redirect to signin)
+      let autoSignInFailed = false;
+      try {
+        const signed = await signIn("credentials", {
+          email: email.trim().toLowerCase(),
+          password,
+          redirect: false,
+        });
 
-      if (!signed || signed.error || !signed.ok) {
-        // Account created but auto sign-in failed — send them to sign-in
+        if (!signed || signed.error || !signed.ok) {
+          autoSignInFailed = true;
+        }
+      } catch {
+        autoSignInFailed = true;
+      }
+
+      if (autoSignInFailed) {
+        // Account created but auto sign-in failed — send them to sign-in page
         toast({
           title: "Account created!",
           description: "Please sign in with your new credentials.",
