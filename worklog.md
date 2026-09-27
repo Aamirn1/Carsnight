@@ -1785,3 +1785,90 @@ Commits pushed:
 Stage Summary:
 - ✅ Task A (favicon): already satisfied from the previous task; production favicon is the user's Google Drive 'CM'/'CN' car logo image (blue-to-purple gradient on white), NOT the old golden emblem. Re-verified after re-downloading and refreshing all favicon files.
 - ✅ Task B (animated AI icon): fully implemented and verified on production. The icon is a premium LIVE ANIMATED SVG component per the user's 21-point spec — no white outer circle, flowing gradient border, orbiting sparkles (clockwise + anti-clockwise + twinkles), breathing inner area, floating motion, neon glow, hover scale, tap squash, prefers-reduced-motion compliance.
+
+---
+Task ID: 49
+Agent: main (orchestrator)
+Task: Fix the Cars Night AI floating chat assistant icon — rebuild SVG to EXACTLY match the original target icon design (previous implementation had regressed into a "small plain white bubble")
+
+Work Log:
+- The user reported that the current animated AI icon was wrong — it looked like a "small plain white bubble" with a thin border and missing/invisible sparkles, instead of the original premium colorful icon design.
+- I analyzed the original target icon (at /public/ai-assistant/ai-icon.png) with VLM to get exact coordinates:
+  * viewBox: 256x256
+  * Chat bubble: 128x72 units, 16px stroke, 20px corner radius, tail at bottom-right pointing down-right (tip at 198,218)
+  * Large sparkle: center (72, 96), radius 56, concave cubic-bezier 4-point star, blue/cyan gradient
+  * Small sparkle: center (84, 56), radius 24, same concave shape, pink/magenta gradient (vertical)
+  * Gradient: purple #8B3DF7 (bottom-left) → blue #3B82F6 (center) → cyan #00E5FF (top-right) — 3 stops
+  * Message lines: height 16, color #B8BCC8 (soft silver-gray), Line 1 (top, w=104), Line 2 (bottom-left, w=60), Line 3 (bottom-right, w=42)
+  * Layer order: sparkles drawn BEHIND the bubble so the white fill covers overlapping parts
+
+- Rebuilt src/components/ai-assistant-icon.tsx with a 256x256 viewBox to match the original coordinate system exactly:
+
+  1. CHAT BUBBLE:
+     * Path: M 100,112 L 188,112 A 20,20 0 0,1 208,132 L 208,164 A 20,20 0 0,1 188,184 L 170,184 L 198,218 L 132,184 L 100,184 A 20,20 0 0,1 80,164 L 80,132 A 20,20 0 0,1 100,112 Z
+     * Fill: #FFFFFF (white)
+     * Stroke: url(#ai-bubble-gradient), strokeWidth=16 (THICK, was 7), strokeLinejoin=round
+     * Tail at bottom-right pointing down-right (was bottom-center in the previous version)
+
+  2. LARGE SPARKLE (drawn behind bubble):
+     * Wrapped in <g transform="translate(72, 96)">
+     * Path: M 0,-56 C 12,-36 16,-20 56,0 C 16,20 12,36 0,56 C -12,36 -16,20 -56,0 C -16,-20 -12,-36 0,-56 Z
+     * Fill: url(#ai-sparkle-large-gradient) — deep indigo #4338CA → blue #3B82F6 → cyan #00D4FF
+     * Radius 56 (was 22 — now the sparkle is a PROMINENT part of the icon, overlapping the bubble's upper-left as in the original)
+
+  3. SMALL SPARKLE (drawn behind bubble):
+     * Wrapped in <g transform="translate(84, 56)">
+     * Path: M 0,-24 C 6,-12 8,-6 24,0 C 8,6 6,12 0,24 C -6,12 -8,6 -24,0 C -8,-6 -6,-12 0,-24 Z
+     * Fill: url(#ai-sparkle-small-gradient) — deep pink #FF007F → light magenta #FF66C4 (vertical gradient)
+     * Radius 24 (was 11 — now properly visible)
+
+  4. MESSAGE LINES (drawn on top of bubble, clipped to bubble shape):
+     * Line 1: x=92, y=118, w=104, h=16, rx=8, fill=#B8BCC8 (top, longest)
+     * Line 2: x=92, y=148, w=60, h=16, rx=8 (bottom-left)
+     * Line 3: x=162, y=148, w=42, h=16, rx=8 (bottom-right, side-by-side with Line 2)
+
+  5. FLOWING GRADIENT (improved):
+     * Uses SMIL <animateTransform> on gradientTransform (rotate 0→360, 5s linear infinite)
+     * The gradient direction rotates continuously, so each point on the border cycles through purple → blue → cyan → purple
+     * Creates a smooth "energy circulating" effect — the icon itself does NOT rotate, only the gradient flows
+
+ANIMATIONS PRESERVED (all from the previous working version):
+- Large sparkle: orbit clockwise around (72, 96) at radius 8 (6s linear infinite) + twinkle (2.5s, scale 0.94↔1.06 + opacity 0.88↔1)
+- Small sparkle: orbit anti-clockwise around (84, 56) at radius 6 (4.5s linear infinite) + twinkle (1.8s, scale 0.96↔1.04 + opacity 0.85↔1)
+- Inner content breathing: scale 1↔0.97↔1.02 (3.2s ease-in-out infinite)
+- Message lines sequential pulse: 3.2s, staggered delays 0/0.4/0.8s
+- Whole icon floating: translateY 0→-3→0 (3.4s ease-in-out infinite)
+- Hover (desktop): scale 1.06 + brighter glow (drop-shadow) + brighter sparkles (filter brightness 1.25)
+- Tap: scale 1→0.94→1 squash (0.3s)
+- prefers-reduced-motion: disables ALL animations
+
+TRANSPARENT BACKGROUND PRESERVED:
+- NO outer white circle / badge background
+- White only inside the chat bubble interior
+- Everything outside the icon is fully transparent
+
+Verified with Agent Browser (sub-agent) on dev:
+- VLM confirms: "A vibrant, stylized AI assistant icon… chat bubble with a distinct, colorful border. Overlapping the upper-left are two bright, star-like sparkles of different sizes. Premium and highly colorful rather than a simple monochrome design."
+- DOM confirms: viewBox 256x256, stroke-width=16 (THICK), large sparkle radius 56 with concave cubic-bezier curves at translate(72,96), small sparkle radius 24 with pink gradient at translate(84,56), 3 message lines (w=104/60/42), tail at (198,218) bottom-right.
+- All animations running: flowing gradient (confirmed via SMIL setCurrentTime sampling — left border cycled cyan↔purple, right border cycled purple↔cyan in opposite phase, ~165° rotation between samples), large sparkle orbit (Ø≈4.9px screen), small sparkle orbit (Ø≈3.7px screen), float (translateY -3px in SVG units), hover scale 1.06, tap squash.
+- Chat panel header avatar uses the SAME premium animated SVG (40x40, not a plain white bubble).
+- No outer white circle — icon floats directly on the dark hero.
+- Zero console / runtime errors / hydration mismatches.
+
+Verified with Agent Browser (sub-agent) on production (carsnight1.vercel.app):
+- VLM confirms FAB close-up: "1. ✅ Thick, vibrant gradient border transitioning from cyan/light blue at the top to deep purple/blue at the bottom. 2. ✅ Large four-pointed blue/cyan sparkle overlapping the upper-left. 3. ✅ Smaller pink/magenta four-pointed sparkle just above the large blue one. 4. ✅ Three gray horizontal message lines. 5. ✅ Chat tail extending down-right from bottom-right. 6. PREMIUM and COLORFUL, not plain/monochrome. 7. Area outside the icon is transparent — no solid white circle/badge behind it."
+- VLM confirms header avatar: "Same premium icon — thick cyan-to-purple gradient border, large blue four-pointed star upper-left, smaller pink star above it, three gray lines inside, bottom-right tail. Premium and colorful against the dark header. No outer white circle."
+- Flowing gradient animation verified: captured 3 screenshots 2.3s apart, sampled left-border RGB: shot 0 = (45, 163, 229) cyan-blue, shot 1 = (107, 83, 221) deep purple, shot 2 = (49, 150, 219) back to cyan-blue. VLM independently confirmed on contact sheet: "Shot 0 left edge = bright Cyan; Shot 1 = deep Purple/violet; Shot 2 = back to bright Cyan. Colors differ significantly → gradient is animating/rotating."
+- All 8 animations present and running (confirmed via getComputedStyle mid-frame matrices + SMIL).
+- Mobile responsive (390x844): FAB visible at bottom-right, icon unchanged.
+- No console errors. (One transient stale-cache on first Vercel preview load that self-resolves on reload — not a defect.)
+
+Commit: dde9381 — pushed to GitHub main. Vercel rebuilt and deployed.
+
+Stage Summary:
+- ✅ The AI assistant icon now EXACTLY matches the original target icon design — thick purple-blue-cyan gradient border, large blue/cyan sparkle at upper-left overlapping the bubble, small pink/magenta sparkle above it, three gray message lines, bottom-right tail, premium and colorful appearance.
+- ✅ NO outer white circle / badge background — the icon floats directly on the page background with transparent surroundings.
+- ✅ All professional animations running: flowing gradient border (5s), large sparkle clockwise orbit + twinkle, small sparkle anti-clockwise orbit + twinkle, inner breathing, message line pulse, floating, hover scale, tap squash, prefers-reduced-motion.
+- ✅ Same premium animated SVG in the 68x68 FAB and the 40x40 chat panel header avatar.
+- ✅ Verified on dev and production (carsnight1.vercel.app) with Agent Browser + VLM.
+- ✅ Zero console / runtime errors.
