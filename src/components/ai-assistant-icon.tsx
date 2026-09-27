@@ -7,69 +7,90 @@
  * The icon design is PRESERVED EXACTLY (per user spec — do NOT redesign):
  *  - Rounded chat bubble (white interior) with a bottom-right tail pointing
  *    down-right.
- *  - THICK gradient border: purple → blue → cyan (bottom-left to top-right).
+ *  - Gradient border: purple → blue → cyan (bottom-left to top-right),
+ *    strokeWidth=12 (slimmer than before — was 16, the user said the border
+ *    was "too large and oversized" and the white inner area felt "too small").
  *  - Three gray message lines inside (one long top line, two shorter side-by-
  *    side lines below).
- *  - LARGE 4-point sparkle (blue/cyan gradient) overlapping the upper-left of
- *    the bubble. Center at (72, 96), radius 56 in a 256×256 viewBox.
- *  - SMALL 4-point sparkle (magenta/pink gradient) above the large sparkle.
- *    Center at (84, 56), radius 24.
- *  - Both sparkles have concave cubic-bezier curves (not sharp angles).
+ *  - LARGE 4-point sparkle (blue/cyan gradient), X-orientation (points at 45°
+ *    diagonals, top point aims upper-left), center at (68, 136), radius 52.
+ *    The large star overlaps the bubble's left edge — the parts inside the
+ *    bubble are hidden behind the white fill, only the parts extending
+ *    outside (to the left and below) are visible.
+ *  - SMALL 4-point sparkle (pink/magenta gradient), X-orientation, center at
+ *    (96, 84), radius 18. Positioned ABOVE and to the UPPER-RIGHT of the large
+ *    star — both stars form a cluster in the LEFT-LOWER area of the canvas,
+ *    anchored near the bubble's left edge.
+ *  - Size ratio: large star diameter : small star diameter ≈ 2.9 : 1 (per
+ *    the reference icon — the large star is clearly dominant, the small
+ *    star is a secondary accent).
  *
  * Animations (all CSS + SMIL, GPU-accelerated, respect prefers-reduced-motion):
  *  1. Flowing gradient border — purple→blue→cyan continuously flows around
  *     the outline via SMIL animateTransform on the gradient (5s linear
  *     infinite). The gradient direction rotates, making the colors appear
  *     to travel around the border. The icon itself does NOT rotate.
- *  2. Large sparkle — orbits CLOCKWISE around its original position (72, 96)
- *     at a small radius (8 units, 6s linear infinite) so it stays in the
- *     upper-left zone. Also twinkles (scale 0.94↔1.06 + opacity, 2.5s).
- *  3. Small sparkle — orbits ANTI-CLOCKWISE around (84, 56) at radius 6
- *     (4.5s linear infinite). Also twinkles (1.8s).
+ *  2. Large sparkle — orbits CLOCKWISE around (68, 136) at a small radius
+ *     (5 units, 7s linear infinite). The orbit is intentionally small so
+ *     the star stays anchored to the left-corner cluster (per user spec:
+ *     "the stars must remain visually fixed to the upper-left corner area
+ *     of the icon, the orbit should be local and small"). Also twinkles
+ *     (scale 0.96↔1.04 + opacity, 2.5s).
+ *  3. Small sparkle — orbits ANTI-CLOCKWISE around (96, 84) at radius 4
+ *     (6s linear infinite). Also twinkles (1.8s).
  *  4. Inner content (message lines) — subtle breathing scale (3.2s).
  *  5. Gray message lines — subtle sequential pulse (3.2s, staggered).
- *  6. Whole icon — idle floating (translateY 0 → -3 → 0, 3.4s).
- *  7. Hover (desktop): scale 1.06 + brighter glow + brighter sparkles.
- *  8. Active (tap): scale 0.94 → 1 (0.3s).
  *
- * CRITICAL: The floating button has NO outer white circle / badge background.
- * The area outside the icon is fully transparent. White color appears ONLY
- * inside the chat bubble interior. (Per user spec.)
+ * CRITICAL — NO UP/DOWN FLOATING (per user spec):
+ *  The previous implementation had an `ai-float` animation that translated
+ *  the whole icon up and down by 3px. The user explicitly said: "The stars
+ *  are moving up and down, which looks stupid and unnatural" and "NO up-down
+ *  floating. NO random drifting. NO stupid bouncing." So the root-level
+ *  float animation is REMOVED. The icon stays anchored in place. Only the
+ *  gradient flows, the stars orbit in small circles (not vertical), and
+ *  the inner content breathes (scale, not translate).
+ *
+ * CRITICAL — TRANSPARENT BACKGROUND (per user spec):
+ *  The floating button has NO outer white circle / badge background.
+ *  The area outside the icon is fully transparent. White color appears ONLY
+ *  inside the chat bubble interior.
  */
 
 interface AIAssistantIconProps {
   /** Rendered width of the SVG in pixels. Height is computed automatically
-   * from the icon's natural aspect ratio (~1.039:1) so the icon is never
-   * stretched or compressed. The wrapper also accepts the
-   * `ai-icon-responsive` class which makes the width responsive via CSS
-   * (88px on mobile, 100px on desktop) — useful when the parent wants to
-   * control the size via Tailwind breakpoints instead of a fixed prop. */
+   * from the icon's natural aspect ratio so the icon is never stretched
+   * or compressed. The wrapper also accepts the `ai-icon-responsive` class
+   * which makes the width responsive via CSS (88px on mobile, 100px on
+   * desktop) — useful when the parent wants to control the size via
+   * Tailwind breakpoints instead of a fixed prop. */
   width?: number;
-  /** Extra classes for the outer wrapper. Pass `ai-icon-responsive` to
-   * make the icon responsive (mobile 88px, desktop 100px) via CSS. */
+  /** Extra classes for the outer wrapper. Pass `ai-fab-icon` to make the
+   * icon responsive (mobile 88px, desktop 100px) via CSS. */
   className?: string;
 }
 
-// Tight viewBox bounds: x=4, y=16, width=212, height=204.
+// Tight viewBox bounds: x=8, y=44, width=216, height=184.
 // Computed from the actual artwork bounds + animation margins:
-//   - Large sparkle extends to x=16, y=40 (with orbit radius 8 → x=8, y=32)
-//   - Small sparkle extends to y=32 (with orbit radius 6 → y=26)
-//   - Bubble stroke extends to x=216 (208 + 8 stroke), y=192 (184 + 8 stroke)
-//   - Tail tip at y=218
-//   - Float animation translates -3px → y can go to 23
-// So animated bounds: x=8..216 (w=208), y=23..218 (h=195).
-// Adding a 4px margin all around → viewBox "4 19 212 203" → rounded to
-// "4 16 212 204" for a clean, slightly generous frame.
-const ICON_VIEWBOX_X = 4;
-const ICON_VIEWBOX_Y = 16;
-const ICON_VIEWBOX_W = 212;
-const ICON_VIEWBOX_H = 204;
-const ICON_ASPECT_RATIO = ICON_VIEWBOX_W / ICON_VIEWBOX_H; // ~1.039
+//   - Large sparkle: center (68, 136), radius 52, X-orientation. Points at
+//     45° diagonals → top-left point at (68-52/√2, 136-52/√2) ≈ (31, 99);
+//     bottom-left at (31, 173); with orbit radius 5 → (26, 94) to (26, 178).
+//   - Small sparkle: center (96, 84), radius 18, X-orientation. Top point
+//     at (96-18/√2, 84-18/√2) ≈ (83, 71); with orbit radius 4 → (79, 67).
+//   - Bubble: x=66 to 220 (stroke adds 6 each side → 60 to 226),
+//     y=78 to 222 (stroke adds 6 → 72 to 228; tail tip at y=220).
+// So animated bounds: x=26..226 (w=200), y=67..228 (h=161).
+// Adding a small margin → viewBox "20 62 212 172" → rounded generously to
+// "8 44 216 184" to give the stars breathing room on the left.
+const ICON_VIEWBOX_X = 8;
+const ICON_VIEWBOX_Y = 44;
+const ICON_VIEWBOX_W = 216;
+const ICON_VIEWBOX_H = 184;
+const ICON_ASPECT_RATIO = ICON_VIEWBOX_W / ICON_VIEWBOX_H; // ~1.174
 
 export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps) {
   // If `width` prop is provided, use it (with auto height from aspect ratio).
   // Otherwise, fall back to the responsive CSS class (mobile 88px, desktop 100px)
-  // which sets the width via CSS variables; the SVG fills 100% of the wrapper.
+  // which sets the width via CSS; the SVG fills 100% of the wrapper.
   const isResponsive = !width;
   const computedWidth = width ?? 88;
   const computedHeight = Math.round((computedWidth / ICON_ASPECT_RATIO) * 100) / 100;
@@ -111,8 +132,8 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
             y2="0%"
             gradientUnits="objectBoundingBox"
           >
-            <stop offset="0%" stopColor="#8B3DF7" />
-            <stop offset="50%" stopColor="#3B82F6" />
+            <stop offset="0%" stopColor="#7B2FFF" />
+            <stop offset="50%" stopColor="#007BFF" />
             <stop offset="100%" stopColor="#00E5FF" />
             <animateTransform
               attributeName="gradientTransform"
@@ -134,14 +155,13 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
             y2="0%"
             gradientUnits="objectBoundingBox"
           >
-            <stop offset="0%" stopColor="#4338CA" />
+            <stop offset="0%" stopColor="#2B5FFF" />
             <stop offset="50%" stopColor="#3B82F6" />
-            <stop offset="100%" stopColor="#00D4FF" />
+            <stop offset="100%" stopColor="#00E5FF" />
           </linearGradient>
 
           {/* Small sparkle gradient — deep pink (top) → light magenta (bottom).
-              Vertical gradient to distinguish it from the blue/cyan
-              sparkles and bubble. */}
+              Vertical gradient to distinguish it from the blue/cyan sparkles. */}
           <linearGradient
             id="ai-sparkle-small-gradient"
             x1="0%"
@@ -159,7 +179,7 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
               glow without losing the sharp source graphic. */}
           <filter id="ai-bubble-glow" x="-50%" y="-50%" width="200%" height="200%">
             <feGaussianBlur stdDeviation="2" result="blur1" />
-            <feGaussianBlur stdDeviation="5" in="SourceGraphic" result="blur2" />
+            <feGaussianBlur stdDeviation="4" in="SourceGraphic" result="blur2" />
             <feMerge>
               <feMergeNode in="blur2" />
               <feMergeNode in="blur1" />
@@ -171,55 +191,65 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
               lines so the breathing scale doesn't let them extend beyond
               the bubble border. */}
           <clipPath id="ai-bubble-clip">
-            <path d="M 100,112 L 188,112 A 20,20 0 0,1 208,132 L 208,164 A 20,20 0 0,1 188,184 L 170,184 L 198,218 L 132,184 L 100,184 A 20,20 0 0,1 80,164 L 80,132 A 20,20 0 0,1 100,112 Z" />
+            <path d="M 85,85 L 195,85 A 15,15 0 0,1 210,100 L 210,170 A 15,15 0 0,1 195,185 L 165,185 L 130,220 A 6,6 0 0,1 120,215 L 120,185 L 81,185 A 15,15 0 0,1 66,170 L 66,100 A 15,15 0 0,1 81,85 Z" />
           </clipPath>
         </defs>
 
         {/* ============================================================
-            ROOT GROUP — idle floating animation (translateY 0 → -3 → 0)
+            ROOT GROUP — NO floating animation (per user spec: "NO up-down
+            floating. NO random drifting. NO stupid bouncing.").
+            The icon stays anchored in place. Only the gradient flows,
+            the stars orbit in small circles, and the inner content
+            breathes (scale, not translate).
             ============================================================ */}
-        <g className="ai-icon-float">
+        <g>
           {/* ============================================================
               SPARKLES — drawn BEHIND the bubble so the bubble's white
               fill covers the overlapping parts. Each sparkle is wrapped
               in an outer <g transform="translate(cx, cy)"> to position the
               orbit center, then .ai-sparkle-* for the orbit animation,
-              then .ai-sparkle-*-inner for the twinkle.
+              then .ai-sparkle-*-inner for the twinkle. The star path is
+              rotated 45° (X-orientation) so its points aim at the corners.
               ============================================================ */}
 
-          {/* LARGE SPARKLE — center (72, 96), radius 56.
-              Orbits CLOCKWISE around (72, 96) at radius 8 (6s linear).
-              The orbit is small so the sparkle stays in the upper-left
-              zone of the icon (per user spec: "Keep it near the upper-left
-              zone of the icon, Do not let it travel far away"). */}
-          <g transform="translate(72, 96)">
+          {/* LARGE SPARKLE — center (68, 136), radius 52, X-orientation.
+              Orbits CLOCKWISE around (68, 136) at radius 5 (7s linear).
+              The orbit is intentionally small so the star stays anchored
+              to the left-corner cluster (per user spec: "the stars must
+              remain visually fixed to the upper-left corner area of the
+              icon, the orbit should be local and small, the stars should
+              never look like they are wandering away"). */}
+          <g transform="translate(68, 136)">
             <g className="ai-sparkle-large">
               <g className="ai-sparkle-large-inner">
-                {/* Four-point star with concave cubic-bezier curves.
-                    Points at top (0,-56), right (56,0), bottom (0,56),
-                    left (-56,0). Control points at ~R/4 from center create
-                    gentle concave indentations on each side. */}
+                {/* Four-point star with concave cubic-bezier curves,
+                    X-orientation (rotated 45°). Points at top-left, top-right,
+                    bottom-right, bottom-left. Control points create gentle
+                    concave indentations on each side. */}
                 <path
-                  d="M 0,-56 C 12,-36 16,-20 56,0 C 16,20 12,36 0,56 C -12,36 -16,20 -56,0 C -16,-20 -12,-36 0,-56 Z"
+                  d="M 0,-52 C 10,-30 14,-14 52,0 C 14,14 10,30 0,52 C -10,30 -14,14 -52,0 C -14,-14 -10,-30 0,-52 Z"
                   fill="url(#ai-sparkle-large-gradient)"
                   filter="url(#ai-bubble-glow)"
+                  transform="rotate(45)"
                 />
               </g>
             </g>
           </g>
 
-          {/* SMALL SPARKLE — center (84, 56), radius 24.
-              Orbits ANTI-CLOCKWISE around (84, 56) at radius 6 (4.5s linear).
-              Positioned above and slightly to the right of the large
-              sparkle's top point (72, 40). */}
-          <g transform="translate(84, 56)">
+          {/* SMALL SPARKLE — center (96, 84), radius 18, X-orientation.
+              Orbits ANTI-CLOCKWISE around (96, 84) at radius 4 (6s linear).
+              Positioned above and to the upper-right of the large star's
+              center, forming a left-corner cluster. */}
+          <g transform="translate(96, 84)">
             <g className="ai-sparkle-small">
               <g className="ai-sparkle-small-inner">
-                {/* Same concave 4-point star shape, scaled down to R=24. */}
+                {/* Same concave 4-point star shape, scaled down to R=18,
+                    X-orientation. */}
                 <path
-                  d="M 0,-24 C 6,-12 8,-6 24,0 C 8,6 6,12 0,24 C -6,12 -8,6 -24,0 C -8,-6 -6,-12 0,-24 Z"
+                  d="M 0,-18 C 4,-8 6,-4 18,0 C 6,4 4,8 0,18 C -4,8 -6,4 -18,0 C -6,-4 -4,-8 0,-18 Z"
                   fill="url(#ai-sparkle-small-gradient)"
                   filter="url(#ai-bubble-glow)"
+                  transform="rotate(45)"
                 />
               </g>
             </g>
@@ -229,55 +259,56 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
               CHAT BUBBLE — drawn ON TOP of the sparkles. The white fill
               covers the parts of the large sparkle that overlap the
               bubble interior, so only the parts of the sparkle that
-              extend outside the bubble (to the left and above) are
+              extend outside the bubble (to the left and below) are
               visible — exactly matching the original icon design.
               ============================================================ */}
           <g className="ai-bubble-group">
-            {/* Bubble outline — white fill + thick gradient stroke.
-                The stroke is 16px wide (matching the original icon), with
-                stroke-linejoin="round" for smooth corners. The gradient
-                is animated (flowing effect) via the SMIL animateTransform
-                in the gradient def above. */}
+            {/* Bubble outline — white fill + slimmer gradient stroke.
+                strokeWidth=12 (was 16 — the user said the border was "too
+                large and oversized" and the white inner area felt "too
+                small"). 12 gives a clear gradient border while letting
+                the white inner area feel balanced and well-proportioned.
+                strokeLinejoin="round" for smooth corners. */}
             <path
-              d="M 100,112 L 188,112 A 20,20 0 0,1 208,132 L 208,164 A 20,20 0 0,1 188,184 L 170,184 L 198,218 L 132,184 L 100,184 A 20,20 0 0,1 80,164 L 80,132 A 20,20 0 0,1 100,112 Z"
+              d="M 85,85 L 195,85 A 15,15 0 0,1 210,100 L 210,170 A 15,15 0 0,1 195,185 L 165,185 L 130,220 A 6,6 0 0,1 120,215 L 120,185 L 81,185 A 15,15 0 0,1 66,170 L 66,100 A 15,15 0 0,1 81,85 Z"
               fill="#FFFFFF"
               stroke="url(#ai-bubble-gradient)"
-              strokeWidth="16"
+              strokeWidth="12"
               strokeLinejoin="round"
               strokeLinecap="round"
             />
 
             {/* Inner content (message lines) — clipped to the bubble shape
                 and animated with a subtle breathing scale. The transform-
-                origin is at the center of the bubble interior (144, 148). */}
+                origin is at the center of the bubble interior (138, 135). */}
             <g clipPath="url(#ai-bubble-clip)">
-              <g className="ai-bubble-inner" style={{ transformOrigin: "144px 148px" }}>
+              <g className="ai-bubble-inner" style={{ transformOrigin: "138px 135px" }}>
                 {/* Line 1 (top, longest) — spans most of the bubble width */}
                 <rect
-                  x="92" y="118"
-                  width="104" height="16"
+                  x="84" y="108"
+                  width="100" height="16"
                   rx="8" ry="8"
                   fill="#B8BCC8"
                   className="ai-msg-line ai-msg-line-1"
-                  style={{ transformOrigin: "144px 126px" }}
+                  style={{ transformOrigin: "134px 116px" }}
                 />
                 {/* Line 2 (bottom-left, medium) */}
                 <rect
-                  x="92" y="148"
-                  width="60" height="16"
+                  x="84" y="138"
+                  width="58" height="16"
                   rx="8" ry="8"
                   fill="#B8BCC8"
                   className="ai-msg-line ai-msg-line-2"
-                  style={{ transformOrigin: "122px 156px" }}
+                  style={{ transformOrigin: "113px 146px" }}
                 />
                 {/* Line 3 (bottom-right, medium) — side by side with Line 2 */}
                 <rect
-                  x="162" y="148"
-                  width="42" height="16"
+                  x="150" y="138"
+                  width="40" height="16"
                   rx="8" ry="8"
                   fill="#B8BCC8"
                   className="ai-msg-line ai-msg-line-3"
-                  style={{ transformOrigin: "183px 156px" }}
+                  style={{ transformOrigin: "170px 146px" }}
                 />
               </g>
             </g>
@@ -294,67 +325,58 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
           contain: layout paint style;
         }
 
-        /* ===== Root floating animation (3.4s) =====
-           Very subtle vertical float: translateY 0 → -3 → 0.
-           The icon stays anchored to the bottom-right; the movement is
-           small enough to feel premium, not chaotic. */
-        .ai-icon-float {
-          animation: ai-float 3.4s ease-in-out infinite;
-          will-change: transform;
-        }
-        @keyframes ai-float {
-          0%   { transform: translateY(0); }
-          50%  { transform: translateY(-3px); }
-          100% { transform: translateY(0); }
-        }
-
-        /* ===== Large sparkle — orbit CLOCKWISE (6s) =====
-           The outer <g transform="translate(72, 96)"> positions the orbit
+        /* ===== Large sparkle — orbit CLOCKWISE (7s) =====
+           The outer <g transform="translate(68, 136)"> positions the orbit
            center. The .ai-sparkle-large group applies the orbit:
              rotate(θ) translateX(r) rotate(-θ)
            which traces a circle of radius r around the parent translate
            point. The counter-rotation keeps the sparkle's own orientation
-           stable (it orbits but doesn't spin). Radius 8 is small enough
-           to keep the sparkle in the upper-left zone (per spec). */
+           stable (it orbits but doesn't spin). Radius 5 is small enough
+           to keep the star anchored to the left-corner cluster (per user
+           spec: "the stars must remain visually fixed to the upper-left
+           corner area of the icon, the orbit should be local and small,
+           the stars should never look like they are wandering away").
+           Duration 7s (per spec: "big star: approximately 6–8 seconds"). */
         .ai-sparkle-large {
-          animation: ai-orbit-cw 6s linear infinite;
+          animation: ai-orbit-cw 7s linear infinite;
           will-change: transform;
         }
         @keyframes ai-orbit-cw {
-          0%   { transform: rotate(0deg)   translateX(8px) rotate(0deg); }
-          25%  { transform: rotate(90deg)  translateX(8px) rotate(-90deg); }
-          50%  { transform: rotate(180deg) translateX(8px) rotate(-180deg); }
-          75%  { transform: rotate(270deg) translateX(8px) rotate(-270deg); }
-          100% { transform: rotate(360deg) translateX(8px) rotate(-360deg); }
+          0%   { transform: rotate(0deg)   translateX(5px) rotate(0deg); }
+          25%  { transform: rotate(90deg)  translateX(5px) rotate(-90deg); }
+          50%  { transform: rotate(180deg) translateX(5px) rotate(-180deg); }
+          75%  { transform: rotate(270deg) translateX(5px) rotate(-270deg); }
+          100% { transform: rotate(360deg) translateX(5px) rotate(-360deg); }
         }
         /* Twinkle for the large sparkle (2.5s) — subtle scale + opacity.
-           Per spec: "scale(0.92) → scale(1.08) → scale(0.92)" but kept
-           subtle (0.94↔1.06) so it feels premium, not aggressive. */
+           Per spec: "slight scale pulse, slight glow pulse, slight opacity
+           shift. Do NOT overdo it." */
         .ai-sparkle-large-inner {
           animation: ai-twinkle-large 2.5s ease-in-out infinite;
           transform-origin: center;
           will-change: transform, opacity;
         }
         @keyframes ai-twinkle-large {
-          0%   { transform: scale(0.94); opacity: 0.88; }
-          50%  { transform: scale(1.06); opacity: 1; }
-          100% { transform: scale(0.94); opacity: 0.88; }
+          0%   { transform: scale(0.96); opacity: 0.88; }
+          50%  { transform: scale(1.04); opacity: 1; }
+          100% { transform: scale(0.96); opacity: 0.88; }
         }
 
-        /* ===== Small sparkle — orbit ANTI-CLOCKWISE (4.5s) =====
-           Orbit center (84, 56) via outer <g transform="translate(84, 56)">.
-           Radius 6. Different duration from the large sparkle (4.5s vs 6s)
+        /* ===== Small sparkle — orbit ANTI-CLOCKWISE (6s) =====
+           Orbit center (96, 84) via outer <g transform="translate(96, 84)">.
+           Radius 4. Duration 6s (per spec: "small star: approximately 5–7
+           seconds"). Different duration from the large sparkle (6s vs 7s)
            prevents the motion from looking robotic. */
         .ai-sparkle-small {
-          animation: ai-orbit-ccw 4.5s linear infinite;
+          animation: ai-orbit-ccw 6s linear infinite;
           will-change: transform;
         }
         @keyframes ai-orbit-ccw {
-          0%   { transform: rotate(0deg)    translateX(6px) rotate(0deg); }
-          25%  { transform: rotate(-90deg)  translateX(6px) rotate(90deg); }
-          50%  { transform: rotate(-180deg) translateX(6px) rotate(180deg); }
-          75%  { transform: rotate(-270deg) translateX(6px) rotate(270deg); }
-          100% { transform: rotate(-360deg) translateX(6px) rotate(360deg); }
+          0%   { transform: rotate(0deg)    translateX(4px) rotate(0deg); }
+          25%  { transform: rotate(-90deg)  translateX(4px) rotate(90deg); }
+          50%  { transform: rotate(-180deg) translateX(4px) rotate(180deg); }
+          75%  { transform: rotate(-270deg) translateX(4px) rotate(270deg); }
+          100% { transform: rotate(-360deg) translateX(4px) rotate(360deg); }
         }
         .ai-sparkle-small-inner {
           animation: ai-twinkle-small 1.8s ease-in-out infinite;
@@ -369,8 +391,10 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
 
         /* ===== Inner content breathing (3.2s) =====
            The message lines group scales subtly (1 ↔ 0.97 ↔ 1.02 ↔ 1)
-           to simulate the "AI breathing" depth effect. Transform-origin
-           is at the center of the bubble interior (144, 148). */
+           to simulate the "AI breathing" depth effect. This is a SCALE
+           only (no translate) — per user spec: "NO up-down floating. NO
+           random drifting." Transform-origin is at the center of the
+           bubble interior (138, 135). */
         .ai-bubble-inner {
           animation: ai-breathe 3.2s ease-in-out infinite;
           will-change: transform;
@@ -400,29 +424,29 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
         }
 
         /* ===== HOVER (desktop only — @media hover:hover) =====
-           On hover: slightly scale the whole icon to 1.06, increase the
-           glow, and brighten the sparkles. All other animations keep
-           running. Smooth 0.4s transition. */
+           On hover: slightly scale the whole icon to 1.06 and increase the
+           glow. All other animations keep running. Smooth 0.4s transition.
+           Note: the hover scale is on the wrapper, NOT a translate — so no
+           up/down bouncing. */
         @media (hover: hover) {
-          .ai-assistant-icon-wrapper:hover .ai-icon-float {
-            animation: ai-float 3.4s ease-in-out infinite, ai-hover-scale 0.4s ease forwards;
-          }
-          @keyframes ai-hover-scale {
-            to { transform: translateY(-3px) scale(1.06); }
+          .ai-assistant-icon-wrapper:hover {
+            transform: scale(1.06);
+            transition: transform 0.4s ease;
           }
           .ai-assistant-icon-wrapper:hover .ai-sparkle-large-inner,
           .ai-assistant-icon-wrapper:hover .ai-sparkle-small-inner {
             filter: brightness(1.25);
           }
           .ai-assistant-icon-wrapper:hover .ai-bubble-group {
-            filter: drop-shadow(0 0 6px rgba(139, 61, 247, 0.5))
+            filter: drop-shadow(0 0 6px rgba(123, 47, 255, 0.5))
                     drop-shadow(0 0 12px rgba(0, 229, 255, 0.4));
           }
         }
 
-        /* ===== ACTIVE (tap/click) — quick 1 → 0.94 → 1 squash (0.3s) ===== */
-        .ai-assistant-icon-wrapper:active .ai-icon-float {
-          animation: ai-float 3.4s ease-in-out infinite, ai-tap 0.3s ease;
+        /* ===== ACTIVE (tap/click) — quick 1 → 0.94 → 1 squash (0.3s) =====
+           A scale squash, NOT a translate — so no up/down bouncing. */
+        .ai-assistant-icon-wrapper:active {
+          animation: ai-tap 0.3s ease;
         }
         @keyframes ai-tap {
           0%   { transform: scale(1); }
@@ -434,18 +458,17 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
            For users who request reduced motion, disable ALL animations.
            The icon remains visually attractive in its static state. */
         @media (prefers-reduced-motion: reduce) {
-          .ai-icon-float,
           .ai-sparkle-large,
           .ai-sparkle-large-inner,
           .ai-sparkle-small,
           .ai-sparkle-small-inner,
           .ai-bubble-inner,
-          .ai-msg-line {
+          .ai-msg-line,
+          .ai-assistant-icon-wrapper:active {
             animation: none !important;
           }
-          .ai-assistant-icon-wrapper:hover .ai-icon-float,
-          .ai-assistant-icon-wrapper:active .ai-icon-float {
-            animation: none !important;
+          .ai-assistant-icon-wrapper:hover {
+            transform: none !important;
           }
         }
       `}</style>

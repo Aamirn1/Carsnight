@@ -348,7 +348,9 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
            The button wrapper is slightly larger than the icon for a
            comfortable tap target, but the icon fills ~92% of it so it
            looks prominent (per user spec: "large clickable area is fine;
-           tiny visible icon inside it is NOT fine"). */
+           tiny visible icon inside it is NOT fine").
+           The aspect ratio 216/184 matches the icon's new tightened
+           viewBox (8 44 216 184) so nothing is stretched. */
         .ai-fab-button {
           width: 96px;
           height: 96px;
@@ -356,7 +358,7 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
         .ai-fab-icon {
           width: 88px !important;
           height: auto !important;
-          aspect-ratio: 212 / 204 !important;
+          aspect-ratio: 216 / 184 !important;
         }
         @media (min-width: 640px) {
           .ai-fab-button {
@@ -366,6 +368,20 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
           .ai-fab-icon {
             width: 100px !important;
           }
+        }
+
+        /* ===== Hide the AI button when a Sheet (burger menu) is open =====
+           The shadcn Sheet uses Radix UI which renders a [data-slot="sheet-overlay"]
+           element with [data-state="open"] when the sheet is visible. We use the
+           CSS :has() selector to detect when any sheet overlay is open and hide
+           the floating AI button so it doesn't overlap the burger menu panel.
+           (Per user spec: "When burger options bar open then the ai chat icon
+           must not be shown.") */
+        body:has([data-slot="sheet-overlay"][data-state="open"]) .ai-fab-button {
+          opacity: 0;
+          pointer-events: none;
+          transform: scale(0.85);
+          transition: opacity 0.2s ease, transform 0.2s ease;
         }
       `}</style>
     </>
