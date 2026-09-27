@@ -1695,3 +1695,93 @@ Stage Summary:
 - ✅ The user's Google Drive image (chat bubble + sparkles, purple→blue→cyan gradient on white) is now deployed as the AI chat assistant icon in both the FAB and the chat panel header on production.
 - Files changed: public/ai-assistant/ai-icon.png only.
 - Commit: 9821b05 — pushed to GitHub main, Vercel rebuilt, verified live.
+
+---
+Task ID: 48
+Agent: main (orchestrator)
+Task: Premium animated SVG AI assistant icon + refresh favicon from Google Drive
+
+Task A — Favicon refresh:
+- Re-downloaded the user's image from Google Drive (file id 1M93tE_0SajXjiLTGTb8nGp-ZeYt5dg_f) — 1254x1254 PNG, 839873 bytes, stylized 'CM'/'CN' car logo with blue-to-purple gradient on white background.
+- Regenerated all favicon sizes (16/32/48/64/96/128/256), apple-icon.png, and a multi-size favicon.ico via PIL LANCZOS. Files are byte-identical to the previous task's output (the user's request to "delete the old golden favicon" was already satisfied from the previous task — confirmed via VLM: production /favicon-256.png shows the 'CM'/'CN' car logo, NOT the golden emblem).
+
+Task B — Premium animated SVG AI assistant icon:
+- Created src/components/ai-assistant-icon.tsx — a 200x200 viewBox SVG with 5 independently-animatable layers per the user's 21-point spec:
+  1. Gradient chat-bubble border (purple #7C3AED → blue #00A8FF → indigo #6366F1 → cyan #00E5FF) — flow animated via SMIL <animate> on the 4 gradient stops, 5s linear infinite. The gradient continuously circulates around the border outline (energy circulating effect).
+  2. White inner message bubble (rounded rect with bottom-right tail, white #FFFFFF fill).
+  3. Three gray (#A8A8B3) message lines — subtle sequential pulse (3.2s, staggered delays 0/0.4/0.8s, scale 1↔0.97 + opacity 1↔0.78) so the icon subtly communicates 'AI is thinking'.
+  4. Large 4-point sparkle (purple→blue→cyan gradient) — orbits clockwise around SVG (60, 80) with radius 14 (6s linear infinite) + twinkles (2.5s, scale 0.92↔1.08 + opacity 0.85↔1).
+  5. Small 4-point sparkle (magenta→pink gradient) — orbits anti-clockwise around SVG (45, 50) with radius 10 (4.5s linear infinite) + twinkles (1.8s, scale 0.94↔1.06 + opacity 0.8↔1).
+- The opposite orbit directions + different durations (6s vs 4.5s) prevent the motion from looking robotic.
+- Optional internal light sweep: a soft cyan highlight travels across the border every 7s (subtle, mix-blend-mode: screen).
+
+ANIMATIONS (all CSS keyframes, GPU-accelerated, will-change on transform/opacity only):
+- Root floating: translateY 0 → -3px → 0, 3.4s ease-in-out infinite.
+- Inner breathing: scale 1 → 0.96 → 1.02 → 1, 3.2s ease-in-out infinite.
+- Hover (desktop only, @media hover:hover): whole icon scales to 1.06 over 0.4s + stronger drop-shadow glow (violet 8px + blue 14px) + sparkles brighten to 1.25.
+- Active (tap/click): quick 1 → 0.94 → 1 squash over 0.3s.
+
+VISUAL IDENTITY PRESERVED (per spec):
+- Same chat bubble shape (rounded rect + bottom-right tail).
+- Same gradient colors (purple→violet→blue→cyan).
+- Same white interior.
+- Same gray message lines.
+- Same large + small sparkles (blue/cyan + magenta).
+- Soft neon glow halo (SVG feGaussianBlur filter using violet/blue/cyan).
+
+CRITICAL — TRANSPARENT BACKGROUND (per spec):
+- NO outer white circle, badge, or squircle background.
+- The button wrapper has background: transparent, border: none, padding: 0.
+- White color appears ONLY inside the chat bubble interior.
+- Everything outside the icon is fully transparent, so the Cars Night hero background remains visible around the icon.
+
+ACCESSIBILITY:
+- aria-label='Open Cars Night AI Assistant' on the FAB button.
+- @media (prefers-reduced-motion: reduce): disables ALL animations (float, orbits, twinkle, breathing, message pulse, sweep, hover/active variants). The icon remains visually attractive in its static state.
+
+PERFORMANCE:
+- All animations use transform + opacity only (GPU-accelerated).
+- will-change set only on elements that animate.
+- SVG is resolution-independent (sharp at all screen sizes).
+- No expensive JS animation loops — pure CSS + SMIL.
+
+USAGE:
+- Floating FAB: 68x68px, bottom-right corner (bottom-5 right-5 sm:bottom-6 sm:right-6).
+- Chat panel header avatar: 40x40px (same component, same animations).
+- Both instances share the same SVG defs (gradient, filter) — gradient ids are scoped to the SVG so they don't collide.
+
+BUG FOUND AND FIXED DURING VERIFICATION:
+- Initial implementation used transformOrigin: '60px 80px' on the .ai-sparkle-large group, but the keyframe transform 'rotate(θ) translateX(0px) rotate(-θ)' collapsed to identity (the translate was 0px, so no orbit happened — the sparkle only twinkled in place).
+- Verified by Agent Browser sub-agent: orbit diameter was 0px (only twinkle scale jitter). Confirmed via getComputedStyle: transform matrix was identity at every sample.
+- FIX #1: changed the keyframes to translateX(28px) / translateX(22px) — orbit started working, but the orbit center was at SVG (0,0) (top-left corner) instead of at (60, 80)/(45, 50). The transform-origin was a no-op because the keyframe transform collapses to a pure translation (transform-origin has no effect on pure translations).
+- FIX #2: wrapped each sparkle in an outer <g transform="translate(60, 80)"> / <g transform="translate(45, 50)">. The orbit animation now applies INSIDE that translated parent, so the orbit circle is centered at (60, 80) and (45, 50) as intended. Reduced the radii to 14 (large) and 10 (small) to keep the orbit in the 'upper area of the chat icon' per the user spec ('small curved/orbital path', 'never make the star leave the visual boundaries of the icon').
+- Verified after fix: orbit diameters exactly 28 SVG units (large, 9.52 screen px at 0.34x scale) and 20 SVG units (small, 6.80 screen px). Directions correct (clockwise / anti-clockwise). Sparkles stay within the 68x68 FAB area (17/17 samples inside, overflow: visible).
+
+Updated src/components/ai-assistant.tsx:
+- FAB now uses <AIAssistantIcon size={68}> inside a transparent <button> (no white outer circle, no dark inner ring, no Image component).
+- Chat panel header avatar now uses <AIAssistantIcon size={40}> (same animated SVG, not the old static PNG).
+- Removed the old conic-gradient glow ring, the dark inner container, and the next/image import (no longer needed).
+
+Verified on dev + production:
+- ✅ NO outer white circle — confirmed via DOM (background: transparent, border: 0, border-radius: 0) AND pixel sampling (all 4 FAB corners are non-white: magenta/purple from the glow halo, not white).
+- ✅ Flowing gradient border (5s SMIL animation on 4 gradient stops).
+- ✅ Large sparkle orbits clockwise around (60, 80) with radius 14 (6s linear infinite) + twinkles (2.5s). Confirmed via transform matrix: ‖translate‖ = exactly 14 at every sample.
+- ✅ Small sparkle orbits anti-clockwise around (45, 50) with radius 10 (4.5s linear infinite) + twinkles (1.8s). Confirmed via transform matrix: ‖translate‖ = exactly 10 at every sample.
+- ✅ Three gray message lines with staggered pulse (delays 0/0.4/0.8s).
+- ✅ Inner breathing (3.2s, scale 1↔0.96↔1.02).
+- ✅ Whole-icon floating (3.4s, translateY 0→-3→0).
+- ✅ Hover: scales 1.06 + brighter glow + brighter sparkles.
+- ✅ Active tap: 1→0.94→1 squash (0.3s).
+- ✅ prefers-reduced-motion disables ALL animations.
+- ✅ Same animated SVG in 68x68 FAB and 40x40 panel header (not a static PNG).
+- ✅ Mobile (390x844): FAB visible bottom-right, animations running, no white circle.
+- ✅ aria-label='Open Cars Night AI Assistant'.
+- ✅ Zero console / runtime errors / hydration mismatches.
+
+Commits pushed:
+- ca1eab3: feat: premium animated SVG AI assistant icon — flowing gradient, orbiting sparkles, breathing bubble (initial implementation)
+- 797b5cd: fix(ai-icon): orbit sparkles around (60,80) and (45,50) — not (0,0) (orbit center fix)
+
+Stage Summary:
+- ✅ Task A (favicon): already satisfied from the previous task; production favicon is the user's Google Drive 'CM'/'CN' car logo image (blue-to-purple gradient on white), NOT the old golden emblem. Re-verified after re-downloading and refreshing all favicon files.
+- ✅ Task B (animated AI icon): fully implemented and verified on production. The icon is a premium LIVE ANIMATED SVG component per the user's 21-point spec — no white outer circle, flowing gradient border, orbiting sparkles (clockwise + anti-clockwise + twinkles), breathing inner area, floating motion, neon glow, hover scale, tap squash, prefers-reduced-motion compliance.
