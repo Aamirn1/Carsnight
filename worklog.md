@@ -2149,3 +2149,59 @@ Stage Summary:
 - ✅ Icon design preserved: gradient bubble border (purple→blue→cyan, strokeWidth 12), white inner area, 3 gray lines, big blue star, small pink star, tail pointing right. NO outer white circle.
 - ✅ Verified on dev and production (carsnight1.vercel.app) with Agent Browser + VLM.
 - ✅ Zero console / runtime errors.
+
+---
+Task ID: 53
+Agent: main (orchestrator)
+Task: 7 AI chat fixes — white composer, neon header, white tooltip, slide-out anim, burger hide, V tail, circular orbits
+
+Work Log:
+
+1. COMPOSER → WHITE (was black):
+   - Form background: bg-[#0b0b14]/80 → bg-white
+   - Input: bg-white/[0.05] + text-white → bg-slate-100 + text-slate-900 (black text)
+   - Footer: text-white/30 → text-slate-400 on bg-white
+
+2. HEADER → NEON GRADIENT (was faint /10):
+   - Was: bg-gradient-to-r from-[#00A8FF]/10 via-[#8B5CF6]/10 to-[#D946EF]/10 (almost invisible)
+   - Now: inline style background: linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%) — full opacity neon brand gradient
+
+3. TOOLTIP → WHITE bg + BLACK text (was dark bg + white text):
+   - Container: bg-[#0b0b14]/95 → bg-white + border-slate-200
+   - Text: text-white/90 → text-slate-900
+   - Arrow: bg-[#0b0b14]/95 → bg-white + border-slate-200
+
+4. TOOLTIP SLIDE-OUT ANIMATION + NEVER REAPPEAR:
+   - Added ai-tooltip class with ai-tooltip-slide-out CSS animation (0.4s ease-out forwards):
+     translateX(30px) scale(0.8) → translateX(0) scale(1) — slides out from behind the icon
+   - Added tooltipDismissed state: once the user dismisses the tooltip (X or opens chat),
+     setTooltipDismissed(true) prevents it from ever showing again in that session.
+
+5. TOOLTIP + AI BUTTON HIDDEN IN BURGER MENU:
+   - Added ai-fab-container class to the FAB wrapper div
+   - CSS: body:has([data-slot="sheet-overlay"][data-state="open"]) .ai-fab-container {
+       opacity: 0 !important; pointer-events: none !important; transform: scale(0.85) !important; }
+   - Hides the ENTIRE AI FAB container (button + tooltip) when burger menu is open
+   - Verified: .ai-fab-container opacity 1 → 0 (burger open) → 1 (burger closed)
+
+6. V-SHAPE TAIL (was a triangle):
+   - Old path: L 195,185 L 166,185 L 196,224 L 198,185 L 81,185
+     The segment (195,185)→(166,185) was the "upper gradient line" closing the top of the V
+   - New path: L 198,222 L 175,185 L 81,185
+     Tail starts at bottom-right corner (195,185 from arc), goes to tip (198,222),
+     back to (175,185). NO bottom edge between (195,185) and (175,185) — V replaces it.
+   - VLM confirmed: "V shape, no gradient line across the top"
+
+7. STARS → TRUE CIRCULAR ORBITS (were bouncing/too small):
+   - Increased orbit radius: large 5→12, small 4→10 (clearly visible circular motion)
+   - Both verified as perfect circles (constant radius, stddev=0.0000)
+   - Large: CLOCKWISE, 7s, radius 12.000 (15 samples, +359.99° net rotation)
+   - Small: ANTI-CLOCKWISE, 6s, radius 10.000 (15 samples, -419.99° net rotation)
+   - Updated viewBox from "14 44 214 194" to "10 42 214 192"
+   - Updated responsive aspect-ratio from 214/194 to 214/192
+
+VERIFIED on dev + production (carsnight1.vercel.app):
+- All 7 fixes ✅ confirmed via DOM/CSS inspection + VLM + 15-sample star orbit measurement
+- Zero console runtime errors (only pre-existing Radix a11y warnings)
+
+Commit: 4c218ff — pushed to GitHub main. Vercel rebuilt and deployed.
