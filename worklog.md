@@ -1433,3 +1433,37 @@ Stage Summary:
 - Non-blocking observations from the audit (NOT the cause of the error):
   * `NEXTAUTH_SECRET` is missing from .env.local locally — causes [next-auth][warn][NO_SECRET] in dev. Production (Vercel) should have it set as an env var. Not related to the post-ad client-side error.
   * `DATABASE_URL=file:/home/z/my-project/db/custom.db` in .env conflicts with the postgresql provider in prisma/schema.prisma — causes /api/me 500. Not related to the post-ad client-side error (post-ad uses Supabase directly, not Prisma).
+
+---
+Task ID: 43
+Agent: main (orchestrator)
+Task: Push post-ad fix to GitHub using user-provided token and verify on Vercel
+
+Work Log:
+1. Set remote URL to include the user-provided GitHub Personal Access Token: `https://x-access-token:ghp_***@github.com/Aamirn1/Carsnight.git`.
+2. Pushed 3 local commits that were stuck behind the missing credentials:
+   - c25c70d (Task 41 fix): emptyForm() now takes userCountry/userCity as args
+   - 5892c9a (Task 42 cleanup): removed dead useEffect/findListings imports
+   - 57297c5 (auto): hook for follow-up work
+   Result: `08298e0..57297c5  main -> main`
+3. Removed the token from the stored remote URL (security hygiene): `git remote set-url origin "https://github.com/Aamirn1/Carsnight.git"`.
+4. Waited 30s for Vercel rebuild, then `curl https://carsnight1.vercel.app/post-ad` returned 307 redirect to `/signin?callbackUrl=/post-ad` — expected auth guard, with a fresh build ID `iihnRp6gvG8fyNI_UR8qy` confirming the redeploy.
+5. Launched sub-agent to do end-to-end browser verification on the deployed site:
+   - Registered a fresh test account (Pakistan → Rawalpindi) at /signup
+   - Navigated to https://carsnight1.vercel.app/post-ad as an authenticated user
+   - Page rendered the FULL PostAdForm: "Post a new ad" heading, category radios, Basic information card, Location card with country read-only "Pakistan (from your profile)" + city pre-selected "Rawalpindi", Pricing card with $ field, Description textarea, Photos upload, Live preview sidebar, Tips card
+   - Browser console: ZERO errors, ZERO warnings
+   - No "Application error: a client-side exception has occurred" text anywhere on the page
+6. Sub-agent flagged a minor copy issue: the photo upload said "Upload up to 5 photos" but the user previously requested max 4.
+7. Fixed the photo limit:
+   - src/components/post-ad-form.tsx line 683: "Upload up to 5 photos" → "Upload up to 4 photos"
+   - src/components/post-ad-form.tsx line 687: `max={5}` → `max={4}` on the ImageUpload component
+   - bun run lint passes
+8. Committed (1c14c43) and pushed to GitHub: `57297c5..1c14c43  main -> main`. Removed token from remote URL again.
+
+Stage Summary:
+- ✅ Post Ad page on carsnight1.vercel.app is now FIXED and verified end-to-end via Agent Browser on the production deployment.
+- ✅ All 4 stuck local commits are now on GitHub main (c25c70d, 5892c9a, 57297c5, 1c14c43).
+- ✅ Photo upload limit corrected to 4 per the user's earlier requirement.
+- ✅ Token no longer stored in any git config file (remote URL cleaned).
+- User can now sign in and visit /post-ad on the production site without any client-side exception. The form pre-fills their country (read-only) and city (editable, pre-selected) from their profile.
