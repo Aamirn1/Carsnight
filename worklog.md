@@ -1942,3 +1942,122 @@ Stage Summary:
 - ✅ NO outer white circle / badge background — the icon floats directly on the page background (transparent outside the icon).
 - ✅ Verified on dev and production (carsnight1.vercel.app) with Agent Browser + VLM.
 - ✅ Zero console / runtime errors.
+
+---
+Task ID: 51
+Agent: main (orchestrator)
+Task: Fix AI icon — slimmer border, stars in left corner, X-orientation, no vertical bounce, hide on burger open
+
+Work Log:
+- The user reported the AI icon was still wrong:
+  1. Gradient border too large/oversized — needed to be slimmer.
+  2. Stars not positioned correctly — needed to be anchored to the LEFT CORNER cluster.
+  3. Star sizes relationship wrong — large star needed to be clearly dominant, small star a secondary accent.
+  4. Stars moving up and down — looked "stupid and unnatural". Needed only circular orbit motion, NO vertical bouncing.
+  5. Stars not in X-orientation — needed points at 45° diagonals.
+  6. Burger menu hide — when burger options bar open, AI chat icon must not be shown.
+
+- I analyzed the original target icon (/public/ai-assistant/ai-icon.png) with VLM to get exact coordinates:
+  * Large star center: (68, 136), radius 52, X-orientation (rotate -45° so top point aims upper-left).
+  * Small star center: (96, 84), radius 18, X-orientation.
+  * Small star is ABOVE and to the UPPER-RIGHT of the large star (ΔX=+28, ΔY=-52).
+  * Large star overlaps the bubble's left edge.
+  * Size ratio: 52/18 ≈ 2.9:1.
+  * Bubble border: strokeWidth 14 (I used 12 to make it slightly slimmer per user request).
+  * Bubble bounds: x=66 to 220, y=78 to 222 (tail tip).
+
+Changes to src/components/ai-assistant-icon.tsx:
+
+1. GRADIENT BORDER (slimmer):
+   - strokeWidth reduced from 16 to 12.
+   - User said: "the outer border feels too dominant" and "the white inner area feels too small compared to the outer border". 12 gives a clear gradient border while letting the white inner area feel balanced.
+
+2. STAR POSITIONS (left corner cluster):
+   - Large sparkle moved from (72, 96) to (68, 136) — now overlaps the bubble's LEFT edge.
+   - Small sparkle moved from (84, 56) to (96, 84) — now ABOVE and to the UPPER-RIGHT of the large star.
+   - Both stars form a left-corner cluster matching the reference icon.
+
+3. STAR SIZES (correct relationship):
+   - Large sparkle radius 52 (was 56) — clearly dominant.
+   - Small sparkle radius 18 (was 24) — noticeably smaller.
+   - Size ratio ~2.9:1 (was ~2.3:1) — matches the reference.
+
+4. STAR ORIENTATION (X, not plus):
+   - Added transform="rotate(45)" to both star paths so the points aim at 45° diagonals (top point aims upper-left) — X-orientation matching the reference icon.
+
+5. STAR ANIMATION (no vertical bounce):
+   - REMOVED the root-level ai-float animation that translated the whole icon up/down by 3px. The icon now stays anchored in place.
+   - Reduced orbit radius: large 8→5, small 6→4 — stars stay anchored to the left-corner cluster.
+   - Orbit durations: large 6s→7s, small 4.5s→6s (per user spec: "big star 6-8 seconds, small star 5-7 seconds").
+   - Stars ONLY orbit in small CIRCLES (clockwise / anti-clockwise) — NO vertical bouncing, NO random drifting.
+
+6. BUBBLE REPOSITIONED (to make room for stars on the left):
+   - Bubble moved from x=80-208 to x=66-220 (shifted right, wider).
+   - Tail repositioned to bottom-right at (130, 220) pointing down-right.
+   - Message lines repositioned inside the new bubble bounds (line 1: x=84 y=108 w=100; line 2: x=84 y=138 w=58; line 3: x=150 y=138 w=40).
+
+7. VIEWBOX TIGHTENED:
+   - Changed from "4 16 212 204" (aspect ~1.039) to "8 44 216 184" (aspect ~1.174) — captures the new artwork bounds (stars on the left, bubble on the right, tail at bottom-right) with a small margin for the orbit animation.
+
+8. HOVER/TAP (scale only, no translate):
+   - Hover: scale 1.06 on the wrapper (was a translate-based animation before).
+   - Tap: scale 0.94→1 squash on the wrapper.
+   - Both are scale-only — no translate, so no up/down bouncing.
+
+Changes to src/components/ai-assistant.tsx:
+- Updated responsive aspect-ratio from 212/204 to 216/184 to match the new viewBox.
+- Added burger menu hide CSS:
+  body:has([data-slot="sheet-overlay"][data-state="open"]) .ai-fab-button {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.85);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  This uses the CSS :has() selector to detect when any shadcn Sheet (burger menu) overlay is open and hides the AI floating button. When the Sheet closes, the AI button reappears.
+
+ANIMATIONS PRESERVED:
+- Flowing gradient border (SMIL animateTransform rotate, 5s) — KEEP.
+- Large sparkle orbit clockwise (7s, radius 5) + twinkle (2.5s, scale 0.96↔1.04) — FIXED.
+- Small sparkle orbit anti-clockwise (6s, radius 4) + twinkle (1.8s, scale 0.96↔1.04) — FIXED.
+- Inner content breathing (scale only, 3.2s) — KEEP.
+- Message lines sequential pulse (3.2s, staggered) — KEEP.
+- Hover (desktop): scale 1.06 + brighter glow + brighter sparkles — KEEP.
+- Tap: scale 0.94→1 squash (0.3s) — KEEP.
+- prefers-reduced-motion: disables all — KEEP.
+
+VERIFIED WITH Agent Browser (sub-agent) on dev:
+- Code-level: stroke-width=12, large star at translate(68,136) r=52 with rotate(45), small star at translate(96,84) r=18 with rotate(45), no @keyframes ai-float, orbit radii translate(5px)/translate(4px), burger hide CSS present.
+- VLM confirms: "Large blue/cyan star on the LEFT side, overlapping the left edge of the bubble border; small pink star ABOVE and to the UPPER-RIGHT of the large star. Large star clearly DOMINANT (~3-4×). No outer ring/badge circle. White inner area well-proportioned."
+- Star orbit verification (15 samples over 8.2s):
+  * Large star: x-range 7.88, y-range 6.55, orbit diameter ~5.4px, CLOCKWISE. Circle, not vertical line.
+  * Small star: x-range 6.90, y-range 6.50, orbit diameter ~4.8px, ANTI-CLOCKWISE. Circle, not vertical line.
+  * Bubble (whole icon): Δx=0, Δy=0 across all samples — NO floating.
+- Burger menu hide verified: when Sheet opens (data-state=open), AI button opacity=0, pointer-events=none, scale=0.85. When Sheet closes, AI button reappears (opacity=1, pointer-events=auto).
+- Zero console / runtime errors.
+
+VERIFIED WITH Agent Browser (sub-agent) on production (carsnight1.vercel.app):
+- DOM confirms: stroke-width=12, large star translate(68,136) r=52 rotate(45), small star translate(96,84) r=18 rotate(45), viewBox="8 44 216 184".
+- VLM confirms FAB close-up: "Slim gradient border (purple/blue→cyan), solid white interior, large blue/cyan 4-point star on the LEFT overlapping the bubble's left edge, small pink 4-point star above-and-upper-right of the large star, both X-oriented (45°), no outer white badge/halo."
+- Star orbit: large star orbit diameter ~5.6px CLOCKWISE, small star ~4.5px ANTI-CLOCKWISE. V/H ratios 0.78 / 0.87 ≈ 1.0 → circular, NOT vertical.
+- Whole icon: bubble group cy range = 0.0000px across 7s — NO floating.
+- Flowing gradient: measured 5.00s period, clockwise rotation (402° over 5.59s = 72°/s).
+- Burger menu hide: AI FAB opacity 1 → 0 (burger open) → 1 (burger closed). Verified on mobile 390x844.
+- Chat panel header avatar: 44x37.5px, same fixed icon (viewBox 8 44 216 184, stroke-width=12, same gradients).
+- Zero new console errors (only pre-existing Next.js image-quality warning + a Radix DialogContent a11y notice unrelated to the icon).
+
+Commit: 4571bf5 — pushed to GitHub main. Vercel rebuilt and deployed.
+
+Stage Summary:
+- ✅ Task 1 (burger menu hide): when the burger options bar opens, the AI chat icon is hidden (opacity 0, not clickable). It reappears when the burger closes.
+- ✅ Task 2 (icon fixes):
+  1. Gradient border slimmer (strokeWidth 12, was 16).
+  2. Stars repositioned to the LEFT CORNER cluster (large at (68,136) overlapping bubble left edge; small at (96,84) above-and-upper-right).
+  3. Star sizes correct (large r=52 dominant, small r=18 secondary, ratio 2.9:1).
+  4. Stars X-orientation (rotate 45°, points at diagonals).
+  5. NO vertical bouncing — root float removed; stars only orbit in small circles (large CW r=5/7s, small CCW r=4/6s).
+  6. Whole icon stays anchored (no up/down movement).
+  7. Flowing gradient + twinkle + breathing + message pulse preserved.
+  8. NO outer white circle / badge.
+  9. Same fixed icon in FAB (88/100px) and header avatar (44px).
+- ✅ Verified on dev and production (carsnight1.vercel.app).
+- ✅ Zero console / runtime errors.
