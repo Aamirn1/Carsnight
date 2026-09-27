@@ -1664,3 +1664,34 @@ Stage Summary:
 - Files changed: public/ai-assistant/ai-icon.png, public/apple-icon.png, public/favicon-{16,32,48,64,96,128,256}.png, public/favicon.ico, src/components/ai-assistant.tsx, src/components/ai-listing-card.tsx.
 - Committed as bd12380 and pushed to GitHub main. Vercel will rebuild with all 3 fixes.
 - Note: the user said 'attached image' for the AI chat icon, but the attachment didn't arrive on the sandbox. I used the Google Drive image (which they explicitly provided for the favicon) for BOTH the favicon and the AI chat icon since it's the only user-provided image available and it matches the Cars Night brand perfectly. If the user wants a different image for the AI chat icon, they can re-attach it directly in the next message.
+
+---
+Task ID: 47
+Agent: main (orchestrator)
+Task: Use the user's Google Drive image (file id 1CZiDHdeTd9U5i0I-Vr9Kdk7ZczncaXN3) as the AI chat assistant icon
+
+Work Log:
+- The user selected Option B (provide a Google Drive link) and provided:
+  https://drive.google.com/file/d/1CZiDHdeTd9U5i0I-Vr9Kdk7ZczncaXN3/view?usp=drivesdk
+- Downloaded the image via:
+  curl -sL 'https://drive.google.com/uc?export=download&id=1CZiDHdeTd9U5i0I-Vr9Kdk7ZczncaXN3' -o /tmp/gdrive-ai-icon.png
+  → 1138111 bytes, PNG, 1316x1195, 8-bit RGB.
+- Verified the image content with VLM: "A stylized chat bubble (speech bubble) with a rounded rectangular body and a tail pointing down-right. Three horizontal rounded 'text' lines inside. Two four-pointed stars (sparkles) of different sizes on the upper-left. Vibrant gradient from deep purple/blue to bright cyan/teal. Internal text lines are solid light gray; smaller sparkle is bright magenta/pink. Solid clean white background. Highly suitable as an AI assistant button." — perfect match for the AI assistant use case.
+- Squared the image to 1316x1316 by padding with white background (using PIL) so the FAB circular container doesn't crop off the sparkles or any part of the icon.
+- Saved to /home/z/my-project/public/ai-assistant/ai-icon.png (1154280 bytes, 1316x1316 RGBA PNG).
+- The image is used in BOTH the floating FAB (bottom-right with neon glow ring) AND the chat panel header avatar (40x40 circular image to the left of "Cars Night AI" + "Online" badge).
+- Lint passes; dev server serves the new icon at /ai-assistant/ai-icon.png with HTTP 200, 1154280 bytes (verified via direct fetch + VLM).
+- Committed as 9821b05 and pushed to GitHub main. Vercel rebuilt.
+
+Verified with Agent Browser (sub-agent) on production (carsnight1.vercel.app):
+- Asset: /ai-assistant/ai-icon.png returns 1154280 bytes, PNG 1316x1316 RGBA — matches the user's image (verified via pixel sampling: white background + blue/cyan/purple/magenta gradient + sparkles).
+- FAB (floating button) at bottom-right (1352, 805, 64x64) shows the new chat-bubble-with-sparkles icon inside the neon conic-gradient glow ring.
+- Chat panel header avatar (40x40 circular image) shows the SAME new icon.
+- Header also has "Cars Night AI" + pulsing "Online" badge + trash (Start a new chat) + X (Close chat).
+- Messages area is still white (rgb(255,255,255)) from the previous fix.
+- Zero console / runtime errors.
+
+Stage Summary:
+- ✅ The user's Google Drive image (chat bubble + sparkles, purple→blue→cyan gradient on white) is now deployed as the AI chat assistant icon in both the FAB and the chat panel header on production.
+- Files changed: public/ai-assistant/ai-icon.png only.
+- Commit: 9821b05 — pushed to GitHub main, Vercel rebuilt, verified live.
