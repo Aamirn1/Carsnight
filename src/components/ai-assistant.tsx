@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardRef, FormEvent } from "react";
-import Image from "next/image";
 import { X, Send, Sparkles, Trash2, AlertTriangle, ArrowRight } from "lucide-react";
 import { AIListingCard, type AIListing } from "@/components/ai-listing-card";
+import { AIAssistantIcon } from "@/components/ai-assistant-icon";
 
 // ============================================================================
 // Cars Night AI Assistant — floating button + chat panel
@@ -164,7 +164,12 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
     <>
       {/* Floating button — hidden while the chat panel is open so the only
           close affordance is the top-right X inside the panel (per user request
-          to remove the redundant X that sat on top of the send button area). */}
+          to remove the redundant X that sat on top of the send button area).
+
+          The button uses an animated SVG AI assistant icon (no outer white
+          circle / badge background — fully transparent outside the icon
+          itself, per user spec). The icon's own neon gradient border + glow
+          provides the visual prominence. */}
       {!open && (
         <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[60] print:hidden">
           {/* Tooltip */}
@@ -190,37 +195,21 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
           <button
             type="button"
             onClick={() => setOpen(true)}
-            aria-label="Open Cars Night AI assistant"
+            aria-label="Open Cars Night AI Assistant"
             aria-expanded={false}
-            className="group relative h-14 w-14 sm:h-16 sm:w-16 rounded-full overflow-hidden transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="group relative grid place-items-center transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             style={{
-              boxShadow:
-                "0 0 0 1px rgba(255,255,255,0.08), 0 12px 32px -8px rgba(139,92,246,0.5), 0 0 24px -4px rgba(217,70,239,0.45)",
+              width: 68,
+              height: 68,
+              background: "transparent",
+              border: "none",
+              padding: 0,
+              cursor: "pointer",
             }}
           >
-            {/* Glow ring */}
-            <span
-              aria-hidden
-              className="pointer-events-none absolute inset-0 rounded-full opacity-70 group-hover:opacity-100 transition-opacity"
-              style={{
-                background:
-                  "conic-gradient(from 0deg, #00A8FF, #6366F1, #8B5CF6, #D946EF, #00A8FF)",
-                filter: "blur(8px)",
-                transform: "scale(1.05)",
-              }}
-            />
-            {/* Inner icon — always the AI assistant image, never morphs to X */}
-            <span className="absolute inset-[2px] rounded-full overflow-hidden bg-[#0b0b14] ring-1 ring-white/10">
-              <Image
-                src="/ai-assistant/ai-icon.png"
-                alt=""
-                fill
-                sizes="64px"
-                className="object-cover"
-                priority
-                unoptimized
-              />
-            </span>
+            {/* The animated SVG icon — fully transparent background, only
+                the chat-bubble + sparkles + neon glow are visible. */}
+            <AIAssistantIcon size={68} />
           </button>
         </div>
       )}
@@ -242,15 +231,8 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
         >
           {/* Header */}
           <header className="relative flex items-center gap-3 px-4 py-3 border-b border-white/10 bg-gradient-to-r from-[#00A8FF]/10 via-[#8B5CF6]/10 to-[#D946EF]/10">
-            <div className="relative h-10 w-10 rounded-full overflow-hidden ring-1 ring-white/15 shrink-0">
-              <Image
-                src="/ai-assistant/ai-icon.png"
-                alt=""
-                fill
-                sizes="40px"
-                className="object-cover"
-                unoptimized
-              />
+            <div className="grid place-items-center shrink-0" style={{ width: 40, height: 40 }}>
+              <AIAssistantIcon size={40} />
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-sm font-semibold text-white flex items-center gap-1.5">
