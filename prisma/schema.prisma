@@ -20,8 +20,10 @@ model User {
   city          String?
   phone         String?
   avatarUrl     String?
-  freePostsUsed Int      @default(0) // out of 2 free
-  listingCredits Int     @default(0) // purchased credits
+  freePostsUsed Int      @default(0) // legacy combined counter (kept for backwards compat)
+  freeSalePostsUsed Int  @default(0) // out of 2 free SALE posts
+  freeRentPostsUsed Int  @default(0) // out of 2 free RENT posts
+  listingCredits Int     @default(0) // purchased credits (any category)
   banned        Boolean  @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt

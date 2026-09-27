@@ -162,57 +162,55 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
 
   return (
     <>
-      {/* Floating button */}
-      <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[60] print:hidden">
-        {/* Tooltip */}
-        {showTooltip && !open && (
-          <div
-            className="absolute bottom-[calc(100%+10px)] right-0 flex items-center gap-2 rounded-xl border border-white/10 bg-[#0b0b14]/95 backdrop-blur px-3 py-2 shadow-2xl shadow-fuchsia-500/10"
-            role="tooltip"
-          >
-            <span className="text-xs text-white/90 font-medium whitespace-nowrap">Ask Cars Night AI</span>
-            <button
-              type="button"
-              onClick={() => setShowTooltip(false)}
-              aria-label="Dismiss tooltip"
-              className="text-white/40 hover:text-white/80"
+      {/* Floating button — hidden while the chat panel is open so the only
+          close affordance is the top-right X inside the panel (per user request
+          to remove the redundant X that sat on top of the send button area). */}
+      {!open && (
+        <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[60] print:hidden">
+          {/* Tooltip */}
+          {showTooltip && !open && (
+            <div
+              className="absolute bottom-[calc(100%+10px)] right-0 flex items-center gap-2 rounded-xl border border-white/10 bg-[#0b0b14]/95 backdrop-blur px-3 py-2 shadow-2xl shadow-fuchsia-500/10"
+              role="tooltip"
             >
-              <X className="h-3.5 w-3.5" />
-            </button>
-            {/* Arrow */}
-            <span className="absolute -bottom-1 right-6 h-2 w-2 rotate-45 bg-[#0b0b14]/95 border-r border-b border-white/10" />
-          </div>
-        )}
+              <span className="text-xs text-white/90 font-medium whitespace-nowrap">Ask Cars Night AI</span>
+              <button
+                type="button"
+                onClick={() => setShowTooltip(false)}
+                aria-label="Dismiss tooltip"
+                className="text-white/40 hover:text-white/80"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+              {/* Arrow */}
+              <span className="absolute -bottom-1 right-6 h-2 w-2 rotate-45 bg-[#0b0b14]/95 border-r border-b border-white/10" />
+            </div>
+          )}
 
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-label={open ? "Close Cars Night AI assistant" : "Open Cars Night AI assistant"}
-          aria-expanded={open}
-          className="group relative h-14 w-14 sm:h-16 sm:w-16 rounded-full overflow-hidden transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-          style={{
-            boxShadow:
-              "0 0 0 1px rgba(255,255,255,0.08), 0 12px 32px -8px rgba(139,92,246,0.5), 0 0 24px -4px rgba(217,70,239,0.45)",
-          }}
-        >
-          {/* Glow ring */}
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-0 rounded-full opacity-70 group-hover:opacity-100 transition-opacity"
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            aria-label="Open Cars Night AI assistant"
+            aria-expanded={false}
+            className="group relative h-14 w-14 sm:h-16 sm:w-16 rounded-full overflow-hidden transition-all duration-300 hover:scale-105 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             style={{
-              background:
-                "conic-gradient(from 0deg, #00A8FF, #6366F1, #8B5CF6, #D946EF, #00A8FF)",
-              filter: "blur(8px)",
-              transform: "scale(1.05)",
+              boxShadow:
+                "0 0 0 1px rgba(255,255,255,0.08), 0 12px 32px -8px rgba(139,92,246,0.5), 0 0 24px -4px rgba(217,70,239,0.45)",
             }}
-          />
-          {/* Inner icon */}
-          <span className="absolute inset-[2px] rounded-full overflow-hidden bg-[#0b0b14] ring-1 ring-white/10">
-            {open ? (
-              <span className="absolute inset-0 grid place-items-center text-white/90">
-                <X className="h-6 w-6" />
-              </span>
-            ) : (
+          >
+            {/* Glow ring */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-0 rounded-full opacity-70 group-hover:opacity-100 transition-opacity"
+              style={{
+                background:
+                  "conic-gradient(from 0deg, #00A8FF, #6366F1, #8B5CF6, #D946EF, #00A8FF)",
+                filter: "blur(8px)",
+                transform: "scale(1.05)",
+              }}
+            />
+            {/* Inner icon — always the AI assistant image, never morphs to X */}
+            <span className="absolute inset-[2px] rounded-full overflow-hidden bg-[#0b0b14] ring-1 ring-white/10">
               <Image
                 src="/ai-assistant/ai-icon.png"
                 alt=""
@@ -222,10 +220,10 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
                 priority
                 unoptimized
               />
-            )}
-          </span>
-        </button>
-      </div>
+            </span>
+          </button>
+        </div>
+      )}
 
       {/* Backdrop (mobile only) */}
       {open && (

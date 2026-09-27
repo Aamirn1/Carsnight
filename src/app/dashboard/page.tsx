@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
-  ListChecks, Coins, Car, CreditCard, Plus, Wallet, ShieldCheck, ArrowRight, Sparkles,
+  ListChecks, Coins, Car, CreditCard, Plus, Wallet, ShieldCheck, ArrowRight, Sparkles, Tag,
 } from "lucide-react";
-import { getSessionUser, getUserQuota } from "@/lib/session";
-import { formatPrice, FREE_LISTING_LIMIT, type PublicListing } from "@/lib/constants";
+import { getSessionUser, getUserQuota, FREE_SALE_LIMIT, FREE_RENT_LIMIT } from "@/lib/session";
+import { formatPrice, type PublicListing } from "@/lib/constants";
 import { findListings, findTransactions, getUserById, sbListingToPublic } from "@/lib/sb";
 import { Card, CardContent, CardHeader, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,11 @@ export default async function DashboardPage() {
   if (!user) redirect("/signin?callbackUrl=/dashboard");
 
   // Fetch all data with try/catch so missing Supabase data doesn't crash
-  let quota: any = { freeRemaining: 0, paidRemaining: 0, total: 0, freeUsed: 0, freeLimit: 2 };
+  let quota: any = {
+    freeRemaining: 0, paidRemaining: 0, total: 0, freeUsed: 0, freeLimit: 4,
+    freeSaleRemaining: FREE_SALE_LIMIT, freeRentRemaining: FREE_RENT_LIMIT,
+    freeSaleUsed: 0, freeRentUsed: 0, freeSaleLimit: FREE_SALE_LIMIT, freeRentLimit: FREE_RENT_LIMIT,
+  };
   let listings: PublicListing[] = [];
   let transactions: any[] = [];
   let dbUser: any = null;
@@ -55,11 +59,13 @@ export default async function DashboardPage() {
     .filter((t: any) => t.status === "COMPLETED")
     .reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
 
-  const freeUsedPct = Math.min(100, (quota.freeUsed / FREE_LISTING_LIMIT) * 100);
+  const totalFreeLimit = FREE_SALE_LIMIT + FREE_RENT_LIMIT;
+  const freeUsedPct = Math.min(100, ((quota.freeUsed ?? 0) / totalFreeLimit) * 100);
   const quotaLow = quota.total === 0;
   const initials = (user.name || user.email).trim().slice(0, 1).toUpperCase();
   const isAdmin = user.role === "ADMIN";
   const createdAtStr = dbUser?.createdAt || new Date().toISOString();
+  const displayName = user.name || user.email.split("@")[0];
 
   return (
     <div className="w-full">
@@ -74,27 +80,38 @@ export default async function DashboardPage() {
       )}
 
       <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Welcome header */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        {/* Welcome header — name + profile icon on the same row */}
+        <div className="flex items-center gap-4">
           <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary text-xl font-bold shrink-0">
             {initials}
           </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Welcome back, {user.name || user.email.split("@")[0]}</h1>
+          <div className="min-w-0">
+            <div className="flex items-baseline gap-2 flex-wrap">
+              <span className="text-base text-muted-foreground font-medium">Welcome back,</span>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight truncate">{displayName}</h1>
+            </div>
             <p className="mt-1 text-sm text-muted-foreground">Member since {formatDate(createdAtStr)}</p>
           </div>
         </div>
 
-        {/* Quota cards */}
+        {/* Quota cards — per-category free + paid credits */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
-            <CardHeader className="pb-2"><CardDescription>Free posts used</CardDescription></CardHeader>
+            <CardHeader className="pb-2"><CardDescription className="flex items-center gap-1.5"><Tag className="h-3.5 w-3.5" /> Free Sale posts</CardDescription></CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">
-                <ListChecks className="h-5 w-5 text-primary" />
-                <span className="text-2xl font-bold">{quota.freeUsed} / {FREE_LISTING_LIMIT}</span>
+                <Tag className="h-5 w-5 text-primary" />
+                <span className="text-2xl font-bold">{quota.freeSaleUsed ?? 0} / {FREE_SALE_LIMIT}</span>
               </div>
-              <Progress value={freeUsedPct} className="mt-3 h-2" />
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2"><CardDescription className="flex items-center gap-1.5"><Car className="h-3.5 w-3.5" /> Free Rent posts</CardDescription></CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2">
+                <Car className="h-5 w-5 text-primary" />
+                <span className="text-2xl font-bold">{quota.freeRentUsed ?? 0} / {FREE_RENT_LIMIT}</span>
+              </div>
             </CardContent>
           </Card>
           <Card>
@@ -102,7 +119,7 @@ export default async function DashboardPage() {
             <CardContent>
               <div className="flex items-center gap-2">
                 <Coins className="h-5 w-5 text-primary" />
-                <span className="text-2xl font-bold">{quota.paidRemaining}</span>
+                <span className="text-2xl font-bold">{quota.paidRemaining ?? 0}</span>
               </div>
             </CardContent>
           </Card>
@@ -115,16 +132,18 @@ export default async function DashboardPage() {
               </div>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="pb-2"><CardDescription>Total spent</CardDescription></CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5 text-primary" />
-                <span className="text-2xl font-bold">{formatPrice(totalSpent)}</span>
-              </div>
-            </CardContent>
-          </Card>
         </div>
+
+        {/* Quota progress */}
+        <Card>
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between mb-2 text-sm">
+              <span className="font-medium text-muted-foreground">Total free posts used</span>
+              <span className="font-semibold">{quota.freeUsed ?? 0} / {totalFreeLimit}</span>
+            </div>
+            <Progress value={freeUsedPct} className="h-2" />
+          </CardContent>
+        </Card>
 
         {/* Quota warning */}
         {quotaLow && (

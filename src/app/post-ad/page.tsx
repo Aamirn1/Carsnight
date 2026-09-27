@@ -22,7 +22,12 @@ export default async function PostAdPage({ searchParams }: PageProps) {
   if (!user) redirect("/signin?callbackUrl=/post-ad");
 
   const { edit } = await searchParams;
-  let quota: any = { freeRemaining: 0, paidRemaining: 0, total: 0, freeUsed: 0, freeLimit: 2 };
+  let quota: any = {
+    freeRemaining: 0, paidRemaining: 0, total: 0, freeUsed: 0, freeLimit: 4,
+    freeSaleRemaining: 2, freeRentRemaining: 2,
+    freeSaleUsed: 0, freeRentUsed: 0,
+    freeSaleLimit: 2, freeRentLimit: 2,
+  };
   try { quota = await getUserQuota(user.id); } catch {}
 
   let initialListing: PublicListing | null = null;
@@ -68,6 +73,12 @@ export default async function PostAdPage({ searchParams }: PageProps) {
           total: quota.total,
           freeUsed: quota.freeUsed,
           freeLimit: quota.freeLimit,
+          freeSaleRemaining: quota.freeSaleRemaining ?? 2,
+          freeRentRemaining: quota.freeRentRemaining ?? 2,
+          freeSaleUsed: quota.freeSaleUsed ?? 0,
+          freeRentUsed: quota.freeRentUsed ?? 0,
+          freeSaleLimit: quota.freeSaleLimit ?? 2,
+          freeRentLimit: quota.freeRentLimit ?? 2,
         }}
       />
     </div>

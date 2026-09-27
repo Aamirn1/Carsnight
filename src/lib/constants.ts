@@ -9,6 +9,48 @@ export const BODY_TYPES = ["Sedan", "SUV", "Coupe", "Hatchback", "Truck", "Van",
 export const RENTAL_PERIODS = ["day", "week", "month"] as const;
 export const CURRENCIES = ["USD", "EUR", "GBP", "PKR", "AED", "JPY"] as const;
 
+// Country → default currency code mapping for the AI assistant + Post Ad form.
+// Used to show prices in the user's local currency based on the country they
+// selected at signup. Add new mappings here as the marketplace expands.
+export const COUNTRY_CURRENCY: Record<string, string> = {
+  "United States": "USD",
+  "United Kingdom": "GBP",
+  "Pakistan": "PKR",
+  "Japan": "JPY",
+  "United Arab Emirates": "AED",
+  "Germany": "EUR",
+  "Canada": "USD",
+  "Australia": "USD",
+  "Saudi Arabia": "AED",
+  "India": "USD",
+  "France": "EUR",
+  "Italy": "EUR",
+  "China": "USD",
+  "South Korea": "USD",
+  "Singapore": "USD",
+  "Malaysia": "USD",
+  "Turkey": "USD",
+  "Brazil": "USD",
+  "Mexico": "USD",
+  "Nigeria": "USD",
+};
+
+export function currencyOfCountry(country: string): string {
+  return COUNTRY_CURRENCY[country] || "USD";
+}
+
+export function currencySymbol(currency: string): string {
+  const symbols: Record<string, string> = {
+    USD: "$",
+    EUR: "€",
+    GBP: "£",
+    PKR: "Rs ",
+    AED: "AED ",
+    JPY: "¥",
+  };
+  return symbols[currency] || `${currency} `;
+}
+
 export const FREE_LISTING_LIMIT = 2;
 export const MAX_IMAGES = 4;
 export const MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5MB

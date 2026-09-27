@@ -49,6 +49,8 @@ import {
   RENTAL_PERIODS,
   formatPrice,
   formatPeriod,
+  currencyOfCountry,
+  currencySymbol,
   type PublicListing,
 } from "@/lib/constants";
 
@@ -58,6 +60,12 @@ interface QuotaInfo {
   total: number;
   freeUsed: number;
   freeLimit: number;
+  freeSaleRemaining: number;
+  freeRentRemaining: number;
+  freeSaleUsed: number;
+  freeRentUsed: number;
+  freeSaleLimit: number;
+  freeRentLimit: number;
 }
 
 interface Props {
@@ -142,6 +150,11 @@ export function PostAdForm({ initialListing, editError, quota, userCountry, user
 
   const isEdit = !!initialListing;
 
+  // Derive the user's local currency from their signup country (PKR for Pakistan,
+  // GBP for UK, etc.). Falls back to USD for unmapped countries.
+  const userCurrency = currencyOfCountry(form.country);
+  const userCurrencySymbol = currencySymbol(userCurrency);
+
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((f) => ({ ...f, [key]: value }));
     setErrors((e) => ({ ...e, [key]: "" }));
@@ -225,6 +238,7 @@ export function PostAdForm({ initialListing, editError, quota, userCountry, user
         country: form.country,
         city: form.city,
         price: Number(form.price),
+        currency: userCurrency,
         rentalPeriod: form.category === "RENT" ? form.rentalPeriod : null,
         images: form.images,
       };
@@ -341,8 +355,13 @@ export function PostAdForm({ initialListing, editError, quota, userCountry, user
               <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                 <span className="flex items-center gap-1.5">
                   <Tag className="h-3.5 w-3.5 text-primary" />
-                  <strong className="font-semibold">{quota.freeRemaining}</strong>
-                  <span className="text-muted-foreground">free posts</span>
+                  <strong className="font-semibold">{quota.freeSaleRemaining ?? 2}</strong>
+                  <span className="text-muted-foreground">free Sale posts</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <Car className="h-3.5 w-3.5 text-primary" />
+                  <strong className="font-semibold">{quota.freeRentRemaining ?? 2}</strong>
+                  <span className="text-muted-foreground">free Rent posts</span>
                 </span>
                 <span className="flex items-center gap-1.5">
                   <Coins className="h-3.5 w-3.5 text-primary" />
@@ -385,34 +404,36 @@ export function PostAdForm({ initialListing, editError, quota, userCountry, user
               >
                 <label
                   htmlFor="cat-sale"
-                  className={`flex items-center gap-3 rounded-lg border p-4 cursor-pointer transition-colors ${
+                  className={`flex items-center gap-2 sm:gap-3 rounded-lg border p-3 sm:p-4 cursor-pointer transition-colors ${
                     form.category === "SALE"
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-primary/40"
                   }`}
                 >
-                  <RadioGroupItem value="SALE" id="cat-sale" />
-                  <div>
-                    <div className="font-semibold flex items-center gap-1.5">
-                      <Tag className="h-3.5 w-3.5 text-primary" /> For Sale
+                  <RadioGroupItem value="SALE" id="cat-sale" className="shrink-0" />
+                  <div className="min-w-0">
+                    <div className="font-semibold flex items-center gap-1.5 whitespace-nowrap">
+                      <Tag className="h-3.5 w-3.5 text-primary shrink-0" />
+                      <span>For Sale</span>
                     </div>
-                    <div className="text-xs text-muted-foreground">List your car for sale</div>
+                    <div className="text-xs text-muted-foreground truncate">List your car for sale</div>
                   </div>
                 </label>
                 <label
                   htmlFor="cat-rent"
-                  className={`flex items-center gap-3 rounded-lg border p-4 cursor-pointer transition-colors ${
+                  className={`flex items-center gap-2 sm:gap-3 rounded-lg border p-3 sm:p-4 cursor-pointer transition-colors ${
                     form.category === "RENT"
                       ? "border-primary bg-primary/5"
                       : "border-border hover:border-primary/40"
                   }`}
                 >
-                  <RadioGroupItem value="RENT" id="cat-rent" />
-                  <div>
-                    <div className="font-semibold flex items-center gap-1.5">
-                      <Car className="h-3.5 w-3.5 text-primary" /> For Rent
+                  <RadioGroupItem value="RENT" id="cat-rent" className="shrink-0" />
+                  <div className="min-w-0">
+                    <div className="font-semibold flex items-center gap-1.5 whitespace-nowrap">
+                      <Car className="h-3.5 w-3.5 text-primary shrink-0" />
+                      <span>For Rent</span>
                     </div>
-                    <div className="text-xs text-muted-foreground">List your car for rent</div>
+                    <div className="text-xs text-muted-foreground truncate">List your car for rent</div>
                   </div>
                 </label>
               </RadioGroup>
@@ -554,7 +575,7 @@ export function PostAdForm({ initialListing, editError, quota, userCountry, user
             </CardContent>
           </Card>
 
-          {/* Location — country is auto-filled from user's signup, only city is selectable */}
+          {/* Location — country is auto-filled from user's signup (hidden); only city is selectable */}
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-base flex items-center gap-2">
@@ -563,16 +584,7 @@ export function PostAdForm({ initialListing, editError, quota, userCountry, user
               <CardDescription>Where is the car located?</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {/* Country — read-only, from user's signup */}
-              <div className="space-y-1.5">
-                <Label className="text-sm font-medium">Country</Label>
-                <div className="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm">
-                  <MapPin className="h-3.5 w-3.5 text-primary" />
-                  <span className="font-medium">{form.country || "Not set"}</span>
-                  <span className="text-xs text-muted-foreground ml-auto">(from your profile)</span>
-                </div>
-              </div>
-              {/* City — selectable, only cities from the user's country */}
+              {/* City — selectable, only cities from the user's country (from signup) */}
               <div className="space-y-1.5">
                 <Label htmlFor="postad-city" className="text-sm font-medium">City</Label>
                 <Select
@@ -591,6 +603,9 @@ export function PostAdForm({ initialListing, editError, quota, userCountry, user
                 </Select>
               </div>
               {errors.city && <p className="text-xs text-destructive">{errors.city}</p>}
+              {!form.country && (
+                <p className="text-xs text-muted-foreground">Set your country in your profile first to enable city selection.</p>
+              )}
             </CardContent>
           </Card>
 
@@ -607,9 +622,9 @@ export function PostAdForm({ initialListing, editError, quota, userCountry, user
             <CardContent className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div id="field-price" className="space-y-1.5">
-                  <Label htmlFor="price">Price (USD) *</Label>
+                  <Label htmlFor="price">Price ({userCurrency}) *</Label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm whitespace-nowrap">{userCurrencySymbol}</span>
                     <Input
                       id="price"
                       type="number"
@@ -618,7 +633,7 @@ export function PostAdForm({ initialListing, editError, quota, userCountry, user
                       placeholder="0"
                       min={0}
                       step="any"
-                      className="pl-7"
+                      className={userCurrencySymbol.length > 1 ? "pl-12" : "pl-7"}
                       aria-invalid={!!errors.price}
                     />
                   </div>
@@ -756,7 +771,7 @@ export function PostAdForm({ initialListing, editError, quota, userCountry, user
                 </p>
                 <div className="mt-2 flex items-baseline gap-1">
                   <span className="text-xl font-bold text-primary">
-                    {preview.price > 0 ? formatPrice(preview.price, "USD") : "$—"}
+                    {preview.price > 0 ? formatPrice(preview.price, userCurrency) : `${userCurrencySymbol}—`}
                   </span>
                   {preview.category === "RENT" && preview.price > 0 && (
                     <span className="text-xs text-muted-foreground">

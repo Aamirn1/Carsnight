@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { getSessionUser, getUserQuota } from "@/lib/session";
+import { getSessionUser, getUserQuota, FREE_SALE_LIMIT, FREE_RENT_LIMIT } from "@/lib/session";
+import { hasSupabase, getSupabase } from "@/lib/supabase-server";
 import {
   buildOrderBy,
   buildWhere,
@@ -113,8 +114,9 @@ export async function POST(req: Request) {
   images = images.filter((u) => u.startsWith("/uploads/") || u.startsWith("/cars/") || u.startsWith("data:image/"));
   if (images.length === 0) return NextResponse.json({ error: "Invalid image format." }, { status: 400 });
 
-  // Check quota
+  // Check quota (per-category free + paid credits)
   const quota = await getUserQuota(user.id);
+  const isSale = category === "SALE";
   if (quota.total <= 0) {
     return NextResponse.json({
       error: "You've reached your free listing limit. Upgrade to a Pro Plan to post more ads.",
@@ -124,15 +126,104 @@ export async function POST(req: Request) {
 
   // Determine paidType and decrement quota
   let paidType = "FREE";
-  // Use free quota first, then paid credits
   const slug = `${slugify(`${year ?? ""} ${make} ${model} ${city}`)}-${Math.random().toString(36).slice(2, 6)}`;
+
+  // --- Supabase path: per-category free quota with paid-credit fallback ---
+  if (hasSupabase()) {
+    try {
+      const sb = getSupabase();
+      const { data: freshRows } = await sb.from("User")
+        .select("freeSalePostsUsed, freeRentPostsUsed, listingCredits")
+        .eq("id", user.id).limit(1);
+      const fresh = freshRows?.[0] as any;
+      if (!fresh) {
+        return NextResponse.json({ error: "User not found." }, { status: 404 });
+      }
+      let saleUsed = Number(fresh.freeSalePostsUsed ?? 0);
+      let rentUsed = Number(fresh.freeRentPostsUsed ?? 0);
+      let listingCredits = Number(fresh.listingCredits ?? 0);
+      // also keep the legacy combined counter in sync
+      let freePostsUsed = saleUsed + rentUsed;
+
+      const usedFreeSale = saleUsed >= FREE_SALE_LIMIT;
+      const usedFreeRent = rentUsed >= FREE_RENT_LIMIT;
+      const freeAvailableForCategory = isSale ? !usedFreeSale : !usedFreeRent;
+
+      if (freeAvailableForCategory) {
+        if (isSale) saleUsed += 1; else rentUsed += 1;
+        freePostsUsed = saleUsed + rentUsed;
+        paidType = "FREE";
+      } else if (listingCredits > 0) {
+        listingCredits -= 1;
+        paidType = "PAID";
+      } else {
+        return NextResponse.json({
+          error: `You've used all ${isSale ? "SALE" : "RENT"} free listings. Upgrade to a Pro Plan to post more ads.`,
+          code: "QUOTA_EXCEEDED",
+        }, { status: 402 });
+      }
+
+      const insertBody = {
+        id: undefined, // let DB generate
+        title, description, category, price,
+        currency: body.currency && typeof body.currency === "string" ? body.currency.slice(0, 8) : "USD",
+        make, model,
+        year: year && Number.isFinite(year) ? year : null,
+        mileage: mileage !== null && Number.isFinite(mileage) ? mileage : null,
+        fuelType, transmission, bodyType,
+        color: color || null, country, city,
+        rentalPeriod: category === "RENT" ? rentalPeriod : null,
+        images: JSON.stringify(images),
+        status: "APPROVED",
+        paidType, featured: false, slug,
+        userId: user.id,
+        views: 0,
+      };
+      const { data: created, error: insertErr } = await sb.from("Listing").insert(insertBody).select("*").limit(1).single();
+      if (insertErr || !created) {
+        return NextResponse.json({ error: "Could not create listing." }, { status: 500 });
+      }
+      // Update user counters
+      await sb.from("User").update({
+        freeSalePostsUsed: saleUsed,
+        freeRentPostsUsed: rentUsed,
+        freePostsUsed: freePostsUsed,
+        listingCredits,
+      }).eq("id", user.id);
+      try { await sb.from("AuditLog").insert({ userId: user.id, action: "LISTING_CREATE", details: title }); } catch {}
+
+      // Return as PublicListing
+      const pub: any = {
+        id: created.id, title: created.title, description: created.description,
+        category: created.category, price: created.price, currency: created.currency,
+        make: created.make, model: created.model, year: created.year ?? null,
+        mileage: created.mileage ?? null, fuelType: created.fuelType ?? null,
+        transmission: created.transmission ?? null, bodyType: created.bodyType ?? null,
+        color: created.color ?? null, country: created.country, city: created.city,
+        rentalPeriod: created.rentalPeriod ?? null,
+        images: parseImages(created.images), status: created.status, paidType: created.paidType,
+        featured: created.featured, slug: created.slug, views: created.views ?? 0,
+        createdAt: created.createdAt, updatedAt: created.updatedAt,
+        user: null,
+      };
+      return NextResponse.json({ listing: pub }, { status: 201 });
+    } catch (e: any) {
+      return NextResponse.json({ error: "Could not create listing. Please try again." }, { status: 500 });
+    }
+  }
+
+  // --- Prisma fallback (local dev with SQLite) ---
   const listing = await db.$transaction(async (tx) => {
-    const fresh = await tx.user.findUnique({ where: { id: user.id }, select: { freePostsUsed: true, listingCredits: true } });
+    const fresh = await tx.user.findUnique({ where: { id: user.id }, select: { freePostsUsed: true, freeSalePostsUsed: true, freeRentPostsUsed: true, listingCredits: true } });
     if (!fresh) throw new Error("User not found");
-    let freePostsUsed = fresh.freePostsUsed;
+    let freeSalePostsUsed = Number(fresh.freeSalePostsUsed ?? 0);
+    let freeRentPostsUsed = Number(fresh.freeRentPostsUsed ?? 0);
     let listingCredits = fresh.listingCredits;
-    if (freePostsUsed < 2) {
-      freePostsUsed += 1;
+    const usedFreeSale = freeSalePostsUsed >= FREE_SALE_LIMIT;
+    const usedFreeRent = freeRentPostsUsed >= FREE_RENT_LIMIT;
+    const freeAvailableForCategory = isSale ? !usedFreeSale : !usedFreeRent;
+    if (freeAvailableForCategory) {
+      if (isSale) freeSalePostsUsed += 1; else freeRentPostsUsed += 1;
       paidType = "FREE";
     } else if (listingCredits > 0) {
       listingCredits -= 1;
@@ -146,7 +237,7 @@ export async function POST(req: Request) {
         description,
         category,
         price,
-        currency: "USD",
+        currency: body.currency && typeof body.currency === "string" ? body.currency.slice(0, 8) : "USD",
         make,
         model,
         year,
@@ -168,7 +259,12 @@ export async function POST(req: Request) {
     });
     await tx.user.update({
       where: { id: user.id },
-      data: { freePostsUsed, listingCredits },
+      data: {
+        freePostsUsed: freeSalePostsUsed + freeRentPostsUsed,
+        freeSalePostsUsed,
+        freeRentPostsUsed,
+        listingCredits,
+      },
     });
     await tx.auditLog.create({
       data: { userId: user.id, action: "LISTING_CREATE", details: created.title },

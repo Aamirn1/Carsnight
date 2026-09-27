@@ -1,29 +1,22 @@
 "use client";
 
 import Link from "next/link";
-import { useSyncExternalStore } from "react";
 import { Car, Mail, Shield, Globe, Bitcoin } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
 
 export function SiteFooter() {
-  // Use useSyncExternalStore to check the document element's class list
-  // (set by next-themes before React hydrates) so dark-mode detection is
-  // correct from the first client render with no flash.
-  const isDark = useSyncExternalStore(
-    () => () => {},
-    () => {
-      if (typeof document === "undefined") return false;
-      return document.documentElement.classList.contains("dark");
-    },
-    () => false,
-  );
+  // Per user request: the footer "Cars" wordmark must always be BLACK on all
+  // pages, in both light and dark mode. We render the dark wordmark variant
+  // (which has black "Cars" + gold "Night") unconditionally. The previous
+  // dark-mode behavior swapped to the light (white) wordmark which was
+  // unreadable on the dark footer background and contradicted the spec.
   const year = new Date().getFullYear();
   return (
     <footer className="mt-auto border-t border-border bg-card/40">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           <div className="col-span-2 md:col-span-1">
-            <BrandMark size="sm" light={isDark} />
+            <BrandMark size="sm" light={false} />
             <p className="mt-3 text-sm text-muted-foreground max-w-xs">
               Your global car marketplace — buy, sell, and rent cars worldwide with confidence.
             </p>

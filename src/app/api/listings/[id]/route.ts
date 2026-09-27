@@ -92,6 +92,7 @@ export async function PUT(req: Request, ctx: RouteCtx) {
     where: { id },
     data: {
       title, description, category, price,
+      currency: body.currency && typeof body.currency === "string" ? body.currency.slice(0, 8) : existing.currency,
       make, model,
       year: year && Number.isFinite(year) ? year : null,
       mileage: mileage != null && Number.isFinite(mileage) ? mileage : null,
