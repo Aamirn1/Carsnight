@@ -9,6 +9,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { ScrollToTop } from "@/components/scroll-to-top";
 import { ScrollToTopButton } from "@/components/scroll-to-top-button";
 import { NeonGradientDef } from "@/components/neon-gradient-def";
+import { AIAssistantLazy } from "@/components/ai-assistant-lazy";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -125,6 +126,7 @@ export default function RootLayout({
           <main className="flex-1 flex flex-col">{children}</main>
           <SiteFooter />
           <ScrollToTopButton />
+          <AIAssistantLazy />
           <Toaster />
         </Providers>
       </body>
