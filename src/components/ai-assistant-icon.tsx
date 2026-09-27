@@ -154,45 +154,53 @@ export function AIAssistantIcon({ size = 128, className = "" }: AIAssistantIconP
         <g className="ai-icon-float" style={{ transformOrigin: "center" }}>
           {/* ============================================================
               SPARKLES — drawn BEHIND the bubble so the bubble's white
-              interior stays clean. They orbit outside the bubble.
+              interior stays clean. They orbit around their respective
+              centers (60, 80) for the large one and (45, 50) for the
+              small one — both in the upper-left area of the bubble.
+
+              Structure: outer <g transform="translate(cx, cy)"> moves the
+              orbit center to (cx, cy). Inside, the .ai-sparkle-* group
+              applies the orbit animation: rotate(θ) translate(r, 0)
+              rotate(-θ), which traces a circle of radius r around the
+              outer translate point. The counter-rotation keeps the
+              sparkle's own orientation stable (it orbits but doesn't
+              spin). The .ai-sparkle-*-inner group applies the twinkle
+              (scale + opacity).
               ============================================================ */}
-          {/* Large sparkle — orbits clockwise around (60, 80) */}
-          <g
-            className="ai-sparkle-large"
-            style={{ transformOrigin: "60px 80px" }}
-          >
-            <g className="ai-sparkle-large-inner">
-              {/* Four-point star path (concave edges) centered at (0,0)
-                  then translated to orbit position */}
-              <path
-                d="M 0 -22
-                   C 4 -8 8 -4 22 0
-                   C 8 4 4 8 0 22
-                   C -4 8 -8 4 -22 0
-                   C -8 -4 -4 -8 0 -22
-                   Z"
-                fill="url(#ai-sparkle-large-gradient)"
-                filter="url(#ai-bubble-glow)"
-              />
+          {/* Large sparkle — orbits clockwise around (60, 80), radius 28 */}
+          <g transform="translate(60, 80)">
+            <g className="ai-sparkle-large">
+              <g className="ai-sparkle-large-inner">
+                {/* Four-point star path (concave edges) centered at (0,0) */}
+                <path
+                  d="M 0 -22
+                     C 4 -8 8 -4 22 0
+                     C 8 4 4 8 0 22
+                     C -4 8 -8 4 -22 0
+                     C -8 -4 -4 -8 0 -22
+                     Z"
+                  fill="url(#ai-sparkle-large-gradient)"
+                  filter="url(#ai-bubble-glow)"
+                />
+              </g>
             </g>
           </g>
 
-          {/* Small sparkle — orbits anti-clockwise around (45, 50) */}
-          <g
-            className="ai-sparkle-small"
-            style={{ transformOrigin: "45px 50px" }}
-          >
-            <g className="ai-sparkle-small-inner">
-              <path
-                d="M 0 -11
-                   C 2 -4 4 -2 11 0
-                   C 4 2 2 4 0 11
-                   C -2 4 -4 2 -11 0
-                   C -4 -2 -2 -4 0 -11
-                   Z"
-                fill="url(#ai-sparkle-small-gradient)"
-                filter="url(#ai-bubble-glow)"
-              />
+          {/* Small sparkle — orbits anti-clockwise around (45, 50), radius 22 */}
+          <g transform="translate(45, 50)">
+            <g className="ai-sparkle-small">
+              <g className="ai-sparkle-small-inner">
+                <path
+                  d="M 0 -11
+                     C 2 -4 4 -2 11 0
+                     C 4 2 2 4 0 11
+                     C -2 4 -4 2 -11 0
+                     C -4 -2 -2 -4 0 -11
+                     Z"
+                  fill="url(#ai-sparkle-small-gradient)"
+                  filter="url(#ai-bubble-glow)"
+                />
+              </g>
             </g>
           </g>
 
@@ -315,20 +323,26 @@ export function AIAssistantIcon({ size = 128, className = "" }: AIAssistantIconP
                (no CSS needed; the offsets animate continuously, 5s linear) ===== */
 
         /* ===== Large sparkle — orbit clockwise (6s) =====
-               Orbit center is the transformOrigin set inline (60px, 80px).
-               We rotate the group around that center; the inner group
-               counter-translates so the star itself doesn't rotate
-               chaotically, just orbits smoothly. */
+               The outer <g transform="translate(60, 80)"> (in the SVG markup)
+               moves the orbit center to (60, 80) in the SVG coordinate system.
+               The .ai-sparkle-large group then applies the orbit animation:
+                 rotate(θ) translateX(r) rotate(-θ)
+               which traces a circle of radius r around the parent translate
+               point. The counter-rotation keeps the sparkle's own
+               orientation stable (it orbits but doesn't spin chaotically).
+               Radius 14px keeps the orbit in the upper-left area of the
+               icon, per the user spec ("orbit around the upper area of
+               the chat icon", "small curved/orbital path"). */
         .ai-sparkle-large {
           animation: ai-orbit-cw 6s linear infinite;
           will-change: transform;
         }
         @keyframes ai-orbit-cw {
-          0%   { transform: rotate(0deg)   translateX(0px)   rotate(0deg); }
-          25%  { transform: rotate(90deg)  translateX(0px)   rotate(-90deg); }
-          50%  { transform: rotate(180deg) translateX(0px)   rotate(-180deg); }
-          75%  { transform: rotate(270deg) translateX(0px)   rotate(-270deg); }
-          100% { transform: rotate(360deg) translateX(0px)   rotate(-360deg); }
+          0%   { transform: rotate(0deg)   translateX(14px) rotate(0deg); }
+          25%  { transform: rotate(90deg)  translateX(14px) rotate(-90deg); }
+          50%  { transform: rotate(180deg) translateX(14px) rotate(-180deg); }
+          75%  { transform: rotate(270deg) translateX(14px) rotate(-270deg); }
+          100% { transform: rotate(360deg) translateX(14px) rotate(-360deg); }
         }
         /* Twinkle for the large sparkle (2.5s, subtle scale + opacity) */
         .ai-sparkle-large-inner {
@@ -342,17 +356,19 @@ export function AIAssistantIcon({ size = 128, className = "" }: AIAssistantIconP
           100% { transform: scale(0.92); opacity: 0.85; }
         }
 
-        /* ===== Small sparkle — orbit anti-clockwise (4.5s) ===== */
+        /* ===== Small sparkle — orbit anti-clockwise (4.5s) =====
+               Orbit center (45, 50) via outer <g transform="translate(45, 50)">.
+               Radius 10px. */
         .ai-sparkle-small {
           animation: ai-orbit-ccw 4.5s linear infinite;
           will-change: transform;
         }
         @keyframes ai-orbit-ccw {
-          0%   { transform: rotate(0deg)    translateX(0px) rotate(0deg); }
-          25%  { transform: rotate(-90deg)  translateX(0px) rotate(90deg); }
-          50%  { transform: rotate(-180deg) translateX(0px) rotate(180deg); }
-          75%  { transform: rotate(-270deg) translateX(0px) rotate(270deg); }
-          100% { transform: rotate(-360deg) translateX(0px) rotate(360deg); }
+          0%   { transform: rotate(0deg)    translateX(10px) rotate(0deg); }
+          25%  { transform: rotate(-90deg)  translateX(10px) rotate(90deg); }
+          50%  { transform: rotate(-180deg) translateX(10px) rotate(180deg); }
+          75%  { transform: rotate(-270deg) translateX(10px) rotate(270deg); }
+          100% { transform: rotate(-360deg) translateX(10px) rotate(360deg); }
         }
         .ai-sparkle-small-inner {
           animation: ai-twinkle-small 1.8s ease-in-out infinite;
