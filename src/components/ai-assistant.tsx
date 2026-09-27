@@ -281,17 +281,17 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
             </button>
           </header>
 
-          {/* Messages */}
+          {/* Messages — white background per user request */}
           <div
             ref={scrollRef}
-            className="flex-1 overflow-y-auto px-3 py-4 space-y-4 ai-scroll"
+            className="flex-1 overflow-y-auto px-3 py-4 space-y-4 ai-scroll bg-white"
           >
             {messages.map((m) => (
               <MessageBubble key={m.id} message={m} onQuickReply={onQuickReply} disabled={sending} />
             ))}
 
             {sending && (
-              <div className="flex items-center gap-2 text-white/60 text-xs px-1">
+              <div className="flex items-center gap-2 text-slate-500 text-xs px-1">
                 <span className="inline-flex gap-1">
                   <span className="h-2 w-2 rounded-full bg-fuchsia-400 animate-bounce" style={{ animationDelay: "0ms" }} />
                   <span className="h-2 w-2 rounded-full bg-violet-400 animate-bounce" style={{ animationDelay: "120ms" }} />
@@ -345,8 +345,8 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
         @keyframes ai-slide-up { from { opacity: 0; transform: translateY(12px) } to { opacity: 1; transform: translateY(0) } }
         .ai-scroll::-webkit-scrollbar { width: 6px }
         .ai-scroll::-webkit-scrollbar-track { background: transparent }
-        .ai-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 9999px }
-        .ai-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18) }
+        .ai-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 9999px }
+        .ai-scroll::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.22) }
       `}</style>
     </>
   );
@@ -369,7 +369,7 @@ function MessageBubble({
           className={
             isUser
               ? "rounded-2xl rounded-br-sm px-3.5 py-2.5 text-sm text-white shadow-sm"
-              : "rounded-2xl rounded-bl-sm px-3.5 py-2.5 text-sm text-white/90 bg-white/[0.04] border border-white/10 shadow-sm"
+              : "rounded-2xl rounded-bl-sm px-3.5 py-2.5 text-sm text-slate-800 bg-slate-100 border border-slate-200 shadow-sm"
           }
           style={
             isUser
@@ -378,7 +378,7 @@ function MessageBubble({
           }
         >
           {message.error && (
-            <div className="flex items-center gap-1.5 text-amber-300 text-xs mb-1">
+            <div className="flex items-center gap-1.5 text-amber-600 text-xs mb-1">
               <AlertTriangle className="h-3.5 w-3.5" />
               <span>Couldn't reach the assistant</span>
             </div>
@@ -395,7 +395,7 @@ function MessageBubble({
           </div>
         )}
 
-        {/* Quick reply chips */}
+        {/* Quick reply chips — dark border/text on white background */}
         {message.quickReplies && message.quickReplies.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {message.quickReplies.map((qr, i) => (
@@ -404,9 +404,9 @@ function MessageBubble({
                 type="button"
                 onClick={() => onQuickReply(qr)}
                 disabled={disabled}
-                className="group inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/[0.04] px-3 py-1.5 text-xs text-white/85 hover:text-white hover:border-fuchsia-400/40 hover:bg-fuchsia-500/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="group inline-flex items-center gap-1 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 hover:text-slate-900 hover:border-fuchsia-400 hover:bg-fuchsia-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                <Sparkles className="h-3 w-3 text-fuchsia-400/80 group-hover:text-fuchsia-300" />
+                <Sparkles className="h-3 w-3 text-fuchsia-500 group-hover:text-fuchsia-600" />
                 <span className="truncate max-w-[200px]">{qr}</span>
                 <ArrowRight className="h-3 w-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
               </button>

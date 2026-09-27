@@ -60,9 +60,9 @@ export function AIListingCard({ listing }: { listing: AIListing }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="group block rounded-xl overflow-hidden border border-white/10 bg-white/[0.03] hover:bg-white/[0.06] hover:border-fuchsia-400/30 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-fuchsia-400/40"
+      className="group block rounded-xl overflow-hidden border border-slate-200 bg-slate-50 hover:bg-white hover:border-fuchsia-400 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-fuchsia-400/40"
     >
-      <div className="relative aspect-[16/10] overflow-hidden bg-[#0b0b14]">
+      <div className="relative aspect-[16/10] overflow-hidden bg-slate-200">
         <Image
           src={img}
           alt={listing.title}
@@ -72,7 +72,7 @@ export function AIListingCard({ listing }: { listing: AIListing }) {
           unoptimized
         />
         <div className="absolute left-2 top-2 flex gap-1.5">
-          <span className="text-[10px] font-semibold tracking-wide px-2 py-0.5 rounded-full bg-black/70 backdrop-blur text-white border border-white/10">
+          <span className="text-[10px] font-semibold tracking-wide px-2 py-0.5 rounded-full bg-slate-900/80 backdrop-blur text-white">
             {isRent ? "For Rent" : "For Sale"}
           </span>
           {listing.featured && (
@@ -85,16 +85,16 @@ export function AIListingCard({ listing }: { listing: AIListing }) {
 
       <div className="p-3 space-y-2">
         <div>
-          <h4 className="text-sm font-semibold text-white/95 line-clamp-1 group-hover:text-white">
+          <h4 className="text-sm font-semibold text-slate-900 line-clamp-1 group-hover:text-fuchsia-600 transition-colors">
             {listing.title}
           </h4>
-          <p className="text-[11px] text-white/50 flex items-center gap-1 mt-0.5">
-            <MapPin className="h-3 w-3 text-fuchsia-400/80 shrink-0" />
+          <p className="text-[11px] text-slate-500 flex items-center gap-1 mt-0.5">
+            <MapPin className="h-3 w-3 text-fuchsia-500 shrink-0" />
             <span className="line-clamp-1">{listing.city}, {listing.country}</span>
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-1 text-[10px] text-white/60">
+        <div className="grid grid-cols-2 gap-1 text-[10px] text-slate-600">
           {listing.year != null && (
             <span className="flex items-center gap-1">
               <Calendar className="h-3 w-3" /> {listing.year}
@@ -123,10 +123,10 @@ export function AIListingCard({ listing }: { listing: AIListing }) {
               {formatPrice(listing.price, listing.currency)}
             </div>
             {isRent && (
-              <div className="text-[10px] text-white/40">{formatPeriod(listing.rentalPeriod)}</div>
+              <div className="text-[10px] text-slate-400">{formatPeriod(listing.rentalPeriod)}</div>
             )}
           </div>
-          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-white/80 group-hover:text-white">
+          <span className="inline-flex items-center gap-1 text-[10px] font-medium text-slate-700 group-hover:text-fuchsia-600 transition-colors">
             View
             <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
           </span>
