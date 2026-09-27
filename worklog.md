@@ -1872,3 +1872,73 @@ Stage Summary:
 - ✅ Same premium animated SVG in the 68x68 FAB and the 40x40 chat panel header avatar.
 - ✅ Verified on dev and production (carsnight1.vercel.app) with Agent Browser + VLM.
 - ✅ Zero console / runtime errors.
+
+---
+Task ID: 50
+Agent: main (orchestrator)
+Task: Fix AI assistant icon size, scale, and proportions — make it larger and prominent (was too small/weak at 68x68)
+
+Work Log:
+- The user reported the AI assistant icon was too small and weak on the website — it lost its premium look, the big blue star didn't feel prominent, the small pink star was hard to notice, the white inner area looked cramped, and the message lines weren't readable. The icon needed to be larger and properly proportioned to match the standalone reference icon.
+
+Changes to src/components/ai-assistant-icon.tsx:
+- Tightened the SVG viewBox from "0 0 256 256" to "4 16 212 204" so the icon fills more of the rendered area (less empty padding around the artwork).
+  * Computed the actual artwork bounds + animation margins: large sparkle extends to x=16,y=40 (with orbit radius 8 → x=8,y=32); small sparkle extends to y=32 (with orbit radius 6 → y=26); bubble stroke extends to x=216,y=192; tail tip at y=218; float -3px → y=23. Animated bounds: x=8..216 (w=208), y=23..218 (h=195). Adding 4px margin → viewBox "4 16 212 204".
+- Changed the size prop from `size` (square) to `width` (width-based with auto height).
+- Added ICON_ASPECT_RATIO constant (212/204 ≈ 1.039) so the icon's natural proportions are preserved — nothing is stretched or compressed.
+- Added a responsive mode: when no `width` prop is provided, the wrapper uses width: 100%, height: auto, aspect-ratio: 212/204, and the SVG fills 100% of the wrapper. This lets the parent control the size via CSS breakpoints.
+- Default width is 88px (mobile baseline).
+
+Changes to src/components/ai-assistant.tsx:
+- FAB button: removed the fixed width:68, height:68 inline styles. The button now uses the .ai-fab-button CSS class (96x96 mobile, 108x108 desktop via @media min-width:640px).
+- FAB icon: uses <AIAssistantIcon className="ai-fab-icon" /> (responsive mode). The .ai-fab-icon CSS class sets width: 88px (mobile) / 100px (desktop) with height: auto and aspect-ratio: 212/204 !important so it stays properly proportioned.
+- Chat panel header avatar: changed from <AIAssistantIcon size={40} /> to <AIAssistantIcon width={44} /> (44px wide, was 40x40). Container is now 44x44 (was 40x40).
+- Added responsive CSS to the inline <style jsx global> block:
+  * .ai-fab-button { width: 96px; height: 96px; }
+  * .ai-fab-icon { width: 88px !important; height: auto !important; aspect-ratio: 212/204 !important; }
+  * @media (min-width: 640px) { .ai-fab-button { width: 108px; height: 108px; } .ai-fab-icon { width: 100px !important; } }
+
+Positioning (unchanged, per user spec):
+- Mobile:  bottom-5 right-5 (20px from each edge)
+- Desktop: bottom-6 right-6 (24px from each edge)
+- The icon stays within the viewport bounds (no clipping, no overflow).
+
+VERIFIED WITH Agent Browser (sub-agent) on dev:
+- Measured sizes (getBoundingClientRect):
+  * Desktop: button 108x108, icon 100x96.22 (fills 92.6% W / 89.1% H of button)
+  * Mobile:  button 96x96,   icon 88x84.67  (fills 91.7% W / 88.2% H of button)
+  * Header avatar: 44x42.33
+- Aspect ratio exactly 1.0393 on both desktop and mobile — matches the viewBox ratio (212/204 = 1.0392) to 4 decimals. NOT distorted.
+- VLM confirms FAB close-up: "LARGE and PROMINENT… thick gradient border transitioning from deep purple/blue on the left to bright cyan on the right… large, distinct blue/cyan 4-point star positioned behind and slightly upper-left of the chat bubble… smaller pink/magenta sparkle directly above the center of the larger blue sparkle… three gray horizontal lines inside the white area, clearly readable… distinct chat-bubble tail pointing towards the bottom-right… premium and balanced, does not look cramped or stretched."
+- VLM confirms mobile close-up: "LARGE and PROMINENT, occupying a significant portion of the mobile viewport (~80-90px wide)… thick gradient border clearly visible… fully contained, no clipping."
+- VLM confirms header avatar: "high clarity and stands out prominently… thick border that gradients from cyan to purple… large four-pointed star in blue/cyan… smaller pink/magenta sparkle… no outer white circle."
+- NO outer white circle — confirmed via DOM (background: transparent, border: none, padding: 0) and VLM.
+- All animations running: flowing gradient (verified via computed gradient matrix rotation 229°→73° over 1.2s), large sparkle clockwise orbit (radius 8, all samples r≈8.0, angle increasing), small sparkle anti-clockwise orbit (radius 6, all samples r≈6.0, angle decreasing), twinkle, breathing, message-line pulse, floating. Pixel-diff: ~13% of FAB region changes between frames 600ms apart, max per-channel diff 209.
+- Viewport bounds: desktop button right=1416 (<1440), bottom=876 (<900); mobile right=370 (<390), bottom=824 (<844). overflowX: false on both. No clipping.
+- Zero console / runtime errors / hydration mismatches.
+
+VERIFIED WITH Agent Browser (sub-agent) on production (carsnight1.vercel.app):
+- Measured sizes match spec exactly:
+  * Desktop: button 108x108, icon 100x96.22 (fills 92.6% W / 89.1% H)
+  * Mobile:  button 96x96,   icon 88x84.67  (fills 91.7% W / 88.2% H)
+  * Header avatar: 44x42.33
+- Aspect ratio 1.0393 (matches viewBox 1.039) — not distorted.
+- Flowing gradient + all animations running (verified via 3-frame pixel diff: mean Δ 9.56, 7.87, 11.50 across 1.5s intervals; 29-36% of pixels change between frames).
+- NO outer white circle.
+- Within viewport bounds, no clipping.
+- No console errors.
+
+Commit: 94af98c — pushed to GitHub main. Vercel rebuilt and deployed.
+
+Stage Summary:
+- ✅ The AI assistant icon is now LARGER and PROMINENT:
+  * Mobile: 88px wide (was 68) — ~29% larger
+  * Desktop: 100px wide (was 68) — ~47% larger
+  * Header avatar: 44px wide (was 40)
+- ✅ The icon fills ~90% of the button (was 100% but at a tiny size) — the button is slightly larger than the icon for a touch-friendly tap target, but the icon is now prominent (per spec: "large clickable area is fine; tiny visible icon inside it is NOT fine").
+- ✅ The icon preserves its natural aspect ratio (~1.039:1, slightly wider than tall) — nothing is stretched or compressed.
+- ✅ The viewBox was tightened so the icon fills more of the rendered area (less empty padding).
+- ✅ All animations preserved and running cleanly: flowing gradient border, large sparkle clockwise orbit, small sparkle anti-clockwise orbit, twinkle, breathing, message-line pulse, floating, hover scale, tap squash.
+- ✅ NO outer white circle / badge background — the icon floats directly on the page background (transparent outside the icon).
+- ✅ Verified on dev and production (carsnight1.vercel.app) with Agent Browser + VLM.
+- ✅ Zero console / runtime errors.
