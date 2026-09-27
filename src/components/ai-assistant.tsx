@@ -169,7 +169,13 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
           The button uses an animated SVG AI assistant icon (no outer white
           circle / badge background — fully transparent outside the icon
           itself, per user spec). The icon's own neon gradient border + glow
-          provides the visual prominence. */}
+          provides the visual prominence.
+
+          Size (per user spec):
+            Mobile:  icon width ~88px, right 20px, bottom 20px
+            Desktop: icon width ~100px, right 24px, bottom 24px
+          The button wrapper is slightly larger than the icon (touch-friendly
+          tap target with small padding), but the icon fills most of it. */}
       {!open && (
         <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[60] print:hidden">
           {/* Tooltip */}
@@ -197,10 +203,8 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
             onClick={() => setOpen(true)}
             aria-label="Open Cars Night AI Assistant"
             aria-expanded={false}
-            className="group relative grid place-items-center transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="ai-fab-button group relative grid place-items-center transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-fuchsia-400/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             style={{
-              width: 68,
-              height: 68,
               background: "transparent",
               border: "none",
               padding: 0,
@@ -208,8 +212,16 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
             }}
           >
             {/* The animated SVG icon — fully transparent background, only
-                the chat-bubble + sparkles + neon glow are visible. */}
-            <AIAssistantIcon size={68} />
+                the chat-bubble + sparkles + neon glow are visible.
+                Width-based sizing with auto height from the icon's natural
+                aspect ratio (~1.039:1) so nothing is stretched/compressed.
+                Sizes (per user spec):
+                  Mobile:  88px wide  (~85px tall)
+                  Desktop: 100px wide (~96px tall)
+                The button wrapper is slightly larger than the icon
+                (96px mobile, 108px desktop) for a touch-friendly tap
+                target, but the icon fills ~92% of it. */}
+            <AIAssistantIcon className="ai-fab-icon" />
           </button>
         </div>
       )}
@@ -231,8 +243,8 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
         >
           {/* Header */}
           <header className="relative flex items-center gap-3 px-4 py-3 border-b border-white/10 bg-gradient-to-r from-[#00A8FF]/10 via-[#8B5CF6]/10 to-[#D946EF]/10">
-            <div className="grid place-items-center shrink-0" style={{ width: 40, height: 40 }}>
-              <AIAssistantIcon size={40} />
+            <div className="grid place-items-center shrink-0" style={{ width: 44, height: 44 }}>
+              <AIAssistantIcon width={44} />
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-sm font-semibold text-white flex items-center gap-1.5">
@@ -329,6 +341,32 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
         .ai-scroll::-webkit-scrollbar-track { background: transparent }
         .ai-scroll::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 9999px }
         .ai-scroll::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.22) }
+
+        /* ===== Floating AI button — responsive sizing =====
+           Mobile:  icon 88px wide, button 96x96 (touch-friendly)
+           Desktop: icon 100px wide, button 108x108
+           The button wrapper is slightly larger than the icon for a
+           comfortable tap target, but the icon fills ~92% of it so it
+           looks prominent (per user spec: "large clickable area is fine;
+           tiny visible icon inside it is NOT fine"). */
+        .ai-fab-button {
+          width: 96px;
+          height: 96px;
+        }
+        .ai-fab-icon {
+          width: 88px !important;
+          height: auto !important;
+          aspect-ratio: 212 / 204 !important;
+        }
+        @media (min-width: 640px) {
+          .ai-fab-button {
+            width: 108px;
+            height: 108px;
+          }
+          .ai-fab-icon {
+            width: 100px !important;
+          }
+        }
       `}</style>
     </>
   );

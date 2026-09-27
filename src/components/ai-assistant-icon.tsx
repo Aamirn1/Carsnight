@@ -38,23 +38,56 @@
  */
 
 interface AIAssistantIconProps {
-  /** Pixel size of the rendered SVG. The SVG scales to this size. */
-  size?: number;
-  /** Extra classes for the outer wrapper (e.g. hover state hooks). */
+  /** Rendered width of the SVG in pixels. Height is computed automatically
+   * from the icon's natural aspect ratio (~1.039:1) so the icon is never
+   * stretched or compressed. The wrapper also accepts the
+   * `ai-icon-responsive` class which makes the width responsive via CSS
+   * (88px on mobile, 100px on desktop) — useful when the parent wants to
+   * control the size via Tailwind breakpoints instead of a fixed prop. */
+  width?: number;
+  /** Extra classes for the outer wrapper. Pass `ai-icon-responsive` to
+   * make the icon responsive (mobile 88px, desktop 100px) via CSS. */
   className?: string;
 }
 
-export function AIAssistantIcon({ size = 68, className = "" }: AIAssistantIconProps) {
+// Tight viewBox bounds: x=4, y=16, width=212, height=204.
+// Computed from the actual artwork bounds + animation margins:
+//   - Large sparkle extends to x=16, y=40 (with orbit radius 8 → x=8, y=32)
+//   - Small sparkle extends to y=32 (with orbit radius 6 → y=26)
+//   - Bubble stroke extends to x=216 (208 + 8 stroke), y=192 (184 + 8 stroke)
+//   - Tail tip at y=218
+//   - Float animation translates -3px → y can go to 23
+// So animated bounds: x=8..216 (w=208), y=23..218 (h=195).
+// Adding a 4px margin all around → viewBox "4 19 212 203" → rounded to
+// "4 16 212 204" for a clean, slightly generous frame.
+const ICON_VIEWBOX_X = 4;
+const ICON_VIEWBOX_Y = 16;
+const ICON_VIEWBOX_W = 212;
+const ICON_VIEWBOX_H = 204;
+const ICON_ASPECT_RATIO = ICON_VIEWBOX_W / ICON_VIEWBOX_H; // ~1.039
+
+export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps) {
+  // If `width` prop is provided, use it (with auto height from aspect ratio).
+  // Otherwise, fall back to the responsive CSS class (mobile 88px, desktop 100px)
+  // which sets the width via CSS variables; the SVG fills 100% of the wrapper.
+  const isResponsive = !width;
+  const computedWidth = width ?? 88;
+  const computedHeight = Math.round((computedWidth / ICON_ASPECT_RATIO) * 100) / 100;
   return (
     <span
       className={`ai-assistant-icon-wrapper inline-block align-middle ${className}`}
-      style={{ width: size, height: size, lineHeight: 0 }}
+      style={{
+        width: isResponsive ? "100%" : computedWidth,
+        height: isResponsive ? "auto" : computedHeight,
+        lineHeight: 0,
+        ...(isResponsive ? { aspectRatio: `${ICON_ASPECT_RATIO}` } : {}),
+      }}
       aria-hidden="true"
     >
       <svg
-        viewBox="0 0 256 256"
-        width={size}
-        height={size}
+        viewBox={`${ICON_VIEWBOX_X} ${ICON_VIEWBOX_Y} ${ICON_VIEWBOX_W} ${ICON_VIEWBOX_H}`}
+        width={isResponsive ? "100%" : computedWidth}
+        height={isResponsive ? "100%" : computedHeight}
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         style={{ overflow: "visible", display: "block" }}
