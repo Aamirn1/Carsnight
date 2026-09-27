@@ -349,8 +349,8 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
            comfortable tap target, but the icon fills ~92% of it so it
            looks prominent (per user spec: "large clickable area is fine;
            tiny visible icon inside it is NOT fine").
-           The aspect ratio 216/184 matches the icon's new tightened
-           viewBox (8 44 216 184) so nothing is stretched. */
+           The aspect ratio 214/194 matches the icon's new tightened
+           viewBox (14 44 214 194) so nothing is stretched. */
         .ai-fab-button {
           width: 96px;
           height: 96px;
@@ -358,7 +358,7 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
         .ai-fab-icon {
           width: 88px !important;
           height: auto !important;
-          aspect-ratio: 216 / 184 !important;
+          aspect-ratio: 214 / 194 !important;
         }
         @media (min-width: 640px) {
           .ai-fab-button {

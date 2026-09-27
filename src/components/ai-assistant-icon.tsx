@@ -69,23 +69,23 @@ interface AIAssistantIconProps {
   className?: string;
 }
 
-// Tight viewBox bounds: x=8, y=44, width=216, height=184.
+// Tight viewBox bounds: x=14, y=44, width=214, height=194.
 // Computed from the actual artwork bounds + animation margins:
-//   - Large sparkle: center (68, 136), radius 52, X-orientation. Points at
-//     45° diagonals → top-left point at (68-52/√2, 136-52/√2) ≈ (31, 99);
-//     bottom-left at (31, 173); with orbit radius 5 → (26, 94) to (26, 178).
-//   - Small sparkle: center (96, 84), radius 18, X-orientation. Top point
-//     at (96-18/√2, 84-18/√2) ≈ (83, 71); with orbit radius 4 → (79, 67).
-//   - Bubble: x=66 to 220 (stroke adds 6 each side → 60 to 226),
-//     y=78 to 222 (stroke adds 6 → 72 to 228; tail tip at y=220).
-// So animated bounds: x=26..226 (w=200), y=67..228 (h=161).
-// Adding a small margin → viewBox "20 62 212 172" → rounded generously to
-// "8 44 216 184" to give the stars breathing room on the left.
-const ICON_VIEWBOX_X = 8;
+//   - Large sparkle: center (64, 128), radius 46, X-orientation. Points at
+//     45° diagonals → top-left point at (64-46/√2, 128-46/√2) ≈ (32, 96);
+//     bottom-left at (32, 160); with orbit radius 5 → (27, 91) to (27, 165).
+//   - Small sparkle: center (96, 72), radius 18, X-orientation. Top point
+//     at (96-18/√2, 72-18/√2) ≈ (83, 59); with orbit radius 4 → (79, 55).
+//   - Bubble: x=66 to 210 (stroke adds 6 each side → 60 to 216),
+//     y=85 to 185 (stroke adds 6 → 79 to 191; tail tip at y=224+6=230).
+//   - Tail: tip at (196, 224), stroke adds 6 → x up to 202, y down to 230.
+// So animated bounds: x=27..216 (w=189), y=55..230 (h=175).
+// Adding a small margin → viewBox "14 44 214 194".
+const ICON_VIEWBOX_X = 14;
 const ICON_VIEWBOX_Y = 44;
-const ICON_VIEWBOX_W = 216;
-const ICON_VIEWBOX_H = 184;
-const ICON_ASPECT_RATIO = ICON_VIEWBOX_W / ICON_VIEWBOX_H; // ~1.174
+const ICON_VIEWBOX_W = 214;
+const ICON_VIEWBOX_H = 194;
+const ICON_ASPECT_RATIO = ICON_VIEWBOX_W / ICON_VIEWBOX_H; // ~1.103
 
 export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps) {
   // If `width` prop is provided, use it (with auto height from aspect ratio).
@@ -191,7 +191,7 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
               lines so the breathing scale doesn't let them extend beyond
               the bubble border. */}
           <clipPath id="ai-bubble-clip">
-            <path d="M 85,85 L 195,85 A 15,15 0 0,1 210,100 L 210,170 A 15,15 0 0,1 195,185 L 165,185 L 130,220 A 6,6 0 0,1 120,215 L 120,185 L 81,185 A 15,15 0 0,1 66,170 L 66,100 A 15,15 0 0,1 81,85 Z" />
+            <path d="M 81,85 L 195,85 A 15,15 0 0,1 210,100 L 210,170 A 15,15 0 0,1 195,185 L 166,185 L 196,224 L 198,185 L 81,185 A 15,15 0 0,1 66,170 L 66,100 A 15,15 0 0,1 81,85 Z" />
           </clipPath>
         </defs>
 
@@ -204,73 +204,22 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
             ============================================================ */}
         <g>
           {/* ============================================================
-              SPARKLES — drawn BEHIND the bubble so the bubble's white
-              fill covers the overlapping parts. Each sparkle is wrapped
-              in an outer <g transform="translate(cx, cy)"> to position the
-              orbit center, then .ai-sparkle-* for the orbit animation,
-              then .ai-sparkle-*-inner for the twinkle. The star path is
-              rotated 45° (X-orientation) so its points aim at the corners.
-              ============================================================ */}
-
-          {/* LARGE SPARKLE — center (68, 136), radius 52, X-orientation.
-              Orbits CLOCKWISE around (68, 136) at radius 5 (7s linear).
-              The orbit is intentionally small so the star stays anchored
-              to the left-corner cluster (per user spec: "the stars must
-              remain visually fixed to the upper-left corner area of the
-              icon, the orbit should be local and small, the stars should
-              never look like they are wandering away"). */}
-          <g transform="translate(68, 136)">
-            <g className="ai-sparkle-large">
-              <g className="ai-sparkle-large-inner">
-                {/* Four-point star with concave cubic-bezier curves,
-                    X-orientation (rotated 45°). Points at top-left, top-right,
-                    bottom-right, bottom-left. Control points create gentle
-                    concave indentations on each side. */}
-                <path
-                  d="M 0,-52 C 10,-30 14,-14 52,0 C 14,14 10,30 0,52 C -10,30 -14,14 -52,0 C -14,-14 -10,-30 0,-52 Z"
-                  fill="url(#ai-sparkle-large-gradient)"
-                  filter="url(#ai-bubble-glow)"
-                  transform="rotate(45)"
-                />
-              </g>
-            </g>
-          </g>
-
-          {/* SMALL SPARKLE — center (96, 84), radius 18, X-orientation.
-              Orbits ANTI-CLOCKWISE around (96, 84) at radius 4 (6s linear).
-              Positioned above and to the upper-right of the large star's
-              center, forming a left-corner cluster. */}
-          <g transform="translate(96, 84)">
-            <g className="ai-sparkle-small">
-              <g className="ai-sparkle-small-inner">
-                {/* Same concave 4-point star shape, scaled down to R=18,
-                    X-orientation. */}
-                <path
-                  d="M 0,-18 C 4,-8 6,-4 18,0 C 6,4 4,8 0,18 C -4,8 -6,4 -18,0 C -6,-4 -4,-8 0,-18 Z"
-                  fill="url(#ai-sparkle-small-gradient)"
-                  filter="url(#ai-bubble-glow)"
-                  transform="rotate(45)"
-                />
-              </g>
-            </g>
-          </g>
-
-          {/* ============================================================
-              CHAT BUBBLE — drawn ON TOP of the sparkles. The white fill
-              covers the parts of the large sparkle that overlap the
-              bubble interior, so only the parts of the sparkle that
-              extend outside the bubble (to the left and below) are
-              visible — exactly matching the original icon design.
+              CHAT BUBBLE — drawn FIRST (behind the sparkles). Per user
+              spec: "Bring both stars to the FRONT so they are clearly
+              visible above the icon." Previously the sparkles were drawn
+              behind the bubble so the white fill covered the overlapping
+              parts; now the sparkles are drawn ON TOP of the bubble so
+              both stars are fully visible.
               ============================================================ */}
           <g className="ai-bubble-group">
             {/* Bubble outline — white fill + slimmer gradient stroke.
-                strokeWidth=12 (was 16 — the user said the border was "too
-                large and oversized" and the white inner area felt "too
-                small"). 12 gives a clear gradient border while letting
-                the white inner area feel balanced and well-proportioned.
-                strokeLinejoin="round" for smooth corners. */}
+                strokeWidth=12 (per user spec: slimmer border). The tail
+                now points RIGHT (tip at 196,224) matching the reference
+                (per user spec: "The lower V/chat tail is wrong. It is
+                currently pointing left. Rotate/reshape it so it points
+                to the RIGHT"). strokeLinejoin="round" for smooth corners. */}
             <path
-              d="M 85,85 L 195,85 A 15,15 0 0,1 210,100 L 210,170 A 15,15 0 0,1 195,185 L 165,185 L 130,220 A 6,6 0 0,1 120,215 L 120,185 L 81,185 A 15,15 0 0,1 66,170 L 66,100 A 15,15 0 0,1 81,85 Z"
+              d="M 81,85 L 195,85 A 15,15 0 0,1 210,100 L 210,170 A 15,15 0 0,1 195,185 L 166,185 L 196,224 L 198,185 L 81,185 A 15,15 0 0,1 66,170 L 66,100 A 15,15 0 0,1 81,85 Z"
               fill="#FFFFFF"
               stroke="url(#ai-bubble-gradient)"
               strokeWidth="12"
@@ -309,6 +258,74 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
                   fill="#B8BCC8"
                   className="ai-msg-line ai-msg-line-3"
                   style={{ transformOrigin: "170px 146px" }}
+                />
+              </g>
+            </g>
+          </g>
+
+          {/* ============================================================
+              SPARKLES — drawn ON TOP of (in front of) the bubble so both
+              stars are clearly visible (per user spec: "Bring both stars
+              to the FRONT so they are clearly visible above the icon").
+              Each sparkle is wrapped in an outer <g transform="translate
+              (cx, cy)"> to position the orbit center, then .ai-sparkle-*
+              for the orbit animation, then .ai-sparkle-*-inner for the
+              twinkle. The star path is rotated 45° (X-orientation) so its
+              points aim at the corners.
+
+              Star sizes REDUCED (per user spec: "Reduce both stars size so
+              it do not feels too big according to the chat icon gradient
+              box"): large r=46 (was 52), small r=18 (kept, already small).
+
+              Star positions anchored to the TOP-LEFT corner of the bubble
+              (per user spec: "Keep both stars anchored near the top-left
+              corner of the gradient bubble"):
+              - Large star center (64, 128) — left of the bubble, vertically
+                centered, overlapping the bubble's left edge.
+              - Small star center (96, 72) — above and to the right of the
+                large star, near the top-left corner of the bubble.
+              ============================================================ */}
+
+          {/* LARGE SPARKLE — center (64, 128), radius 46, X-orientation.
+              Orbits CLOCKWISE around (64, 128) at radius 5 (7s linear).
+              The orbit is small so the star stays anchored to the
+              top-left corner (per user spec: "Keep both stars anchored
+              near the top-left corner of the gradient bubble. Their orbit
+              should be small and local, not drifting away").
+              CLOCKWISE means: top → right → bottom → left → top (like a
+              clock hand direction). */}
+          <g transform="translate(64, 128)">
+            <g className="ai-sparkle-large">
+              <g className="ai-sparkle-large-inner">
+                {/* Four-point star with concave cubic-bezier curves,
+                    X-orientation (rotated 45°). Points at top-left, top-right,
+                    bottom-right, bottom-left. Radius 46 (reduced from 52). */}
+                <path
+                  d="M 0,-46 C 9,-27 12,-12 46,0 C 12,12 9,27 0,46 C -9,27 -12,12 -46,0 C -12,-12 -9,-27 0,-46 Z"
+                  fill="url(#ai-sparkle-large-gradient)"
+                  filter="url(#ai-bubble-glow)"
+                  transform="rotate(45)"
+                />
+              </g>
+            </g>
+          </g>
+
+          {/* SMALL SPARKLE — center (96, 72), radius 18, X-orientation.
+              Orbits ANTI-CLOCKWISE around (96, 72) at radius 4 (6s linear).
+              Positioned above and to the right of the large star, near the
+              top-left corner of the bubble.
+              ANTI-CLOCKWISE means: top → left → bottom → right → top
+              (opposite of the large star). */}
+          <g transform="translate(96, 72)">
+            <g className="ai-sparkle-small">
+              <g className="ai-sparkle-small-inner">
+                {/* Same concave 4-point star shape, radius 18,
+                    X-orientation. */}
+                <path
+                  d="M 0,-18 C 4,-8 6,-4 18,0 C 6,4 4,8 0,18 C -4,8 -6,4 -18,0 C -6,-4 -4,-8 0,-18 Z"
+                  fill="url(#ai-sparkle-small-gradient)"
+                  filter="url(#ai-bubble-glow)"
+                  transform="rotate(45)"
                 />
               </g>
             </g>
