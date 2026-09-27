@@ -12,6 +12,50 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+// ----------------------------------------------------------------------------
+// ZAI instance factory.
+//
+// The z-ai-web-dev-sdk reads its credentials from a `.z-ai-config` file at
+// process.cwd(), home dir, or /etc/.z-ai-config. In this dev sandbox that file
+// is auto-provisioned. On Vercel (or any other deployment) the user must set
+// the following env vars so the assistant can call the LLM:
+//   ZAI_API_KEY   — required
+//   ZAI_BASE_URL  — optional (defaults to https://internal-api.z.ai/v1)
+//   ZAI_TOKEN     — optional (JWT session token)
+//   ZAI_CHAT_ID   — optional
+//   ZAI_USER_ID   — optional
+// If env vars are present we construct ZAI directly (bypassing the config
+// file). Otherwise we fall back to ZAI.create() (which reads the config file).
+// ----------------------------------------------------------------------------
+let zaiPromise: Promise<any> | null = null;
+function getZai(): Promise<any> {
+  if (!zaiPromise) {
+    zaiPromise = (async () => {
+      const apiKey = process.env.ZAI_API_KEY;
+      const baseUrl = process.env.ZAI_BASE_URL;
+      const token = process.env.ZAI_TOKEN;
+      const chatId = process.env.ZAI_CHAT_ID;
+      const userId = process.env.ZAI_USER_ID;
+      if (apiKey || baseUrl || token) {
+        const config: any = {
+          baseUrl: baseUrl || "https://internal-api.z.ai/v1",
+          apiKey: apiKey || "Z.ai",
+        };
+        if (token) config.token = token;
+        if (chatId) config.chatId = chatId;
+        if (userId) config.userId = userId;
+        return new ZAI(config);
+      }
+      return await ZAI.create();
+    })().catch((e) => {
+      // Reset so next request can try again
+      zaiPromise = null;
+      throw e;
+    });
+  }
+  return zaiPromise;
+}
+
 // ============================================================================
 // /api/ai/chat — Cars Night AI Car Assistant
 // ----------------------------------------------------------------------------
@@ -244,7 +288,7 @@ export async function POST(req: Request) {
     .map((m) => ({ role: m.role, content: m.content.slice(0, 4000) }));
 
   try {
-    const zai = await ZAI.create();
+    const zai = await getZai();
 
     // --- STEP 1: ask the LLM what to do (and which tool to call, if any) ---
     const firstMessages = [
