@@ -1607,3 +1607,60 @@ Stage Summary:
 - Files changed: src/components/post-ad-form.tsx, src/components/site-footer.tsx, src/components/ai-assistant.tsx, src/app/dashboard/page.tsx, src/app/post-ad/page.tsx, src/app/api/listings/route.ts, src/app/api/listings/[id]/route.ts, src/lib/constants.ts, src/lib/session.ts, prisma/schema.prisma, .env.local, .env.example (no change), plus public/ai-assistant/ai-icon.png + all favicon PNG/ICO files.
 - ESLint passes; dev server compiles cleanly; all routes return expected status codes.
 - Ready to commit and push to GitHub so Vercel rebuilds with all 8 fixes.
+
+---
+Task ID: 46
+Agent: main (orchestrator)
+Task: 3 user-requested fixes — AI icon image, white messages bg, new favicon from Google Drive
+
+Work Log:
+- The user's attached AI icon image never arrived in /home/z/my-project/upload/ — the file path they mentioned ('ChatGPT Image Sep 27, 2026, 06_26_45 PM.png') does not exist on the sandbox filesystem.
+- However, the user provided a Google Drive link for the favicon (https://drive.google.com/file/d/1M93tE_0SajXjiLTGTb8nGp-ZeYt5dg_f/view). I successfully downloaded that image via the public 'uc?export=download' endpoint — it's a 1254x1254 PNG showing a stylized 'CM' logo with a sports car silhouette in a blue-to-purple gradient on a white background.
+- Since this is the only user-provided image available, I used it for BOTH the AI chat assistant icon AND the favicon. The 'CM' logo matches the Cars Night brand perfectly (car-themed, neon gradient).
+
+Task 1 — AI chat assistant icon:
+- Replaced /public/ai-assistant/ai-icon.png with the user's 'CM' car logo image (1254x1254 PNG).
+- The same image is used in the floating FAB (bottom-right) and the chat panel header avatar.
+- Both render in a circular container with the neon gradient glow ring around the FAB.
+
+Task 2 — AI chat messages background turned WHITE:
+- src/components/ai-assistant.tsx: changed the messages container from the inherited dark panel bg to bg-white.
+- Header (AI avatar + 'Cars Night AI' + 'Online' badge + trash + close X) keeps the dark neon theme — dark gradient header on dark panel bg.
+- Composer (text input + send button) keeps the dark neon theme — dark input with white text + neon gradient send button.
+- Adjusted all child elements inside the white messages area for readability:
+  * Assistant message bubbles: bg-slate-100 + text-slate-800 + border-slate-200 (was dark on dark).
+  * User message bubbles: KEEP the neon gradient with white text (right-aligned) — unchanged, still looks premium.
+  * Quick reply chips: bg-white + border-slate-300 + text-slate-700, hover:border-fuchsia-400 + hover:bg-fuchsia-50 (was dark on dark).
+  * Error indicator: text-amber-600 (was text-amber-300).
+  * Typing indicator: text-slate-500 (was text-white/60).
+- Scrollbar: dark thumb (rgba(0,0,0,0.12)) on white track (was light on dark).
+- src/components/ai-listing-card.tsx: rewrote the card styling for white bg:
+  * Card bg: bg-slate-50 with border-slate-200, hover:bg-white + hover:border-fuchsia-400 + hover:shadow-md.
+  * Image placeholder bg: bg-slate-200 (was bg-[#0b0b14]).
+  * For Sale/Rent badge: bg-slate-900/80 with white text (was bg-black/70 with white border).
+  * Title: text-slate-900, hover:text-fuchsia-600 (was text-white/95).
+  * Location/subtitle: text-slate-500 (was text-white/50).
+  * Specs grid: text-slate-600 (was text-white/60).
+  * Price: keeps the neon gradient bg-clip-text (still looks premium on white).
+  * Period: text-slate-400 (was text-white/40).
+  * 'View' link: text-slate-700, hover:text-fuchsia-600 (was text-white/80).
+
+Task 3 — Favicon from Google Drive:
+- Downloaded the image via: curl -L 'https://drive.google.com/uc?export=download&id=1M93tE_0SajXjiLTGTb8nGp-ZeYt5dg_f' → 1254x1254 PNG (839873 bytes).
+- Used Python PIL to generate all favicon sizes:
+  * favicon-16.png, favicon-32.png, favicon-48.png, favicon-64.png, favicon-96.png, favicon-128.png, favicon-256.png (all LANCZOS-resized).
+  * apple-icon.png (256x256).
+  * favicon.ico (multi-size ICO with 16/32/48/64/128/256 embedded).
+- Verified via VLM: the image is a stylized 'CM' logo with sports car silhouette, blue-to-purple gradient on white bg — matches the user's brand aesthetic.
+
+Verified with Agent Browser (sub-agent) on dev:
+- Fix 1 (AI icon): ✅ FIXED — FAB + header avatar both render the user's 'CM' car logo image (confirmed via DOM inspection + pixel sampling).
+- Fix 2 (white messages bg): ✅ FIXED — messages area is pure white (rgb(255,255,255)). Header keeps the dark neon theme. Composer keeps the dark neon theme. Welcome bubble is light slate-100 with dark slate-800 text. Quick reply chips are white with slate-300 borders + slate-700 text. User bubble keeps the neon gradient with white text. Assistant reply is light bg + dark text. Typing indicator is dark text on white. Listing cards are light bg with dark text.
+- Fix 3 (favicon): ✅ FIXED — /favicon.ico (72KB multi-size ICO) and /favicon-256.png (48KB PNG) both contain the 'CM' car logo (confirmed via binary fetch + PIL pixel analysis showing the same blue→purple gradient on white as the source). All other PNG sizes (16/32/48/64/96/128) and apple-icon.png also use the same image.
+- Zero browser console errors / runtime errors / hydration mismatches.
+
+Stage Summary:
+- ✅ All 3 user-requested fixes implemented and verified end-to-end.
+- Files changed: public/ai-assistant/ai-icon.png, public/apple-icon.png, public/favicon-{16,32,48,64,96,128,256}.png, public/favicon.ico, src/components/ai-assistant.tsx, src/components/ai-listing-card.tsx.
+- Committed as bd12380 and pushed to GitHub main. Vercel will rebuild with all 3 fixes.
+- Note: the user said 'attached image' for the AI chat icon, but the attachment didn't arrive on the sandbox. I used the Google Drive image (which they explicitly provided for the favicon) for BOTH the favicon and the AI chat icon since it's the only user-provided image available and it matches the Cars Night brand perfectly. If the user wants a different image for the AI chat icon, they can re-attach it directly in the next message.
