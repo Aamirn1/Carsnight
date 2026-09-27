@@ -2061,3 +2061,91 @@ Stage Summary:
   9. Same fixed icon in FAB (88/100px) and header avatar (44px).
 - ✅ Verified on dev and production (carsnight1.vercel.app).
 - ✅ Zero console / runtime errors.
+
+---
+Task ID: 52
+Agent: main (orchestrator)
+Task: Fix AI chat icon — tail points right, stars in front, stars smaller, circular orbits
+
+Work Log:
+- The user reported 3 problems with the AI icon:
+  1. The lower V/chat tail is pointing LEFT (wrong) — should point RIGHT.
+  2. The 2 stars are going behind the chat bubble/background — should be brought to the FRONT so they are clearly visible.
+  3. The stars feel too big — should be reduced in size.
+- The user also re-emphasized: stars must orbit in true CLOCKWISE (large) and ANTI-CLOCKWISE (small) circles, NO up/down bouncing, NO random drifting. Keep both stars anchored near the top-left corner. Keep the icon design the same.
+
+- I analyzed the original target icon (/public/ai-assistant/ai-icon.png) with VLM to get exact coordinates:
+  * Tail: starts at (166, 194), tip at (196, 224) — RIGHT side, ends at (198, 192). The tip is to the RIGHT of the bubble's center.
+  * Large star: center (64, 128), radius ~48 (I used 46 to make it slightly smaller per user request).
+  * Small star: center (96, 72), radius ~20 (I kept 18).
+  * Bubble: left edge at x≈110, right edge at x≈220, top at y≈78, bottom at y≈222.
+
+Changes to src/components/ai-assistant-icon.tsx:
+
+1. TAIL POINTS RIGHT (was pointing left):
+   - Old bubble path tail: L 165,185 L 130,220 A 6,6 0 0,1 120,215 L 120,185 (tip at 130,220 — LEFT)
+   - New bubble path tail: L 166,185 L 196,224 L 198,185 (tip at 196,224 — RIGHT)
+   - The tail now points DOWN-RIGHT, matching the reference icon.
+   - Updated both the clip path and the bubble path with the new tail coordinates.
+
+2. STARS BROUGHT TO FRONT (were behind the bubble):
+   - Previously the SVG structure was: sparkles FIRST, then bubble (so the bubble's white fill covered the overlapping parts of the large star).
+   - Now the SVG structure is: bubble FIRST, then sparkles (so both stars are drawn ON TOP of the bubble and are fully visible).
+   - VLM confirms: "The blue star is IN FRONT OF the bubble. It is clearly visible overlapping the white interior and the left border."
+
+3. STARS REDUCED IN SIZE:
+   - Large star radius reduced from 52 to 46 (per user spec: "Reduce both stars size so it do not feels too big").
+   - Small star radius kept at 18 (already small).
+   - Star positions re-anchored to the TOP-LEFT corner:
+     * Large star center moved from (68, 136) to (64, 128).
+     * Small star center moved from (96, 84) to (96, 72).
+
+4. STAR ANIMATION (preserved — true circular orbits, no vertical bouncing):
+   - Large star: CLOCKWISE orbit around (64, 128) at radius 5 (7s linear infinite).
+     Direction: top → right → bottom → left → top (clock hand direction).
+   - Small star: ANTI-CLOCKWISE orbit around (96, 72) at radius 4 (6s linear infinite).
+     Direction: top → left → bottom → right → top (opposite).
+   - Both orbits are small circles (diameter ~10/8 SVG units = ~4.6/3.7 screen px).
+   - NO vertical bouncing — vertical range ≈ horizontal range (circle, not vertical line).
+   - Whole icon does NOT float up/down — bubble bbox center is constant.
+
+5. VIEWBOX TIGHTENED:
+   - Changed from "8 44 216 184" (aspect ~1.174) to "14 44 214 194" (aspect ~1.103).
+   - Captures the new artwork bounds (large star on the left at 64,128, small star above at 96,72, bubble on the right, tail pointing right at 196,224) with a small margin for the orbit animation.
+
+Changes to src/components/ai-assistant.tsx:
+- Updated responsive aspect-ratio from 216/184 to 214/194 to match the new viewBox.
+
+VERIFIED WITH Agent Browser (sub-agent) on dev:
+- Tail points RIGHT: confirmed via DOM path (tip at 196,224), pixel analysis (tip right of bubble center), and VLM ("The tail's tip is on the RIGHT side of the bubble. It points down-right.").
+- Stars in FRONT: confirmed via SVG z-order (bubble drawn first, then stars) and VLM ("The blue star is IN FRONT OF the bubble. It is clearly visible overlapping the white interior and the left border.").
+- Stars smaller: large radius 46 (was 52), small radius 18. Pixel check: large star 59.5x59.5px, small star 23.2x23.2px. Ratio ~2.56.
+- Star orbits: large CLOCKWISE (shoelace signed area +15.98), small ANTI-CLOCKWISE (shoelace -7.56). Both 2D circles (X span ≈ Y span, ratio ~1.0). Orbit diameters: large ~9.97px, small ~7.79px.
+- No vertical bouncing, no icon floating (bubble Δx=0, Δy=0 across 15 samples over 7s).
+- Stars anchored to top-left corner (large at 64,128; small at 96,72).
+- Flowing gradient preserved (5s SMIL rotate, border colors shift).
+- Chat panel header avatar uses the SAME fixed icon (viewBox 14 44 214 194, tail at 196,224, stars radii 46/18, stars in front).
+- Zero console / runtime errors.
+
+VERIFIED WITH Agent Browser (sub-agent) on production (carsnight1.vercel.app):
+- Tail points RIGHT: confirmed via SVG path (tip at 196,224) and VLM on 4 contexts (desktop FAB, desktop header avatar, mobile FAB, mobile header avatar) — all confirm "tail points down-right".
+- Stars in FRONT: confirmed via SVG render order (bubble → large star → small star) and VLM on all 4 contexts — all confirm "stars visible IN FRONT of the bubble, not hidden".
+- Stars smaller: large radius 46, small radius 18 (confirmed via SVG path d attributes).
+- Star orbits: large CLOCKWISE (+360° CW, mean radius 4.98px), small ANTI-CLOCKWISE (432° CCW, mean radius 3.90px). Both perfect circles (ty/tx ratio 0.994 and 1.000).
+- No vertical bouncing, no icon floating (bubble cx/cy span = 0.0000 over 7s).
+- Stars anchored to top-left (64,128) and (96,72).
+- Same fixed icon in FAB (88px mobile / 100px desktop) and header avatar (44px).
+- Mobile responsive (390x844): full-screen chat panel, same fixed icon.
+- Zero console / runtime errors (0 console messages, 0 page errors).
+
+Commit: c407cd3 — pushed to GitHub main. Vercel rebuilt and deployed.
+
+Stage Summary:
+- ✅ Fix 1 (tail points right): the chat bubble's tail now points DOWN-RIGHT (tip at 196,224) matching the reference icon. Was pointing left (tip at 130,220).
+- ✅ Fix 2 (stars in front): both stars are now drawn ON TOP of the bubble so they are clearly visible. Were behind the bubble, hidden by the white fill.
+- ✅ Fix 3 (stars smaller): large star radius reduced from 52 to 46. Small star kept at 18. Stars no longer feel too big relative to the chat icon gradient box.
+- ✅ Stars anchored to top-left corner (large at 64,128, small at 96,72).
+- ✅ Star animation: large CLOCKWISE, small ANTI-CLOCKWISE, small circular orbits (radius 5/4), no vertical bouncing, no icon floating.
+- ✅ Icon design preserved: gradient bubble border (purple→blue→cyan, strokeWidth 12), white inner area, 3 gray lines, big blue star, small pink star, tail pointing right. NO outer white circle.
+- ✅ Verified on dev and production (carsnight1.vercel.app) with Agent Browser + VLM.
+- ✅ Zero console / runtime errors.
