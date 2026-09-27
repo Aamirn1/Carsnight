@@ -51,6 +51,7 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [showTooltip, setShowTooltip] = useState(false);
+  const [tooltipDismissed, setTooltipDismissed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const firstOpenRef = useRef(false);
@@ -65,19 +66,21 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
     el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [messages, sending, open]);
 
-  // Show a one-time tooltip after 3s if user hasn't opened the chat
+  // Show a one-time tooltip after 3s if user hasn't opened the chat and
+  // hasn't dismissed it yet. Once dismissed, it will never show again.
   useEffect(() => {
     const t = setTimeout(() => {
-      if (!firstOpenRef.current) setShowTooltip(true);
+      if (!firstOpenRef.current && !tooltipDismissed) setShowTooltip(true);
     }, 3000);
     return () => clearTimeout(t);
-  }, []);
+  }, [tooltipDismissed]);
 
   // Auto-hide tooltip when chat opens
   useEffect(() => {
     if (open) {
       firstOpenRef.current = true;
       setShowTooltip(false);
+      setTooltipDismissed(true);
       setTimeout(() => inputRef.current?.focus(), 300);
     }
   }, [open]);
@@ -177,24 +180,33 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
           The button wrapper is slightly larger than the icon (touch-friendly
           tap target with small padding), but the icon fills most of it. */}
       {!open && (
-        <div className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[60] print:hidden">
-          {/* Tooltip */}
-          {showTooltip && !open && (
+        <div className="ai-fab-container fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-[60] print:hidden">
+          {/* Tooltip — white background with black text (per user spec).
+              Animation: slides out from behind the AI icon (per user spec:
+              "make an animation this text must come out from behind the ai
+              assistant icon if user close it then go back from where it
+              come and must not come out again"). Once dismissed, it won't
+              show again (tooltipDismissed state).
+              Hidden when burger menu is open (per user spec: "When burger
+              options open the ai chat assistant message Ask cars night ai
+              message is visible in burger options bar it must not be shown
+              there"). */}
+          {showTooltip && !tooltipDismissed && !open && (
             <div
-              className="absolute bottom-[calc(100%+10px)] right-0 flex items-center gap-2 rounded-xl border border-white/10 bg-[#0b0b14]/95 backdrop-blur px-3 py-2 shadow-2xl shadow-fuchsia-500/10"
+                           className="ai-tooltip absolute bottom-[calc(100%+10px)] right-0 flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-2xl shadow-slate-900/10"
               role="tooltip"
             >
-              <span className="text-xs text-white/90 font-medium whitespace-nowrap">Ask Cars Night AI</span>
+              <span className="text-xs text-slate-900 font-medium whitespace-nowrap">Ask Cars Night AI</span>
               <button
                 type="button"
-                onClick={() => setShowTooltip(false)}
+                onClick={() => { setShowTooltip(false); setTooltipDismissed(true); }}
                 aria-label="Dismiss tooltip"
-                className="text-white/40 hover:text-white/80"
+                className="text-slate-400 hover:text-slate-900"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
               {/* Arrow */}
-              <span className="absolute -bottom-1 right-6 h-2 w-2 rotate-45 bg-[#0b0b14]/95 border-r border-b border-white/10" />
+              <span className="absolute -bottom-1 right-6 h-2 w-2 rotate-45 bg-white border-r border-b border-slate-200" />
             </div>
           )}
 
@@ -241,8 +253,15 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
           aria-label="Cars Night AI Assistant"
           className="fixed z-50 flex flex-col overflow-hidden border border-white/10 bg-[#0b0b14]/95 backdrop-blur-xl shadow-2xl shadow-fuchsia-500/10 inset-0 sm:inset-auto sm:bottom-24 sm:right-6 sm:w-[400px] sm:h-[600px] sm:max-h-[calc(100vh-7rem)] sm:rounded-2xl rounded-none animate-[ai-slide-up_0.25s_ease-out]"
         >
-          {/* Header */}
-          <header className="relative flex items-center gap-3 px-4 py-3 border-b border-white/10 bg-gradient-to-r from-[#00A8FF]/10 via-[#8B5CF6]/10 to-[#D946EF]/10">
+          {/* Header — neon gradient background (per user spec: "turn it to
+              gradient color of website"). Uses the Cars Night brand gradient:
+              electric blue → indigo → violet → magenta. */}
+          <header
+            className="relative flex items-center gap-3 px-4 py-3 border-b border-white/10"
+            style={{
+              background: "linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%)",
+            }}
+          >
             <div className="grid place-items-center shrink-0" style={{ width: 44, height: 44 }}>
               <AIAssistantIcon width={44} />
             </div>
@@ -296,10 +315,12 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
             )}
           </div>
 
-          {/* Composer */}
+          {/* Composer — white background with black text (per user spec:
+              "turn it to white both chat inner input box and outer black
+              background turn all the text color to black"). */}
           <form
             onSubmit={onSubmit}
-            className="border-t border-white/10 bg-[#0b0b14]/80 backdrop-blur p-3 flex items-center gap-2"
+            className="border-t border-slate-200 bg-white p-3 flex items-center gap-2"
           >
             <input
               ref={inputRef}
@@ -309,7 +330,7 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
               placeholder="Ask about cars, budgets, rentals…"
               disabled={sending}
               aria-label="Type your message"
-              className="flex-1 min-w-0 rounded-full bg-white/[0.05] border border-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-fuchsia-400/40 focus:border-fuchsia-400/30 disabled:opacity-60"
+              className="flex-1 min-w-0 rounded-full bg-slate-100 border border-slate-300 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-400/40 focus:border-fuchsia-400/30 disabled:opacity-60"
               maxLength={500}
             />
             <button
@@ -326,8 +347,8 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
             </button>
           </form>
 
-          {/* Footer micro */}
-          <div className="px-4 py-1.5 text-[10px] text-white/30 text-center border-t border-white/5">
+          {/* Footer micro — dark text on white (matching the white composer) */}
+          <div className="px-4 py-1.5 text-[10px] text-slate-400 text-center border-t border-slate-200 bg-white">
             Powered by Cars Night AI · Recommendations from live listings only
           </div>
         </section>
@@ -345,12 +366,8 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
         /* ===== Floating AI button — responsive sizing =====
            Mobile:  icon 88px wide, button 96x96 (touch-friendly)
            Desktop: icon 100px wide, button 108x108
-           The button wrapper is slightly larger than the icon for a
-           comfortable tap target, but the icon fills ~92% of it so it
-           looks prominent (per user spec: "large clickable area is fine;
-           tiny visible icon inside it is NOT fine").
-           The aspect ratio 214/194 matches the icon's new tightened
-           viewBox (14 44 214 194) so nothing is stretched. */
+           The aspect ratio 214/192 matches the icon's new tightened
+           viewBox (10 42 214 192) so nothing is stretched. */
         .ai-fab-button {
           width: 96px;
           height: 96px;
@@ -358,7 +375,7 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
         .ai-fab-icon {
           width: 88px !important;
           height: auto !important;
-          aspect-ratio: 214 / 194 !important;
+          aspect-ratio: 214 / 192 !important;
         }
         @media (min-width: 640px) {
           .ai-fab-button {
@@ -370,18 +387,48 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
           }
         }
 
-        /* ===== Hide the AI button when a Sheet (burger menu) is open =====
+        /* ===== Tooltip animation — slides out from behind the AI icon =====
+           Per user spec: "make an animation this text must come out from
+           behind the ai assistant icon if user close it then go back from
+           where it come and must not come out again."
+           The tooltip slides in from the right (from behind the icon) and
+           slides back out to the right when dismissed. */
+        .ai-tooltip {
+          animation: ai-tooltip-slide-out 0.4s ease-out forwards;
+          transform-origin: right center;
+        }
+        @keyframes ai-tooltip-slide-out {
+          from {
+            opacity: 0;
+            transform: translateX(30px) scale(0.8);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0) scale(1);
+          }
+        }
+
+        /* ===== Hide the entire AI FAB container (button + tooltip) when a
+           Sheet (burger menu) is open =====
            The shadcn Sheet uses Radix UI which renders a [data-slot="sheet-overlay"]
            element with [data-state="open"] when the sheet is visible. We use the
            CSS :has() selector to detect when any sheet overlay is open and hide
-           the floating AI button so it doesn't overlap the burger menu panel.
+           the entire AI FAB container (which includes both the floating button
+           and the tooltip) so nothing overlaps the burger menu panel.
            (Per user spec: "When burger options bar open then the ai chat icon
-           must not be shown.") */
-        body:has([data-slot="sheet-overlay"][data-state="open"]) .ai-fab-button {
-          opacity: 0;
-          pointer-events: none;
-          transform: scale(0.85);
+           must not be shown" AND "When burger options open the ai chat assistant
+           message Ask cars night ai message is visible in burger options bar it
+           must not be shown there".)
+           Uses !important to override the tooltip's slide-out animation
+           (which sets opacity and transform via keyframes). */
+        body:has([data-slot="sheet-overlay"][data-state="open"]) .ai-fab-container {
+          opacity: 0 !important;
+          pointer-events: none !important;
+          transform: scale(0.85) !important;
           transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        body:has([data-slot="sheet-overlay"][data-state="open"]) .ai-tooltip {
+          animation: none !important;
         }
       `}</style>
     </>

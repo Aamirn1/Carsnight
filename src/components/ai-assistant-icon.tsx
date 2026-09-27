@@ -69,23 +69,21 @@ interface AIAssistantIconProps {
   className?: string;
 }
 
-// Tight viewBox bounds: x=14, y=44, width=214, height=194.
+// Tight viewBox bounds: x=10, y=42, width=214, height=192.
 // Computed from the actual artwork bounds + animation margins:
-//   - Large sparkle: center (64, 128), radius 46, X-orientation. Points at
-//     45° diagonals → top-left point at (64-46/√2, 128-46/√2) ≈ (32, 96);
-//     bottom-left at (32, 160); with orbit radius 5 → (27, 91) to (27, 165).
-//   - Small sparkle: center (96, 72), radius 18, X-orientation. Top point
-//     at (96-18/√2, 72-18/√2) ≈ (83, 59); with orbit radius 4 → (79, 55).
-//   - Bubble: x=66 to 210 (stroke adds 6 each side → 60 to 216),
-//     y=85 to 185 (stroke adds 6 → 79 to 191; tail tip at y=224+6=230).
-//   - Tail: tip at (196, 224), stroke adds 6 → x up to 202, y down to 230.
-// So animated bounds: x=27..216 (w=189), y=55..230 (h=175).
-// Adding a small margin → viewBox "14 44 214 194".
-const ICON_VIEWBOX_X = 14;
-const ICON_VIEWBOX_Y = 44;
+//   - Large sparkle: center (64, 128), radius 46, X-orientation, orbit r=12.
+//     Leftmost = 64 - 46/√2 - 12 ≈ 19. Bottommost = 128 + 46/√2 + 12 ≈ 173.
+//   - Small sparkle: center (96, 72), radius 18, X-orientation, orbit r=10.
+//     Topmost = 72 - 18/√2 - 10 ≈ 49.
+//   - Bubble: x=66 to 210 (stroke 12 → 60 to 216), y=85 to 185 (79 to 191).
+//   - Tail: tip at (198, 222), stroke 12 → y up to 228.
+// So animated bounds: x=19..216 (w=197), y=49..228 (h=179).
+// Adding margin → viewBox "10 42 214 192".
+const ICON_VIEWBOX_X = 10;
+const ICON_VIEWBOX_Y = 42;
 const ICON_VIEWBOX_W = 214;
-const ICON_VIEWBOX_H = 194;
-const ICON_ASPECT_RATIO = ICON_VIEWBOX_W / ICON_VIEWBOX_H; // ~1.103
+const ICON_VIEWBOX_H = 192;
+const ICON_ASPECT_RATIO = ICON_VIEWBOX_W / ICON_VIEWBOX_H; // ~1.115
 
 export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps) {
   // If `width` prop is provided, use it (with auto height from aspect ratio).
@@ -191,7 +189,7 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
               lines so the breathing scale doesn't let them extend beyond
               the bubble border. */}
           <clipPath id="ai-bubble-clip">
-            <path d="M 81,85 L 195,85 A 15,15 0 0,1 210,100 L 210,170 A 15,15 0 0,1 195,185 L 166,185 L 196,224 L 198,185 L 81,185 A 15,15 0 0,1 66,170 L 66,100 A 15,15 0 0,1 81,85 Z" />
+            <path d="M 81,85 L 195,85 A 15,15 0 0,1 210,100 L 210,170 A 15,15 0 0,1 195,185 L 198,222 L 175,185 L 81,185 A 15,15 0 0,1 66,170 L 66,100 A 15,15 0 0,1 81,85 Z" />
           </clipPath>
         </defs>
 
@@ -219,7 +217,7 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
                 currently pointing left. Rotate/reshape it so it points
                 to the RIGHT"). strokeLinejoin="round" for smooth corners. */}
             <path
-              d="M 81,85 L 195,85 A 15,15 0 0,1 210,100 L 210,170 A 15,15 0 0,1 195,185 L 166,185 L 196,224 L 198,185 L 81,185 A 15,15 0 0,1 66,170 L 66,100 A 15,15 0 0,1 81,85 Z"
+              d="M 81,85 L 195,85 A 15,15 0 0,1 210,100 L 210,170 A 15,15 0 0,1 195,185 L 198,222 L 175,185 L 81,185 A 15,15 0 0,1 66,170 L 66,100 A 15,15 0 0,1 81,85 Z"
               fill="#FFFFFF"
               stroke="url(#ai-bubble-gradient)"
               strokeWidth="12"
@@ -343,27 +341,26 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
         }
 
         /* ===== Large sparkle — orbit CLOCKWISE (7s) =====
-           The outer <g transform="translate(68, 136)"> positions the orbit
+           The outer <g transform="translate(64, 128)"> positions the orbit
            center. The .ai-sparkle-large group applies the orbit:
              rotate(θ) translateX(r) rotate(-θ)
            which traces a circle of radius r around the parent translate
            point. The counter-rotation keeps the sparkle's own orientation
-           stable (it orbits but doesn't spin). Radius 5 is small enough
-           to keep the star anchored to the left-corner cluster (per user
-           spec: "the stars must remain visually fixed to the upper-left
-           corner area of the icon, the orbit should be local and small,
-           the stars should never look like they are wandering away").
+           stable (it orbits but doesn't spin).
+           Radius 12 (increased from 5 so the circular orbit is clearly
+           visible — per user spec: "the animation like 2 nuts one moving
+           in clockwise direction one moving in anticlockwise direction").
            Duration 7s (per spec: "big star: approximately 6–8 seconds"). */
         .ai-sparkle-large {
           animation: ai-orbit-cw 7s linear infinite;
           will-change: transform;
         }
         @keyframes ai-orbit-cw {
-          0%   { transform: rotate(0deg)   translateX(5px) rotate(0deg); }
-          25%  { transform: rotate(90deg)  translateX(5px) rotate(-90deg); }
-          50%  { transform: rotate(180deg) translateX(5px) rotate(-180deg); }
-          75%  { transform: rotate(270deg) translateX(5px) rotate(-270deg); }
-          100% { transform: rotate(360deg) translateX(5px) rotate(-360deg); }
+          0%   { transform: rotate(0deg)   translateX(12px) rotate(0deg); }
+          25%  { transform: rotate(90deg)  translateX(12px) rotate(-90deg); }
+          50%  { transform: rotate(180deg) translateX(12px) rotate(-180deg); }
+          75%  { transform: rotate(270deg) translateX(12px) rotate(-270deg); }
+          100% { transform: rotate(360deg) translateX(12px) rotate(-360deg); }
         }
         /* Twinkle for the large sparkle (2.5s) — subtle scale + opacity.
            Per spec: "slight scale pulse, slight glow pulse, slight opacity
@@ -380,8 +377,9 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
         }
 
         /* ===== Small sparkle — orbit ANTI-CLOCKWISE (6s) =====
-           Orbit center (96, 84) via outer <g transform="translate(96, 84)">.
-           Radius 4. Duration 6s (per spec: "small star: approximately 5–7
+           Orbit center (96, 72) via outer <g transform="translate(96, 72)">.
+           Radius 10 (increased from 4 so the circular orbit is clearly
+           visible). Duration 6s (per spec: "small star: approximately 5–7
            seconds"). Different duration from the large sparkle (6s vs 7s)
            prevents the motion from looking robotic. */
         .ai-sparkle-small {
@@ -389,11 +387,11 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
           will-change: transform;
         }
         @keyframes ai-orbit-ccw {
-          0%   { transform: rotate(0deg)    translateX(4px) rotate(0deg); }
-          25%  { transform: rotate(-90deg)  translateX(4px) rotate(90deg); }
-          50%  { transform: rotate(-180deg) translateX(4px) rotate(180deg); }
-          75%  { transform: rotate(-270deg) translateX(4px) rotate(270deg); }
-          100% { transform: rotate(-360deg) translateX(4px) rotate(360deg); }
+          0%   { transform: rotate(0deg)    translateX(10px) rotate(0deg); }
+          25%  { transform: rotate(-90deg)  translateX(10px) rotate(90deg); }
+          50%  { transform: rotate(-180deg) translateX(10px) rotate(180deg); }
+          75%  { transform: rotate(-270deg) translateX(10px) rotate(270deg); }
+          100% { transform: rotate(-360deg) translateX(10px) rotate(360deg); }
         }
         .ai-sparkle-small-inner {
           animation: ai-twinkle-small 1.8s ease-in-out infinite;
