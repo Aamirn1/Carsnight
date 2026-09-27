@@ -680,11 +680,11 @@ export function PostAdForm({ initialListing, editError, quota, userCountry, user
               <CardTitle className="text-base flex items-center gap-2">
                 <Camera className="h-4 w-4 text-primary" /> Photos
               </CardTitle>
-              <CardDescription>Upload up to 5 photos. The first photo is the cover.</CardDescription>
+              <CardDescription>Upload up to 4 photos. The first photo is the cover.</CardDescription>
             </CardHeader>
             <CardContent>
               <div id="field-images">
-                <ImageUpload images={form.images} onChange={(imgs) => set("images", imgs)} max={5} />
+                <ImageUpload images={form.images} onChange={(imgs) => set("images", imgs)} max={4} />
                 {errors.images && <p className="text-xs text-destructive mt-2">{errors.images}</p>}
               </div>
             </CardContent>
