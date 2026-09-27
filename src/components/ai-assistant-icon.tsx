@@ -1,44 +1,50 @@
 "use client";
 
 /**
- * AIAssistantIcon — a premium live-animated SVG recreation of the Cars Night
- * AI assistant icon, built per the user's spec.
+ * AIAssistantIcon — premium live-animated SVG recreation of the Cars Night
+ * AI assistant icon, built to EXACTLY match the user's reference icon image.
  *
- * Visual identity (preserved exactly from the supplied reference icon):
- *  - Rounded chat bubble (white interior) with a tail pointing bottom-right
- *  - Gradient border: purple → violet → blue → cyan (flowing animation)
- *  - Three gray message lines inside the bubble (subtle breathing pulse)
- *  - Large sparkle (blue/cyan) on the upper-left — orbits clockwise + twinkles
- *  - Small sparkle (magenta/pink) above it — orbits anti-clockwise + twinkles
- *  - Soft neon glow around the bubble (violet/blue/cyan)
+ * The icon design is PRESERVED EXACTLY (per user spec — do NOT redesign):
+ *  - Rounded chat bubble (white interior) with a bottom-right tail pointing
+ *    down-right.
+ *  - THICK gradient border: purple → blue → cyan (bottom-left to top-right).
+ *  - Three gray message lines inside (one long top line, two shorter side-by-
+ *    side lines below).
+ *  - LARGE 4-point sparkle (blue/cyan gradient) overlapping the upper-left of
+ *    the bubble. Center at (72, 96), radius 56 in a 256×256 viewBox.
+ *  - SMALL 4-point sparkle (magenta/pink gradient) above the large sparkle.
+ *    Center at (84, 56), radius 24.
+ *  - Both sparkles have concave cubic-bezier curves (not sharp angles).
  *
- * Animations (all CSS @keyframes, GPU-accelerated, respect prefers-reduced-motion):
- *  - Gradient flow around the border (4-6s linear infinite)
- *  - Large sparkle: orbit clockwise (6s) + twinkle (2.5s)
- *  - Small sparkle: orbit anti-clockwise (4.5s) + twinkle (1.8s)
- *  - Inner white area: subtle breathing (3.2s)
- *  - Gray message lines: subtle sequential pulse (3.2s, staggered)
- *  - Whole icon: idle floating translateY (-3px, 3.4s)
- *  - Hover (desktop): scale 1.06 + brighter glow + brighter sparkles
- *  - Active (tap): scale 0.94 then 1 (0.3s)
+ * Animations (all CSS + SMIL, GPU-accelerated, respect prefers-reduced-motion):
+ *  1. Flowing gradient border — purple→blue→cyan continuously flows around
+ *     the outline via SMIL animateTransform on the gradient (5s linear
+ *     infinite). The gradient direction rotates, making the colors appear
+ *     to travel around the border. The icon itself does NOT rotate.
+ *  2. Large sparkle — orbits CLOCKWISE around its original position (72, 96)
+ *     at a small radius (8 units, 6s linear infinite) so it stays in the
+ *     upper-left zone. Also twinkles (scale 0.94↔1.06 + opacity, 2.5s).
+ *  3. Small sparkle — orbits ANTI-CLOCKWISE around (84, 56) at radius 6
+ *     (4.5s linear infinite). Also twinkles (1.8s).
+ *  4. Inner content (message lines) — subtle breathing scale (3.2s).
+ *  5. Gray message lines — subtle sequential pulse (3.2s, staggered).
+ *  6. Whole icon — idle floating (translateY 0 → -3 → 0, 3.4s).
+ *  7. Hover (desktop): scale 1.06 + brighter glow + brighter sparkles.
+ *  8. Active (tap): scale 0.94 → 1 (0.3s).
  *
- * Container:
- *  - NO outer white circle / badge background — fully transparent outside the icon
- *  - Size: 64-72px desktop, 60-68px mobile (controlled by parent)
- *  - White only inside the chat bubble; everything else transparent
+ * CRITICAL: The floating button has NO outer white circle / badge background.
+ * The area outside the icon is fully transparent. White color appears ONLY
+ * inside the chat bubble interior. (Per user spec.)
  */
 
 interface AIAssistantIconProps {
-  /** Pixel size of the SVG viewBox. The icon scales to its container. */
+  /** Pixel size of the rendered SVG. The SVG scales to this size. */
   size?: number;
   /** Extra classes for the outer wrapper (e.g. hover state hooks). */
   className?: string;
 }
 
-export function AIAssistantIcon({ size = 128, className = "" }: AIAssistantIconProps) {
-  // The SVG viewBox is 200x200 — large enough for the sparkles to orbit outside
-  // the bubble without clipping. The bubble sits centered-right; sparkles orbit
-  // around the upper-left of the bubble.
+export function AIAssistantIcon({ size = 68, className = "" }: AIAssistantIconProps) {
   return (
     <span
       className={`ai-assistant-icon-wrapper inline-block align-middle ${className}`}
@@ -46,7 +52,7 @@ export function AIAssistantIcon({ size = 128, className = "" }: AIAssistantIconP
       aria-hidden="true"
     >
       <svg
-        viewBox="0 0 200 200"
+        viewBox="0 0 256 256"
         width={size}
         height={size}
         fill="none"
@@ -54,64 +60,73 @@ export function AIAssistantIcon({ size = 128, className = "" }: AIAssistantIconP
         style={{ overflow: "visible", display: "block" }}
       >
         {/* ============================================================
-            DEFS — gradients (animated stops) + glow filter
+            DEFS — gradients (with flowing animation) + glow filters
             ============================================================ */}
         <defs>
-          {/* Main flowing gradient for the bubble border.
-              The animated <animate> shifts the x1/y1/x2/y2 to make the
-              gradient flow around the outline. 5s per cycle, linear. */}
-          <linearGradient id="ai-bubble-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#7C3AED">
-              <animate
-                attributeName="offset"
-                values="0;1;0"
-                dur="5s"
-                repeatCount="indefinite"
-              />
-            </stop>
-            <stop offset="33%" stopColor="#00A8FF">
-              <animate
-                attributeName="offset"
-                values="0.33;1.33;0.33"
-                dur="5s"
-                repeatCount="indefinite"
-              />
-            </stop>
-            <stop offset="66%" stopColor="#6366F1">
-              <animate
-                attributeName="offset"
-                values="0.66;1.66;0.66"
-                dur="5s"
-                repeatCount="indefinite"
-              />
-            </stop>
-            <stop offset="100%" stopColor="#00E5FF">
-              <animate
-                attributeName="offset"
-                values="1;2;1"
-                dur="5s"
-                repeatCount="indefinite"
-              />
-            </stop>
+          {/* Main bubble border gradient — purple (bottom-left) → blue
+              (center) → cyan (top-right). Animated via gradientTransform
+              rotate to create the "flowing" effect (5s linear infinite).
+              The gradient direction rotates continuously, so each point on
+              the border cycles through purple → blue → cyan → purple,
+              creating the "energy circulating" effect the user spec asks
+              for. The icon itself does NOT rotate. */}
+          <linearGradient
+            id="ai-bubble-gradient"
+            x1="0%"
+            y1="100%"
+            x2="100%"
+            y2="0%"
+            gradientUnits="objectBoundingBox"
+          >
+            <stop offset="0%" stopColor="#8B3DF7" />
+            <stop offset="50%" stopColor="#3B82F6" />
+            <stop offset="100%" stopColor="#00E5FF" />
+            <animateTransform
+              attributeName="gradientTransform"
+              type="rotate"
+              values="0 0.5 0.5; 360 0.5 0.5"
+              dur="5s"
+              repeatCount="indefinite"
+            />
           </linearGradient>
 
-          {/* Large sparkle gradient (purple → blue → cyan) */}
-          <linearGradient id="ai-sparkle-large-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#4F00FF" />
-            <stop offset="50%" stopColor="#6366F1" />
+          {/* Large sparkle gradient — deep indigo/purple (bottom-left) → blue
+              (center) → cyan (top-right). Same direction as the bubble
+              gradient for visual harmony. */}
+          <linearGradient
+            id="ai-sparkle-large-gradient"
+            x1="0%"
+            y1="100%"
+            x2="100%"
+            y2="0%"
+            gradientUnits="objectBoundingBox"
+          >
+            <stop offset="0%" stopColor="#4338CA" />
+            <stop offset="50%" stopColor="#3B82F6" />
             <stop offset="100%" stopColor="#00D4FF" />
           </linearGradient>
 
-          {/* Small sparkle gradient (magenta → pink) */}
-          <linearGradient id="ai-sparkle-small-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          {/* Small sparkle gradient — deep pink (top) → light magenta (bottom).
+              Vertical gradient to distinguish it from the blue/cyan
+              sparkles and bubble. */}
+          <linearGradient
+            id="ai-sparkle-small-gradient"
+            x1="0%"
+            y1="0%"
+            x2="0%"
+            y2="100%"
+            gradientUnits="objectBoundingBox"
+          >
             <stop offset="0%" stopColor="#FF007F" />
             <stop offset="100%" stopColor="#FF66C4" />
           </linearGradient>
 
-          {/* Soft neon glow filter — purple/blue/cyan halo */}
+          {/* Soft neon glow filter — purple/blue/cyan halo around the bubble
+              and sparkles. Uses feGaussianBlur + feMerge to create a soft
+              glow without losing the sharp source graphic. */}
           <filter id="ai-bubble-glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="3" result="blur1" />
-            <feGaussianBlur stdDeviation="6" in="SourceGraphic" result="blur2" />
+            <feGaussianBlur stdDeviation="2" result="blur1" />
+            <feGaussianBlur stdDeviation="5" in="SourceGraphic" result="blur2" />
             <feMerge>
               <feMergeNode in="blur2" />
               <feMergeNode in="blur1" />
@@ -119,66 +134,40 @@ export function AIAssistantIcon({ size = 128, className = "" }: AIAssistantIconP
             </feMerge>
           </filter>
 
-          {/* Stronger glow on hover (applied via CSS class) */}
-          <filter id="ai-bubble-glow-hover" x="-80%" y="-80%" width="260%" height="260%">
-            <feGaussianBlur stdDeviation="5" result="blur1" />
-            <feGaussianBlur stdDeviation="10" in="SourceGraphic" result="blur2" />
-            <feMerge>
-              <feMergeNode in="blur2" />
-              <feMergeNode in="blur1" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-
-          {/* Clip path for the white inner area (so the breathing scale
-              stays within the bubble border). */}
+          {/* Clip path for the bubble interior — used to clip the message
+              lines so the breathing scale doesn't let them extend beyond
+              the bubble border. */}
           <clipPath id="ai-bubble-clip">
-            <path d="M 56 56
-                     Q 56 40 72 40
-                     L 138 40
-                     Q 154 40 154 56
-                     L 154 116
-                     Q 154 132 138 132
-                     L 110 132
-                     L 96 152
-                     L 92 132
-                     L 72 132
-                     Q 56 132 56 116
-                     Z" />
+            <path d="M 100,112 L 188,112 A 20,20 0 0,1 208,132 L 208,164 A 20,20 0 0,1 188,184 L 170,184 L 198,218 L 132,184 L 100,184 A 20,20 0 0,1 80,164 L 80,132 A 20,20 0 0,1 100,112 Z" />
           </clipPath>
         </defs>
 
         {/* ============================================================
             ROOT GROUP — idle floating animation (translateY 0 → -3 → 0)
             ============================================================ */}
-        <g className="ai-icon-float" style={{ transformOrigin: "center" }}>
+        <g className="ai-icon-float">
           {/* ============================================================
               SPARKLES — drawn BEHIND the bubble so the bubble's white
-              interior stays clean. They orbit around their respective
-              centers (60, 80) for the large one and (45, 50) for the
-              small one — both in the upper-left area of the bubble.
-
-              Structure: outer <g transform="translate(cx, cy)"> moves the
-              orbit center to (cx, cy). Inside, the .ai-sparkle-* group
-              applies the orbit animation: rotate(θ) translate(r, 0)
-              rotate(-θ), which traces a circle of radius r around the
-              outer translate point. The counter-rotation keeps the
-              sparkle's own orientation stable (it orbits but doesn't
-              spin). The .ai-sparkle-*-inner group applies the twinkle
-              (scale + opacity).
+              fill covers the overlapping parts. Each sparkle is wrapped
+              in an outer <g transform="translate(cx, cy)"> to position the
+              orbit center, then .ai-sparkle-* for the orbit animation,
+              then .ai-sparkle-*-inner for the twinkle.
               ============================================================ */}
-          {/* Large sparkle — orbits clockwise around (60, 80), radius 28 */}
-          <g transform="translate(60, 80)">
+
+          {/* LARGE SPARKLE — center (72, 96), radius 56.
+              Orbits CLOCKWISE around (72, 96) at radius 8 (6s linear).
+              The orbit is small so the sparkle stays in the upper-left
+              zone of the icon (per user spec: "Keep it near the upper-left
+              zone of the icon, Do not let it travel far away"). */}
+          <g transform="translate(72, 96)">
             <g className="ai-sparkle-large">
               <g className="ai-sparkle-large-inner">
-                {/* Four-point star path (concave edges) centered at (0,0) */}
+                {/* Four-point star with concave cubic-bezier curves.
+                    Points at top (0,-56), right (56,0), bottom (0,56),
+                    left (-56,0). Control points at ~R/4 from center create
+                    gentle concave indentations on each side. */}
                 <path
-                  d="M 0 -22
-                     C 4 -8 8 -4 22 0
-                     C 8 4 4 8 0 22
-                     C -4 8 -8 4 -22 0
-                     C -8 -4 -4 -8 0 -22
-                     Z"
+                  d="M 0,-56 C 12,-36 16,-20 56,0 C 16,20 12,36 0,56 C -12,36 -16,20 -56,0 C -16,-20 -12,-36 0,-56 Z"
                   fill="url(#ai-sparkle-large-gradient)"
                   filter="url(#ai-bubble-glow)"
                 />
@@ -186,17 +175,16 @@ export function AIAssistantIcon({ size = 128, className = "" }: AIAssistantIconP
             </g>
           </g>
 
-          {/* Small sparkle — orbits anti-clockwise around (45, 50), radius 22 */}
-          <g transform="translate(45, 50)">
+          {/* SMALL SPARKLE — center (84, 56), radius 24.
+              Orbits ANTI-CLOCKWISE around (84, 56) at radius 6 (4.5s linear).
+              Positioned above and slightly to the right of the large
+              sparkle's top point (72, 40). */}
+          <g transform="translate(84, 56)">
             <g className="ai-sparkle-small">
               <g className="ai-sparkle-small-inner">
+                {/* Same concave 4-point star shape, scaled down to R=24. */}
                 <path
-                  d="M 0 -11
-                     C 2 -4 4 -2 11 0
-                     C 4 2 2 4 0 11
-                     C -2 4 -4 2 -11 0
-                     C -4 -2 -2 -4 0 -11
-                     Z"
+                  d="M 0,-24 C 6,-12 8,-6 24,0 C 8,6 6,12 0,24 C -6,12 -8,6 -24,0 C -8,-6 -6,-12 0,-24 Z"
                   fill="url(#ai-sparkle-small-gradient)"
                   filter="url(#ai-bubble-glow)"
                 />
@@ -205,95 +193,60 @@ export function AIAssistantIcon({ size = 128, className = "" }: AIAssistantIconP
           </g>
 
           {/* ============================================================
-              CHAT BUBBLE — gradient border (flowing) + white interior
+              CHAT BUBBLE — drawn ON TOP of the sparkles. The white fill
+              covers the parts of the large sparkle that overlap the
+              bubble interior, so only the parts of the sparkle that
+              extend outside the bubble (to the left and above) are
+              visible — exactly matching the original icon design.
               ============================================================ */}
           <g className="ai-bubble-group">
-            {/* Bubble outline (stroke = flowing gradient) */}
+            {/* Bubble outline — white fill + thick gradient stroke.
+                The stroke is 16px wide (matching the original icon), with
+                stroke-linejoin="round" for smooth corners. The gradient
+                is animated (flowing effect) via the SMIL animateTransform
+                in the gradient def above. */}
             <path
-              d="M 56 56
-                 Q 56 40 72 40
-                 L 138 40
-                 Q 154 40 154 56
-                 L 154 116
-                 Q 154 132 138 132
-                 L 110 132
-                 L 96 152
-                 L 92 132
-                 L 72 132
-                 Q 56 132 56 116
-                 Z"
+              d="M 100,112 L 188,112 A 20,20 0 0,1 208,132 L 208,164 A 20,20 0 0,1 188,184 L 170,184 L 198,218 L 132,184 L 100,184 A 20,20 0 0,1 80,164 L 80,132 A 20,20 0 0,1 100,112 Z"
               fill="#FFFFFF"
               stroke="url(#ai-bubble-gradient)"
-              strokeWidth="7"
+              strokeWidth="16"
               strokeLinejoin="round"
               strokeLinecap="round"
-              filter="url(#ai-bubble-glow)"
             />
 
-            {/* Inner white area — breathing animation (scale 1 ↔ 0.96 ↔ 1.02) */}
+            {/* Inner content (message lines) — clipped to the bubble shape
+                and animated with a subtle breathing scale. The transform-
+                origin is at the center of the bubble interior (144, 148). */}
             <g clipPath="url(#ai-bubble-clip)">
-              <g className="ai-bubble-inner" style={{ transformOrigin: "105px 86px" }}>
-                {/* White interior fill (slightly larger than the clip to allow scaling) */}
-                <rect x="40" y="30" width="130" height="120" fill="#FFFFFF" />
-
-                {/* Three gray message lines */}
-                {/* Line 1 (top, longest) */}
+              <g className="ai-bubble-inner" style={{ transformOrigin: "144px 148px" }}>
+                {/* Line 1 (top, longest) — spans most of the bubble width */}
                 <rect
-                  x="68" y="62"
-                  width="74" height="9"
-                  rx="4.5" ry="4.5"
-                  fill="#A8A8B3"
+                  x="92" y="118"
+                  width="104" height="16"
+                  rx="8" ry="8"
+                  fill="#B8BCC8"
                   className="ai-msg-line ai-msg-line-1"
-                  style={{ transformOrigin: "105px 66.5px" }}
+                  style={{ transformOrigin: "144px 126px" }}
                 />
                 {/* Line 2 (bottom-left, medium) */}
                 <rect
-                  x="68" y="80"
-                  width="46" height="9"
-                  rx="4.5" ry="4.5"
-                  fill="#A8A8B3"
+                  x="92" y="148"
+                  width="60" height="16"
+                  rx="8" ry="8"
+                  fill="#B8BCC8"
                   className="ai-msg-line ai-msg-line-2"
-                  style={{ transformOrigin: "91px 84.5px" }}
+                  style={{ transformOrigin: "122px 156px" }}
                 />
-                {/* Line 3 (bottom-right, medium) */}
+                {/* Line 3 (bottom-right, medium) — side by side with Line 2 */}
                 <rect
-                  x="120" y="80"
-                  width="32" height="9"
-                  rx="4.5" ry="4.5"
-                  fill="#A8A8B3"
+                  x="162" y="148"
+                  width="42" height="16"
+                  rx="8" ry="8"
+                  fill="#B8BCC8"
                   className="ai-msg-line ai-msg-line-3"
-                  style={{ transformOrigin: "136px 84.5px" }}
+                  style={{ transformOrigin: "183px 156px" }}
                 />
               </g>
-            </g>
-
-            {/* Optional internal light sweep — a soft cyan highlight that
-                travels across the gradient outline every ~6s. Implemented as
-                a moving semi-transparent stripe clipped to the bubble path. */}
-            <g
-              className="ai-light-sweep"
-              style={{ opacity: 0, mixBlendMode: "screen" }}
-            >
-              <path
-                d="M 56 56
-                   Q 56 40 72 40
-                   L 138 40
-                   Q 154 40 154 56
-                   L 154 116
-                   Q 154 132 138 132
-                   L 110 132
-                   L 96 152
-                   L 92 132
-                   L 72 132
-                   Q 56 132 56 116
-                   Z"
-                fill="none"
-                stroke="#00E5FF"
-                strokeWidth="9"
-                strokeLinejoin="round"
-                strokeLinecap="round"
-                opacity="0.55"
-              />
             </g>
           </g>
         </g>
@@ -308,7 +261,10 @@ export function AIAssistantIcon({ size = 128, className = "" }: AIAssistantIconP
           contain: layout paint style;
         }
 
-        /* ===== Root floating animation (3.4s) ===== */
+        /* ===== Root floating animation (3.4s) =====
+           Very subtle vertical float: translateY 0 → -3 → 0.
+           The icon stays anchored to the bottom-right; the movement is
+           small enough to feel premium, not chaotic. */
         .ai-icon-float {
           animation: ai-float 3.4s ease-in-out infinite;
           will-change: transform;
@@ -319,56 +275,53 @@ export function AIAssistantIcon({ size = 128, className = "" }: AIAssistantIconP
           100% { transform: translateY(0); }
         }
 
-        /* ===== Flowing gradient border — handled by SMIL <animate> on stops
-               (no CSS needed; the offsets animate continuously, 5s linear) ===== */
-
-        /* ===== Large sparkle — orbit clockwise (6s) =====
-               The outer <g transform="translate(60, 80)"> (in the SVG markup)
-               moves the orbit center to (60, 80) in the SVG coordinate system.
-               The .ai-sparkle-large group then applies the orbit animation:
-                 rotate(θ) translateX(r) rotate(-θ)
-               which traces a circle of radius r around the parent translate
-               point. The counter-rotation keeps the sparkle's own
-               orientation stable (it orbits but doesn't spin chaotically).
-               Radius 14px keeps the orbit in the upper-left area of the
-               icon, per the user spec ("orbit around the upper area of
-               the chat icon", "small curved/orbital path"). */
+        /* ===== Large sparkle — orbit CLOCKWISE (6s) =====
+           The outer <g transform="translate(72, 96)"> positions the orbit
+           center. The .ai-sparkle-large group applies the orbit:
+             rotate(θ) translateX(r) rotate(-θ)
+           which traces a circle of radius r around the parent translate
+           point. The counter-rotation keeps the sparkle's own orientation
+           stable (it orbits but doesn't spin). Radius 8 is small enough
+           to keep the sparkle in the upper-left zone (per spec). */
         .ai-sparkle-large {
           animation: ai-orbit-cw 6s linear infinite;
           will-change: transform;
         }
         @keyframes ai-orbit-cw {
-          0%   { transform: rotate(0deg)   translateX(14px) rotate(0deg); }
-          25%  { transform: rotate(90deg)  translateX(14px) rotate(-90deg); }
-          50%  { transform: rotate(180deg) translateX(14px) rotate(-180deg); }
-          75%  { transform: rotate(270deg) translateX(14px) rotate(-270deg); }
-          100% { transform: rotate(360deg) translateX(14px) rotate(-360deg); }
+          0%   { transform: rotate(0deg)   translateX(8px) rotate(0deg); }
+          25%  { transform: rotate(90deg)  translateX(8px) rotate(-90deg); }
+          50%  { transform: rotate(180deg) translateX(8px) rotate(-180deg); }
+          75%  { transform: rotate(270deg) translateX(8px) rotate(-270deg); }
+          100% { transform: rotate(360deg) translateX(8px) rotate(-360deg); }
         }
-        /* Twinkle for the large sparkle (2.5s, subtle scale + opacity) */
+        /* Twinkle for the large sparkle (2.5s) — subtle scale + opacity.
+           Per spec: "scale(0.92) → scale(1.08) → scale(0.92)" but kept
+           subtle (0.94↔1.06) so it feels premium, not aggressive. */
         .ai-sparkle-large-inner {
           animation: ai-twinkle-large 2.5s ease-in-out infinite;
           transform-origin: center;
           will-change: transform, opacity;
         }
         @keyframes ai-twinkle-large {
-          0%   { transform: scale(0.92); opacity: 0.85; }
-          50%  { transform: scale(1.08); opacity: 1; }
-          100% { transform: scale(0.92); opacity: 0.85; }
+          0%   { transform: scale(0.94); opacity: 0.88; }
+          50%  { transform: scale(1.06); opacity: 1; }
+          100% { transform: scale(0.94); opacity: 0.88; }
         }
 
-        /* ===== Small sparkle — orbit anti-clockwise (4.5s) =====
-               Orbit center (45, 50) via outer <g transform="translate(45, 50)">.
-               Radius 10px. */
+        /* ===== Small sparkle — orbit ANTI-CLOCKWISE (4.5s) =====
+           Orbit center (84, 56) via outer <g transform="translate(84, 56)">.
+           Radius 6. Different duration from the large sparkle (4.5s vs 6s)
+           prevents the motion from looking robotic. */
         .ai-sparkle-small {
           animation: ai-orbit-ccw 4.5s linear infinite;
           will-change: transform;
         }
         @keyframes ai-orbit-ccw {
-          0%   { transform: rotate(0deg)    translateX(10px) rotate(0deg); }
-          25%  { transform: rotate(-90deg)  translateX(10px) rotate(90deg); }
-          50%  { transform: rotate(-180deg) translateX(10px) rotate(180deg); }
-          75%  { transform: rotate(-270deg) translateX(10px) rotate(270deg); }
-          100% { transform: rotate(-360deg) translateX(10px) rotate(360deg); }
+          0%   { transform: rotate(0deg)    translateX(6px) rotate(0deg); }
+          25%  { transform: rotate(-90deg)  translateX(6px) rotate(90deg); }
+          50%  { transform: rotate(-180deg) translateX(6px) rotate(180deg); }
+          75%  { transform: rotate(-270deg) translateX(6px) rotate(270deg); }
+          100% { transform: rotate(-360deg) translateX(6px) rotate(360deg); }
         }
         .ai-sparkle-small-inner {
           animation: ai-twinkle-small 1.8s ease-in-out infinite;
@@ -376,24 +329,30 @@ export function AIAssistantIcon({ size = 128, className = "" }: AIAssistantIconP
           will-change: transform, opacity;
         }
         @keyframes ai-twinkle-small {
-          0%   { transform: scale(0.94); opacity: 0.8; }
-          50%  { transform: scale(1.06); opacity: 1; }
-          100% { transform: scale(0.94); opacity: 0.8; }
+          0%   { transform: scale(0.96); opacity: 0.85; }
+          50%  { transform: scale(1.04); opacity: 1; }
+          100% { transform: scale(0.96); opacity: 0.85; }
         }
 
-        /* ===== Inner white area — subtle breathing (3.2s) ===== */
+        /* ===== Inner content breathing (3.2s) =====
+           The message lines group scales subtly (1 ↔ 0.97 ↔ 1.02 ↔ 1)
+           to simulate the "AI breathing" depth effect. Transform-origin
+           is at the center of the bubble interior (144, 148). */
         .ai-bubble-inner {
           animation: ai-breathe 3.2s ease-in-out infinite;
           will-change: transform;
         }
         @keyframes ai-breathe {
           0%   { transform: scale(1); }
-          33%  { transform: scale(0.96); }
+          33%  { transform: scale(0.97); }
           66%  { transform: scale(1.02); }
           100% { transform: scale(1); }
         }
 
-        /* ===== Gray message lines — subtle sequential pulse (3.2s, staggered) ===== */
+        /* ===== Gray message lines — subtle sequential pulse (3.2s) =====
+           Very subtle opacity pulse, staggered across the 3 lines
+           (delays 0 / 0.4s / 0.8s) to communicate "AI is ready/thinking".
+           NOT a loading spinner — just a gentle, premium pulse. */
         .ai-msg-line {
           animation: ai-msg-pulse 3.2s ease-in-out infinite;
           will-change: transform, opacity;
@@ -403,26 +362,14 @@ export function AIAssistantIcon({ size = 128, className = "" }: AIAssistantIconP
         .ai-msg-line-3 { animation-delay: 0.8s; }
         @keyframes ai-msg-pulse {
           0%   { transform: scale(1);    opacity: 1; }
-          50%  { transform: scale(0.97); opacity: 0.78; }
+          50%  { transform: scale(0.98); opacity: 0.78; }
           100% { transform: scale(1);    opacity: 1; }
         }
 
-        /* ===== Optional internal light sweep — a soft cyan highlight
-               that briefly travels across the border every 7s. ===== */
-        .ai-light-sweep {
-          animation: ai-sweep 7s ease-in-out infinite;
-          will-change: opacity, transform;
-          transform-origin: 105px 86px;
-        }
-        @keyframes ai-sweep {
-          0%, 100% { opacity: 0; transform: translateX(-30px); }
-          45%      { opacity: 0; transform: translateX(-30px); }
-          50%      { opacity: 0.7; transform: translateX(0); }
-          55%      { opacity: 0; transform: translateX(30px); }
-        }
-
-        /* ===== HOVER (desktop only — :hover applies to the wrapper,
-               the icon scales 1.06 and sparkles brighten) ===== */
+        /* ===== HOVER (desktop only — @media hover:hover) =====
+           On hover: slightly scale the whole icon to 1.06, increase the
+           glow, and brighten the sparkles. All other animations keep
+           running. Smooth 0.4s transition. */
         @media (hover: hover) {
           .ai-assistant-icon-wrapper:hover .ai-icon-float {
             animation: ai-float 3.4s ease-in-out infinite, ai-hover-scale 0.4s ease forwards;
@@ -430,19 +377,17 @@ export function AIAssistantIcon({ size = 128, className = "" }: AIAssistantIconP
           @keyframes ai-hover-scale {
             to { transform: translateY(-3px) scale(1.06); }
           }
-          .ai-assistant-icon-wrapper:hover .ai-sparkle-large-inner {
-            filter: brightness(1.25);
-          }
+          .ai-assistant-icon-wrapper:hover .ai-sparkle-large-inner,
           .ai-assistant-icon-wrapper:hover .ai-sparkle-small-inner {
             filter: brightness(1.25);
           }
           .ai-assistant-icon-wrapper:hover .ai-bubble-group {
-            filter: drop-shadow(0 0 8px rgba(124, 58, 237, 0.45))
-                    drop-shadow(0 0 14px rgba(0, 168, 255, 0.35));
+            filter: drop-shadow(0 0 6px rgba(139, 61, 247, 0.5))
+                    drop-shadow(0 0 12px rgba(0, 229, 255, 0.4));
           }
         }
 
-        /* ===== ACTIVE (tap/click) — quick 0.94 → 1 squash ===== */
+        /* ===== ACTIVE (tap/click) — quick 1 → 0.94 → 1 squash (0.3s) ===== */
         .ai-assistant-icon-wrapper:active .ai-icon-float {
           animation: ai-float 3.4s ease-in-out infinite, ai-tap 0.3s ease;
         }
@@ -452,7 +397,9 @@ export function AIAssistantIcon({ size = 128, className = "" }: AIAssistantIconP
           100% { transform: scale(1); }
         }
 
-        /* ===== Accessibility — prefers-reduced-motion ===== */
+        /* ===== Accessibility — prefers-reduced-motion =====
+           For users who request reduced motion, disable ALL animations.
+           The icon remains visually attractive in its static state. */
         @media (prefers-reduced-motion: reduce) {
           .ai-icon-float,
           .ai-sparkle-large,
@@ -460,11 +407,9 @@ export function AIAssistantIcon({ size = 128, className = "" }: AIAssistantIconP
           .ai-sparkle-small,
           .ai-sparkle-small-inner,
           .ai-bubble-inner,
-          .ai-msg-line,
-          .ai-light-sweep {
+          .ai-msg-line {
             animation: none !important;
           }
-          /* Keep the static icon visually attractive */
           .ai-assistant-icon-wrapper:hover .ai-icon-float,
           .ai-assistant-icon-wrapper:active .ai-icon-float {
             animation: none !important;
