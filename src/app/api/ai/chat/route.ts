@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import ZAI from "z-ai-web-dev-sdk";
 import { clientKey, rateLimit, rateLimitResponse, RATE_LIMITS } from "@/lib/rate-limit";
 import {
   searchCars,
@@ -15,16 +14,21 @@ export const dynamic = "force-dynamic";
 // ----------------------------------------------------------------------------
 // LLM instance factory.
 //
-// Supports two providers:
-// 1. OpenAI — when OPENAI_API_KEY is set in env vars. Uses the OpenAI
-//    Chat Completions API (https://api.openai.com/v1/chat/completions).
-//    Model: gpt-4o-mini (configurable via OPENAI_MODEL env var).
-// 2. ZAI (z-ai-web-dev-sdk) — fallback when OPENAI_API_KEY is not set.
-//    Uses the ZAI config file or ZAI_* env vars.
+// Supports two providers (checked in order):
+// 1. Google Gemini — when GEMINI_API_KEY is set. Uses the Gemini API
+//    (https://generativelanguage.googleapis.com/v1beta/models).
+//    Model: gemini-2.0-flash (configurable via GEMINI_MODEL env var).
+// 2. OpenRouter — when OPENROUTER_API_KEY is set. Uses the OpenRouter
+//    Chat Completions API (https://openrouter.ai/api/v1/chat/completions).
+//    Model: z-ai/glm-5.2:free (configurable via OPENROUTER_MODEL env var).
 //
-// To enable OpenAI on Vercel:
-//   OPENAI_API_KEY=sk-...  (required)
-//   OPENAI_MODEL=gpt-4o-mini  (optional, defaults to gpt-4o-mini)
+// To enable Gemini on Vercel:
+//   GEMINI_API_KEY=your-gemini-api-key  (from https://aistudio.google.com/apikey)
+//   GEMINI_MODEL=gemini-2.0-flash  (optional, defaults to gemini-2.0-flash)
+//
+// To enable OpenRouter on Vercel (fallback when Gemini key is not set):
+//   OPENROUTER_API_KEY=sk-or-...  (from https://openrouter.ai/keys)
+//   OPENROUTER_MODEL=z-ai/glm-5.2:free  (optional, defaults to z-ai/glm-5.2:free)
 // ----------------------------------------------------------------------------
 
 interface LLMClient {
@@ -37,97 +41,172 @@ interface LLMClient {
 
 let llmPromise: Promise<LLMClient> | null = null;
 
+/**
+ * Convert ZAI-style messages (role "assistant" for system prompts) to
+ * standard OpenAI/Gemini/OpenRouter-style messages (role "system" for
+ * system prompts, role "assistant" for AI responses).
+ */
+function normalizeMessages(messages: any[]): any[] {
+  return messages.map((m: any, i: number) => {
+    if (i === 0 && m.role === "assistant" && typeof m.content === "string" && m.content.length > 200) {
+      return { role: "system", content: m.content };
+    }
+    return { role: m.role, content: m.content };
+  });
+}
+
+/**
+ * Normalize any chat completion response to the ZAI format:
+ * { choices: [{ message: { content: string } }] }
+ */
+function normalizeResponse(data: any): any {
+  return {
+    choices: [
+      {
+        message: {
+          content: data.choices?.[0]?.message?.content ?? "",
+        },
+      },
+    ],
+  };
+}
+
 function getLLM(): Promise<LLMClient> {
   if (!llmPromise) {
     llmPromise = (async () => {
-      const openaiKey = process.env.OPENAI_API_KEY;
-      if (openaiKey) {
-        // --- OpenAI provider ---
-        const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+      // --- Provider 1: Google Gemini ---
+      const geminiKey = process.env.GEMINI_API_KEY;
+      if (geminiKey) {
+        const geminiModel = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+        console.log("[AI Chat] Using Gemini provider, model:", geminiModel);
         return {
           chat: {
             completions: {
               create: async (body: any) => {
-                // Map ZAI-style roles to OpenAI roles:
-                // ZAI uses "assistant" for system prompts; OpenAI uses "system".
-                // ZAI uses "assistant" for AI responses; OpenAI also uses "assistant".
-                // We detect system prompts by checking if the content starts with
-                // the SYSTEM_PROMPT or SUMMARIZE_PROMPT markers.
-                const messages = body.messages.map((m: any, i: number) => {
-                  if (i === 0 && m.role === "assistant" && typeof m.content === "string" && m.content.length > 200) {
-                    return { role: "system", content: m.content };
-                  }
-                  return { role: m.role, content: m.content };
-                });
-                const res = await fetch("https://api.openai.com/v1/chat/completions", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${openaiKey}`,
+                const messages = normalizeMessages(body.messages);
+                // Gemini uses a different API format: generateContent
+                // System messages go in "systemInstruction"
+                const systemMessages = messages.filter((m: any) => m.role === "system");
+                const chatMessages = messages.filter((m: any) => m.role !== "system");
+                const systemInstruction = systemMessages.map((m: any) => m.content).join("\n\n");
+
+                const contents = chatMessages.map((m: any) => ({
+                  role: m.role === "assistant" ? "model" : "user",
+                  parts: [{ text: m.content }],
+                }));
+
+                const res = await fetch(
+                  `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiKey}`,
+                  {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined,
+                      contents,
+                      generationConfig: {
+                        temperature: 0.7,
+                        maxOutputTokens: 1000,
+                      },
+                    }),
                   },
-                  body: JSON.stringify({
-                    model,
-                    messages,
-                    temperature: 0.7,
-                    max_tokens: 1000,
-                  }),
-                });
+                );
+
                 if (!res.ok) {
                   const errText = await res.text();
-                  console.error("[AI Chat] OpenAI API error:", res.status, errText);
-                  // Retry once on 429 (rate limit) with a short delay
+                  console.error("[AI Chat] Gemini API error:", res.status, errText);
+                  // Retry once on 429
                   if (res.status === 429) {
                     await new Promise((r) => setTimeout(r, 2000));
-                    const retryRes = await fetch("https://api.openai.com/v1/chat/completions", {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                        "Authorization": `Bearer ${openaiKey}`,
+                    const retryRes = await fetch(
+                      `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiKey}`,
+                      {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                          systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined,
+                          contents,
+                          generationConfig: { temperature: 0.7, maxOutputTokens: 1000 },
+                        }),
                       },
-                      body: JSON.stringify({ model, messages, temperature: 0.7, max_tokens: 1000 }),
-                    });
+                    );
                     if (retryRes.ok) {
                       const retryData = await retryRes.json();
-                      return {
-                        choices: [{ message: { content: retryData.choices?.[0]?.message?.content ?? "" } }],
-                      };
+                      const retryContent = retryData.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join("") ?? "";
+                      return normalizeResponse({ choices: [{ message: { content: retryContent } }] });
                     }
                   }
-                  throw new Error(`OpenAI API error: ${res.status} ${errText.slice(0,200)}`);
+                  throw new Error(`Gemini API error: ${res.status}`);
                 }
+
                 const data = await res.json();
-                // Normalize to the ZAI response format
-                return {
-                  choices: [
-                    {
-                      message: {
-                        content: data.choices?.[0]?.message?.content ?? "",
-                      },
-                    },
-                  ],
-                };
+                const content = data.candidates?.[0]?.content?.parts?.map((p: any) => p.text).join("") ?? "";
+                return normalizeResponse({ choices: [{ message: { content } }] });
               },
             },
           },
         };
       }
 
-      // --- ZAI provider (fallback) ---
-      const zaiConfig: any = {};
-      const zaiApiKey = process.env.ZAI_API_KEY;
-      const zaiBaseUrl = process.env.ZAI_BASE_URL;
-      const zaiToken = process.env.ZAI_TOKEN;
-      const zaiChatId = process.env.ZAI_CHAT_ID;
-      const zaiUserId = process.env.ZAI_USER_ID;
-      if (zaiApiKey || zaiBaseUrl || zaiToken) {
-        zaiConfig.baseUrl = zaiBaseUrl || "https://internal-api.z.ai/v1";
-        zaiConfig.apiKey = zaiApiKey || "Z.ai";
-        if (zaiToken) zaiConfig.token = zaiToken;
-        if (zaiChatId) zaiConfig.chatId = zaiChatId;
-        if (zaiUserId) zaiConfig.userId = zaiUserId;
-        return new ZAI(zaiConfig) as LLMClient;
+      // --- Provider 2: OpenRouter (free model z-ai/glm-5.2:free) ---
+      const openrouterKey = process.env.OPENROUTER_API_KEY;
+      if (openrouterKey) {
+        const orModel = process.env.OPENROUTER_MODEL || "z-ai/glm-5.2:free";
+        console.log("[AI Chat] Using OpenRouter provider, model:", orModel);
+        return {
+          chat: {
+            completions: {
+              create: async (body: any) => {
+                const messages = normalizeMessages(body.messages);
+                const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${openrouterKey}`,
+                    "HTTP-Referer": "https://carsnight1.vercel.app",
+                    "X-Title": "Cars Night AI",
+                  },
+                  body: JSON.stringify({
+                    model: orModel,
+                    messages,
+                    temperature: 0.7,
+                    max_tokens: 1000,
+                  }),
+                });
+
+                if (!res.ok) {
+                  const errText = await res.text();
+                  console.error("[AI Chat] OpenRouter API error:", res.status, errText);
+                  // Retry once on 429
+                  if (res.status === 429) {
+                    await new Promise((r) => setTimeout(r, 2000));
+                    const retryRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${openrouterKey}`,
+                        "HTTP-Referer": "https://carsnight1.vercel.app",
+                        "X-Title": "Cars Night AI",
+                      },
+                      body: JSON.stringify({ model: orModel, messages, temperature: 0.7, max_tokens: 1000 }),
+                    });
+                    if (retryRes.ok) {
+                      const retryData = await retryRes.json();
+                      return normalizeResponse(retryData);
+                    }
+                  }
+                  throw new Error(`OpenRouter API error: ${res.status}`);
+                }
+
+                const data = await res.json();
+                return normalizeResponse(data);
+              },
+            },
+          },
+        };
       }
-      return (await ZAI.create()) as LLMClient;
+
+      // --- No provider configured ---
+      throw new Error("No LLM provider configured. Set GEMINI_API_KEY or OPENROUTER_API_KEY in Vercel env vars.");
     })().catch((e) => {
       llmPromise = null;
       throw e;
