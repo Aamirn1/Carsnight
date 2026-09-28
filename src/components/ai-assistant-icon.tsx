@@ -126,41 +126,39 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
           </g>
 
           {/* ============================================================
-              SPARKLES — drawn ON TOP of the bubble. Both stars are FIXED at
-              the same anchor point (the left corner of the bubble) and orbit
-              in OPPOSITE circular directions (chain-type animation).
-              - Large star: center (64, 128), radius 34 (REDUCED from 46 per
-                user spec: "reduce the size of big star"). Orbits CLOCKWISE.
-              - Small star: center (64, 128) (SAME as large — per user spec:
-                "position it with the big star fix it too"). Radius 18
-                (untouched). Orbits ANTI-CLOCKWISE.
-              Both orbit at radius 14, creating a chain-type animation where
-              the two stars circle around the same point in opposite directions.
+              SPARKLES — drawn ON TOP of the bubble. Both stars are FIXED
+              at their positions near the TOP-LEFT corner of the gradient
+              bubble. They rotate in place around their OWN centers like two
+              connected gears — big star CLOCKWISE, small star ANTI-CLOCKWISE.
+              No orbiting, no bouncing, no drifting — pure rotation only.
+
+              Layout (per user spec):
+                    small star (slightly above + slightly right)
+                       ✦
+                  big star (upper-left corner of bubble)
+                     ✦
+                [ chat bubble ]
+
+              - Big star: center (64, 128), radius 34, at the left corner.
+              - Small star: center (92, 90), radius 18, slightly above and
+                to the right of the big star.
               ============================================================ */}
           <g transform="translate(64, 128)">
-            <g className="ai-sparkle-large">
-              <g className="ai-sparkle-large-inner">
-                <path
-                  d="M 0,-34 C 7,-20 9,-9 34,0 C 9,9 7,20 0,34 C -7,20 -9,9 -34,0 C -9,-9 -7,-20 0,-34 Z"
-                  fill="url(#ai-sparkle-large-gradient)"
-                  filter="url(#ai-bubble-glow)"
-                  transform="rotate(45)"
-                />
-              </g>
-            </g>
+            <path
+              className="ai-sparkle-large"
+              d="M 0,-34 C 7,-20 9,-9 34,0 C 9,9 7,20 0,34 C -7,20 -9,9 -34,0 C -9,-9 -7,-20 0,-34 Z"
+              fill="url(#ai-sparkle-large-gradient)"
+              filter="url(#ai-bubble-glow)"
+            />
           </g>
 
-          <g transform="translate(64, 128)">
-            <g className="ai-sparkle-small">
-              <g className="ai-sparkle-small-inner">
-                <path
-                  d="M 0,-18 C 4,-8 6,-4 18,0 C 6,4 4,8 0,18 C -4,8 -6,4 -18,0 C -6,-4 -4,-8 0,-18 Z"
-                  fill="url(#ai-sparkle-small-gradient)"
-                  filter="url(#ai-bubble-glow)"
-                  transform="rotate(45)"
-                />
-              </g>
-            </g>
+          <g transform="translate(92, 90)">
+            <path
+              className="ai-sparkle-small"
+              d="M 0,-18 C 4,-8 6,-4 18,0 C 6,4 4,8 0,18 C -4,8 -6,4 -18,0 C -6,-4 -4,-8 0,-18 Z"
+              fill="url(#ai-sparkle-small-gradient)"
+              filter="url(#ai-bubble-glow)"
+            />
           </g>
         </g>
       </svg>
@@ -171,55 +169,33 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
           contain: layout paint style;
         }
 
-        /* ===== Large star — CLOCKWISE circular orbit (7s) =====
-           Radius 14. The star traces a perfect circle around (64, 128). */
+        /* ===== Big star — CLOCKWISE rotation around its own center (6s) =====
+           Pure rotation only — NO translate, NO orbit, NO bounce.
+           transform-box: fill-box makes transform-origin: center refer to
+           the element's own bounding box center, not the SVG origin. */
         .ai-sparkle-large {
-          animation: ai-orbit-cw 7s linear infinite;
+          transform-box: fill-box;
+          transform-origin: center;
+          animation: bigStarGear 6s linear infinite;
           will-change: transform;
         }
-        @keyframes ai-orbit-cw {
-          0%   { transform: rotate(0deg)   translateX(14px) rotate(0deg); }
-          25%  { transform: rotate(90deg)  translateX(14px) rotate(-90deg); }
-          50%  { transform: rotate(180deg) translateX(14px) rotate(-180deg); }
-          75%  { transform: rotate(270deg) translateX(14px) rotate(-270deg); }
-          100% { transform: rotate(360deg) translateX(14px) rotate(-360deg); }
-        }
-        .ai-sparkle-large-inner {
-          animation: ai-twinkle-large 2.5s ease-in-out infinite;
-          transform-origin: center;
-          will-change: transform, opacity;
-        }
-        @keyframes ai-twinkle-large {
-          0%   { transform: scale(0.96); opacity: 0.88; }
-          50%  { transform: scale(1.04); opacity: 1; }
-          100% { transform: scale(0.96); opacity: 0.88; }
+        @keyframes bigStarGear {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
         }
 
-        /* ===== Small star — ANTI-CLOCKWISE circular orbit (6s) =====
-           Same center (64, 128) and same radius 14 as the large star, but
-           orbiting in the OPPOSITE direction. This creates a chain-type
-           animation where the two stars circle around the same point in
-           opposite directions. */
+        /* ===== Small star — ANTI-CLOCKWISE rotation around its own center (6s) =====
+           Same duration as the big star (6s) so they look like connected gears
+           turning against each other at the same speed. Pure rotation only. */
         .ai-sparkle-small {
-          animation: ai-orbit-ccw 6s linear infinite;
+          transform-box: fill-box;
+          transform-origin: center;
+          animation: smallStarGear 6s linear infinite;
           will-change: transform;
         }
-        @keyframes ai-orbit-ccw {
-          0%   { transform: rotate(0deg)    translateX(14px) rotate(0deg); }
-          25%  { transform: rotate(-90deg)  translateX(14px) rotate(90deg); }
-          50%  { transform: rotate(-180deg) translateX(14px) rotate(180deg); }
-          75%  { transform: rotate(-270deg) translateX(14px) rotate(270deg); }
-          100% { transform: rotate(-360deg) translateX(14px) rotate(360deg); }
-        }
-        .ai-sparkle-small-inner {
-          animation: ai-twinkle-small 1.8s ease-in-out infinite;
-          transform-origin: center;
-          will-change: transform, opacity;
-        }
-        @keyframes ai-twinkle-small {
-          0%   { transform: scale(0.96); opacity: 0.85; }
-          50%  { transform: scale(1.04); opacity: 1; }
-          100% { transform: scale(0.96); opacity: 0.85; }
+        @keyframes smallStarGear {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(-360deg); }
         }
 
         /* ===== HOVER (desktop) ===== */
@@ -227,10 +203,6 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
           .ai-assistant-icon-wrapper:hover {
             transform: scale(1.06);
             transition: transform 0.4s ease;
-          }
-          .ai-assistant-icon-wrapper:hover .ai-sparkle-large-inner,
-          .ai-assistant-icon-wrapper:hover .ai-sparkle-small-inner {
-            filter: brightness(1.25);
           }
           .ai-assistant-icon-wrapper:hover .ai-bubble-group {
             filter: drop-shadow(0 0 6px rgba(123, 47, 255, 0.5))
@@ -251,9 +223,7 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
         /* ===== Accessibility ===== */
         @media (prefers-reduced-motion: reduce) {
           .ai-sparkle-large,
-          .ai-sparkle-large-inner,
           .ai-sparkle-small,
-          .ai-sparkle-small-inner,
           .ai-assistant-icon-wrapper:active {
             animation: none !important;
           }
