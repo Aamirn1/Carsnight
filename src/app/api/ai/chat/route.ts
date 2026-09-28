@@ -336,29 +336,45 @@ export async function POST(req: Request) {
     const raw1 = completion1.choices[0]?.message?.content ?? "";
     const parsed = parseAssistantJson(raw1);
 
-    if (!parsed) {
-      // LLM returned something unparseable — try once more with a gentle nudge
-      const retryMessages = [
-        ...firstMessages,
-        { role: "assistant" as const, content: raw1 || "{}" },
-        { role: "user" as const, content: "Respond with STRICT JSON only, in the shape {\"reply\": string, \"tool\": null, \"quickReplies\": string[]}. No markdown, no code fences, no prose outside the JSON." },
-      ];
-      const completionRetry = await zai.chat.completions.create({
-        messages: retryMessages,
-      });
-      const rawRetry = completionRetry.choices[0]?.message?.content ?? "";
-      const parsedRetry = parseAssistantJson(rawRetry);
-      if (!parsedRetry) {
-        return NextResponse.json({
-          reply: FALLBACK_REPLY,
-          listings: [],
-          quickReplies: FALLBACK_QUICK_REPLIES,
-        });
-      }
-      return await finalize(zai, clean, parsedRetry);
+    // If the first call returned valid JSON, skip the retry entirely
+    // (saves an API call and avoids rate limits)
+    if (parsed) {
+      return await finalize(zai, clean, parsed);
     }
 
-    return await finalize(zai, clean, parsed);
+    // First response wasn't valid JSON — check if it's a 429 empty response
+    if (!raw1 || raw1.length < 10) {
+      return NextResponse.json({
+        reply: FALLBACK_REPLY,
+        listings: [],
+        quickReplies: FALLBACK_QUICK_REPLIES,
+        _e: "empty_or_short_response",
+        _raw1: raw1?.slice(0, 200),
+      });
+    }
+
+    // Try once more with a nudge
+    const retryMessages = [
+      ...firstMessages,
+      { role: "assistant" as const, content: raw1 || "{}" },
+      { role: "user" as const, content: "Respond with STRICT JSON only: {\"reply\": string, \"tool\": null, \"quickReplies\": string[]}. No markdown." },
+    ];
+    const completionRetry = await zai.chat.completions.create({
+      messages: retryMessages,
+    });
+    const rawRetry = completionRetry.choices[0]?.message?.content ?? "";
+    const parsedRetry = parseAssistantJson(rawRetry);
+    if (!parsedRetry) {
+      return NextResponse.json({
+        reply: FALLBACK_REPLY,
+        listings: [],
+        quickReplies: FALLBACK_QUICK_REPLIES,
+        _e: "parse_failed_both",
+        _raw1: raw1?.slice(0, 300),
+        _raw2: rawRetry?.slice(0, 300),
+      });
+    }
+    return await finalize(zai, clean, parsedRetry);
   } catch (err: any) {
     console.error("[AI Chat] Error:", err?.message || err);
     return NextResponse.json({
