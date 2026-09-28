@@ -2372,3 +2372,29 @@ Task: Fix desktop navbar centering, hero content positioning, footer dark mode l
 AI chat assistant: NOT TOUCHED.
 
 Commit: c2dee3d — pushed to GitHub main. Vercel rebuilt and deployed.
+
+---
+Task ID: 59
+Agent: main (orchestrator)
+Task: Redesign desktop hero with new background, search card, city cards, brands strip, feature cards
+
+- Generated new premium desktop hero background: three luxury cars at night
+  in a futuristic neon city (cyberpunk atmosphere). Saved as
+  /public/hero-cars-desktop.png.
+- Redesigned the desktop hero (lg+):
+  1. Dark overlay gradients for readability
+  2. Left content block: announcement pill, headline with 'no limits.' in
+     gradient, paragraph, search/filter card (Buy/Rent/All tabs + search
+     input + country dropdown + gradient Search button), stats row (4
+     items with icons), popular brands strip (9 brands), 4 feature cards
+  3. Right side: 4 floating glassmorphism city cards (New York, London,
+     Dubai, Tokyo) with staggered float animation
+  4. Scroll to Explore at bottom-center
+- Mobile layout unchanged.
+- AI chat assistant icon untouched.
+- Navbar already centered (from previous fix).
+
+Verified on production: all 10 elements (a-j) present, AI assistant
+visible, mobile works, zero console errors.
+
+Commit: a4cc524 — pushed to GitHub main. Vercel rebuilt and deployed.
