@@ -2241,3 +2241,27 @@ Work Log:
 Verified on production via DOM inspection (8/8 checks ✅).
 
 Commit: a2fe143 — pushed to GitHub main. Vercel rebuilt and deployed.
+
+---
+Task ID: 55
+Agent: main (orchestrator)
+Task: 4 AI chat fixes — rounded gradient borders, remove 'only', closer tooltip, thinner icon border
+
+1. Input box + quick-reply borders: rounded with gradient (was rectangular):
+   - Replaced border-image (ignores border-radius) with background-clip technique:
+     2px transparent border + gradient background on border-box + white on padding-box.
+   - The gradient border now follows the rounded-full border-radius properly.
+   - Removed the pink color from the input border.
+
+2. Footer text: removed "only":
+   "Recommendations from live listings only" → "Recommendations from live listings"
+
+3. Tooltip moved even closer (4px → 1px gap):
+   bottom-[calc(100%+4px)] → bottom-[calc(100%+1px)]
+
+4. AI icon border made thinner (strokeWidth 12 → 7):
+   Just the stroke width reduced; design unchanged.
+
+Verified on production: all 4 fixes ✅ confirmed via DOM inspection + VLM.
+
+Commit: aad6564 — pushed to GitHub main. Vercel rebuilt and deployed.
