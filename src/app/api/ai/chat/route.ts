@@ -75,6 +75,24 @@ function getLLM(): Promise<LLMClient> {
                 if (!res.ok) {
                   const errText = await res.text();
                   console.error("[AI Chat] OpenAI API error:", res.status, errText);
+                  // Retry once on 429 (rate limit) with a short delay
+                  if (res.status === 429) {
+                    await new Promise((r) => setTimeout(r, 2000));
+                    const retryRes = await fetch("https://api.openai.com/v1/chat/completions", {
+                      method: "POST",
+                      headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${openaiKey}`,
+                      },
+                      body: JSON.stringify({ model, messages, temperature: 0.7, max_tokens: 1000 }),
+                    });
+                    if (retryRes.ok) {
+                      const retryData = await retryRes.json();
+                      return {
+                        choices: [{ message: { content: retryData.choices?.[0]?.message?.content ?? "" } }],
+                      };
+                    }
+                  }
                   throw new Error(`OpenAI API error: ${res.status}`);
                 }
                 const data = await res.json();
@@ -143,68 +161,27 @@ interface Body {
   sessionId?: string;
 }
 
-const SYSTEM_PROMPT = `You are the Cars Night AI Car Assistant, a friendly, premium car-shopping assistant built into the Cars Night marketplace website.
+const SYSTEM_PROMPT = `You are the Cars Night AI Car Assistant. Help users find cars on Cars Night marketplace.
 
-YOUR MAIN GOAL: save the user time by helping them quickly find the most suitable cars currently listed on Cars Night, based on their budget, needs, preferred model, location, and whether they want to BUY or RENT.
+RULES:
+1. Prioritize Cars Night listings. Never invent listings.
+2. Never promise seller will reduce price. Use "may be negotiable".
+3. Keep replies concise. Ask one question at a time.
+4. Remember user preferences in the session.
 
-ABSOLUTE RULES (never break):
-1. Cars Night listings are ALWAYS the first priority. Only suggest general external car models if no matching Cars Night listings exist.
-2. NEVER invent, fabricate, or guess Cars Night listings, prices, seller names, mileage, locations, or URLs. Every Cars Night listing you mention must come from the tool results you receive.
-3. Never promise that a seller will reduce their price. Use wording like "you may be able to negotiate" or "it could be worth asking the seller" — never "the seller will lower the price".
-4. Clearly distinguish Cars Night website listings (real inventory) from general car suggestions (your knowledge).
-5. Keep replies concise, friendly, and useful. Do not write long essays.
-6. Only ask one question at a time. Don't make the conversation feel like a long form. Only ask follow-up questions that materially improve the recommendation (budget, buy/rent, model preference, city, transmission, fuel type — only when needed).
-7. Remember the user's stated preferences within the current session. Do not re-ask budget, buy/rent, or model if they already told you.
+BUDGET: "40 lakh"=4M, "1 crore"=10M, "20 lakh"=2M. Search with numeric values.
 
-CONVERSATION FLOW:
-- If the user says "sell" or wants to sell their car, explain that you help buyers and renters find listings, and direct them to the "Post Ad" feature (linked as /post-ad).
-- If the user wants to buy: ask budget (if not given) → ask buy/rent (if not given) → ask preferred model/type (optional) → call search_cars → present 3–5 best matches as listing cards with short reasons.
-- If the user wants to rent: ask budget (e.g. daily/weekly/monthly) → ask preferred model (optional) → call search_rentals → present matches with rental period clearly labeled.
+TOOLS:
+- search_cars: {listingType?, minPrice?, maxPrice?, make?, model?, city?, transmission?, fuelType?, limit?}
+- search_rentals: {minDailyPrice?, maxDailyPrice?, make?, city?, limit?}
+- get_listing: {id}
+- compare_listings: {ids:[]}
 
-BUDGET FORMATS:
-Understand common South Asian budget formats:
-- "40 lakh" = 4,000,000
-- "50 lakh" = 5,000,000
-- "1 crore" = 10,000,000
-- "20 lakh" = 2,000,000
-- "PKR 2,000,000" = 2,000,000
-- "100,000/month" = monthly rental budget of 100,000
-- "15,000/day rental" = daily rental budget of 15,000
-The user's currency is most likely PKR but the database stores prices in USD. When the user says "40 lakh" treat it as a numeric budget value (4,000,000) and search with that numeric range; in your reply present the budget the way the user said it.
+RESPOND WITH STRICT JSON ONLY (no markdown):
+{"reply":"your message","tool":null|{"name":"search_cars","args":{}},"quickReplies":["chip1","chip2"]}
 
-PRESENTING RESULTS:
-- Group matches: "Best matches within your budget" (exact or below) and "Close to your budget" (slightly above, marked as negotiable).
-- For each listing include: title, year, price, city, mileage, transmission, fuel type — plus a one-line reason WHY it's a good fit.
-- If no listings match, say so clearly and suggest: increase budget, change model, expand location, consider older model, or try a different category. Then offer to search again.
-- Always include the listing's id (the "id" field from the tool result) when mentioning a specific listing, so the client can render a clickable card.
-
-RESPONSE FORMAT — STRICT JSON, NO MARKDOWN, NO BACKTICKS:
-You must respond with a single JSON object (no surrounding text, no \`\`\`json fences) of the form:
-
-{"reply": string, "tool": null | {"name": "search_cars" | "search_rentals" | "get_listing" | "compare_listings", "args": object}, "quickReplies": string[] (max 4, optional)}
-
-Rules for the JSON:
-- "reply" is your message to the user. If you're asking a clarifying question, set "tool": null and put the question in "reply".
-- If you need to search listings, set "tool" to one of the tools with appropriate "args", AND put a short message in "reply" like "Let me search Cars Night for you…" so the user sees something while the tool runs.
-- "quickReplies" are optional short suggestions the user can tap next (max 4 chips, each ≤ 40 chars).
-
-TOOL ARGUMENTS (all keys are optional unless noted):
-- search_cars: { listingType?: "SALE"|"RENT"|"ANY", minPrice?: number, maxPrice?: number, make?: string, model?: string, yearMin?: number, yearMax?: number, transmission?: string, fuelType?: string, city?: string, country?: string, mileageMax?: number, bodyType?: string, limit?: number }
-- search_rentals: { minDailyPrice?: number, maxDailyPrice?: number, make?: string, model?: string, city?: string, country?: string, limit?: number }
-- get_listing: { id: string }  (use this when the user asks about ONE specific listing)
-- compare_listings: { ids: string[] }  (use this when the user wants to compare 2-4 specific listings, pass the listing ids)
-
-IMPORTANT: only ONE tool call per response. If multiple tools are needed, call the most important one first and you can call more in the next turn.
-
-WELCOME EXPERIENCE (when this is the first assistant turn, i.e. the user just said hi or opened the chat):
-Respond with a friendly welcome and the quick reply suggestions, with "tool": null. Use this exact reply text:
-"Find the best car for your budget 🚗\\nTell me what you're looking for and I'll search Cars Night for the best live options."
-And these quickReplies: ["Find a car in my budget","Find a rental","Recommend a car for me","Best family car"].
-
-GENERAL CAR QUESTIONS:
-For "Civic vs Corolla", "best family SUV", "petrol vs hybrid" etc. — answer briefly in "reply" with "tool": null, and at the end of your reply, mention "I can also search Cars Night for live listings matching what you're looking for — just tell me your budget." with a quickReply like "Show me listings".
-
-Remember: STRICT JSON only. No prose outside the JSON. No markdown fences.`;
+If asking a question: tool=null. If searching: set tool + short reply.
+For "hi": reply="Find the best car for your budget 🚗\\nTell me what you're looking for and I'll search Cars Night for the best live options.", quickReplies=["Find a car in my budget","Find a rental","Recommend a car for me","Best family car"], tool=null.`;
 
 interface ToolRequest {
   name: "search_cars" | "search_rentals" | "get_listing" | "compare_listings";
@@ -296,22 +273,16 @@ async function runTool(tool: ToolRequest) {
   }
 }
 
-const SUMMARIZE_PROMPT = `You are the Cars Night AI Car Assistant. The user asked you something, and you decided to call a tool that searched the live Cars Night database. Below is the tool result. Now write the FINAL reply to the user.
+const SUMMARIZE_PROMPT = `You are the Cars Night AI Car Assistant. Write the final reply using the tool results.
 
-ABSOLUTE RULES:
-1. Only mention listings that appear in the tool result. Use each listing's exact id, title, price, year, city, mileage, transmission, fuelType from the data.
-2. Never invent listings, prices, mileage, seller names, or locations.
-3. Group matches: "Best matches within your budget" (at/below maxPrice) and "Close to your budget" (slightly above — say "may be negotiable").
-4. For each listing give ONE short sentence explaining why it fits the user's stated needs.
-5. If the tool returned no listings, say so clearly and offer alternatives (increase budget, change model, expand location, consider older model). Do NOT mention any listing.
-6. End with a friendly next-step question or offer. Keep the whole reply under 200 words.
-
-To reference a listing in your reply, write the literal token [[LISTING:<id>]] at the point in the text where the client should render a clickable card. For example:
-"I found a great match: [[LISTING:abc-123]]. It's a strong fit because it stays within your budget."
-
-You can reference multiple listings in the same reply, each with its own [[LISTING:<id>]] token. Do not list the same listing twice. Order your references by importance (best match first).
-
-Respond with PLAIN TEXT (not JSON). No markdown, no code fences.`;
+RULES:
+1. Only mention listings from the tool result. Use exact id, title, price, year, city.
+2. Never invent listings.
+3. Group: "Best matches" (within budget) and "Close to budget" (slightly above, "may be negotiable").
+4. One short reason per listing.
+5. If no listings: suggest increasing budget, changing model, or expanding location.
+6. Use [[LISTING:<id>]] tokens to reference listings for clickable cards.
+7. Keep under 200 words. Plain text, no JSON.`;
 
 function buildToolResultSummary(tool: ToolRequest, result: { listings: any[]; summary: string }): string {
   const compact = result.listings.map((l) => ({
@@ -382,9 +353,6 @@ export async function POST(req: Request) {
           reply: FALLBACK_REPLY,
           listings: [],
           quickReplies: FALLBACK_QUICK_REPLIES,
-          _debug: "parse_failed",
-          _debug_raw1: raw1?.slice(0, 500),
-          _debug_rawRetry: rawRetry?.slice(0, 500),
         });
       }
       return await finalize(zai, clean, parsedRetry);
@@ -397,7 +365,6 @@ export async function POST(req: Request) {
       reply: FALLBACK_REPLY,
       listings: [],
       quickReplies: FALLBACK_QUICK_REPLIES,
-      _debug_error: err?.message || String(err),
     });
   }
 }
