@@ -194,7 +194,7 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
               there"). */}
           {showTooltip && !tooltipDismissed && !open && (
             <div
-                           className="ai-tooltip absolute bottom-[calc(100%+4px)] right-0 flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-2xl shadow-slate-900/10"
+                           className="ai-tooltip absolute bottom-[calc(100%+1px)] right-0 flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-2xl shadow-slate-900/10"
               role="tooltip"
             >
               <span className="text-xs text-slate-900 font-medium whitespace-nowrap">Ask Cars Night AI</span>
@@ -364,7 +364,7 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
 
           {/* Footer micro — dark text on white (matching the white composer) */}
           <div className="px-4 py-1.5 text-[10px] text-slate-400 text-center border-t border-slate-200 bg-white">
-            Powered by Cars Night AI · Recommendations from live listings only
+            Powered by Cars Night AI · Recommendations from live listings
           </div>
         </section>
       )}
@@ -428,20 +428,28 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
            Uses the border-image property to apply the neon gradient as the
            border color. border-image-slice: 1 stretches the gradient across
            the entire border. */
+        /* ===== Input border — website gradient (per user spec: "remove the
+           pink color from border use gradient on its place"). Uses a
+           background-clip technique to create a gradient border that follows
+           the border-radius (border-image doesn't work with border-radius).
+           The element has a gradient background, clipped to the padding box,
+           with an inner solid background to create the border effect. */
         .ai-input {
-          border: 2px solid;
-          border-image: linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%) 1;
-          border-radius: 9999px;
+          border: 2px solid transparent;
+          background:
+            linear-gradient(#fff, #fff) padding-box,
+            linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%) border-box;
         }
 
         /* ===== Quick reply chips — gradient border (per user spec: "for the
-           suggestion messages borders use the website gradient too") =====
-           Uses the border-image property to apply the neon gradient as the
-           border color. */
+           suggestion messages borders use the website gradient too"). Same
+           background-clip technique as the input for a gradient border that
+           follows the border-radius. */
         .ai-quick-reply {
-          border: 2px solid;
-          border-image: linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%) 1;
-          border-radius: 9999px;
+          border: 2px solid transparent;
+          background:
+            linear-gradient(#fff, #fff) padding-box,
+            linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%) border-box;
         }
 
         /* ===== Send button — gradient by default + button press animation

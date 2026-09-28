@@ -119,7 +119,7 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
               d="M 81,85 L 195,85 A 15,15 0 0,1 210,100 L 210,170 A 15,15 0 0,1 195,185 L 198,222 L 175,185 L 81,185 A 15,15 0 0,1 66,170 L 66,100 A 15,15 0 0,1 81,85 Z"
               fill="none"
               stroke="url(#ai-bubble-gradient)"
-              strokeWidth="12"
+              strokeWidth="7"
               strokeLinejoin="round"
               strokeLinecap="round"
             />
