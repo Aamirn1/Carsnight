@@ -2265,3 +2265,46 @@ Task: 4 AI chat fixes — rounded gradient borders, remove 'only', closer toolti
 Verified on production: all 4 fixes ✅ confirmed via DOM inspection + VLM.
 
 Commit: aad6564 — pushed to GitHub main. Vercel rebuilt and deployed.
+
+---
+Task ID: 56
+Agent: main (orchestrator)
+Task: Fix ONLY star animation and positioning — pure gear rotation, no orbit/bounce
+
+STAR POSITIONING:
+- Big star: center (64, 128) — at the upper-left corner of the bubble.
+- Small star: center (92, 90) — slightly ABOVE and to the RIGHT of the
+  big star (was at the same position 64,128 in the previous version).
+
+ANIMATION — pure gear rotation (no orbit, no bounce, no translate):
+- Removed ALL old orbit animations (rotate+translateX(14px)+counter-rotate).
+- Removed ALL twinkle animations (scale+opacity pulse on inner groups).
+- Removed ALL inner wrapper groups (ai-sparkle-large-inner, etc.).
+- Big star: CSS animation bigStarGear 6s linear infinite —
+  transform: rotate(0deg) → rotate(360deg) — CLOCKWISE.
+- Small star: CSS animation smallStarGear 6s linear infinite —
+  transform: rotate(0deg) → rotate(-360deg) — ANTI-CLOCKWISE.
+- Both use transform-box: fill-box + transform-origin: center.
+- Same duration (6s) — like connected gears at the same speed.
+- linear timing (not ease-in-out) for steady continuous rotation.
+- NO translateX, NO translateY, NO bouncing, NO drifting, NO orbiting.
+- Stars' positions are FIXED via SVG transform="translate(...)".
+  Only rotation is animated via CSS.
+- Removed static transform="rotate(45)" from star paths (CSS animation
+  handles rotation from 0°).
+
+NOTHING ELSE CHANGED:
+- Chat bubble: unchanged (same path, fill="none", strokeWidth=7).
+- Gradient border: unchanged (same flowing animation).
+- Tail: unchanged (V-shape pointing right).
+- Icon design: unchanged.
+
+Verified on production via DOM inspection:
+- animation-name: bigStarGear / smallStarGear ✅ (not ai-orbit-cw/ccw)
+- transform-box: fill-box ✅ (not view-box)
+- parent transform: translate(64,128) / translate(92,90) ✅ (different positions)
+- transform samples: pure rotation (a/b/c/d changing, tx/ty=0) ✅
+- No inner classes (ai-sparkle-*-inner) ✅ (removed)
+
+Commit: 569a1f7 + 8ad760c (empty trigger) — pushed to GitHub main.
+Vercel rebuilt and deployed.
