@@ -2344,3 +2344,31 @@ Task: 3 fixes — gradient input border, OpenAI API key support, smaller auto-hi
 Verified on production (carsnight1.vercel.app): all 3 fixes ✅ confirmed.
 
 Commit: 1b55414 — pushed to GitHub main. Vercel rebuilt and deployed.
+
+---
+Task ID: 58
+Agent: main (orchestrator)
+Task: Fix desktop navbar centering, hero content positioning, footer dark mode logo
+
+1. NAVBAR: replaced flex justify-between with 3-column grid (grid-cols-[1fr_auto_1fr]):
+   - Left: logo (justify-start)
+   - Center: nav links (justify-self-center) — perfectly centered
+   - Right: theme toggle + auth buttons (justify-end)
+   Verified: nav links center at 713px vs viewport center 720px (Δ -7px).
+
+2. HERO: repositioned content from bottom-left to upper-left:
+   - Changed from justify-end pb-24 to justify-center pt-20 pb-32
+   - Content in upper-left with max-width 640px
+   - Paragraph max-width 580px with leading-relaxed
+   - Tighter spacing between elements
+   - Scroll to Explore stays bottom-center (unchanged)
+   - Background image, cars, falling stars: untouched
+
+3. FOOTER dark mode: 'Cars' text word logo now WHITE in dark mode:
+   - Was: light={false} (always black)
+   - Now: light={isDark} (black in light mode, white in dark mode)
+   - Added useSyncExternalStore for dark-mode detection
+
+AI chat assistant: NOT TOUCHED.
+
+Commit: c2dee3d — pushed to GitHub main. Vercel rebuilt and deployed.
