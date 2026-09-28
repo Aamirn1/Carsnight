@@ -394,6 +394,7 @@ export async function POST(req: Request) {
       reply: FALLBACK_REPLY,
       listings: [],
       quickReplies: FALLBACK_QUICK_REPLIES,
+      _debug_error: err?.message || String(err),
     });
   }
 }
