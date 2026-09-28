@@ -342,14 +342,12 @@ export async function POST(req: Request) {
       return await finalize(zai, clean, parsed);
     }
 
-    // First response wasn't valid JSON — check if it's a 429 empty response
+    // First response wasn't valid JSON — check if it's an empty response
     if (!raw1 || raw1.length < 10) {
       return NextResponse.json({
         reply: FALLBACK_REPLY,
         listings: [],
         quickReplies: FALLBACK_QUICK_REPLIES,
-        _e: "empty_or_short_response",
-        _raw1: raw1?.slice(0, 200),
       });
     }
 
@@ -369,9 +367,6 @@ export async function POST(req: Request) {
         reply: FALLBACK_REPLY,
         listings: [],
         quickReplies: FALLBACK_QUICK_REPLIES,
-        _e: "parse_failed_both",
-        _raw1: raw1?.slice(0, 300),
-        _raw2: rawRetry?.slice(0, 300),
       });
     }
     return await finalize(zai, clean, parsedRetry);
@@ -381,7 +376,6 @@ export async function POST(req: Request) {
       reply: FALLBACK_REPLY,
       listings: [],
       quickReplies: FALLBACK_QUICK_REPLIES,
-      _e: (err?.message || "").slice(0, 300),
     });
   }
 }
