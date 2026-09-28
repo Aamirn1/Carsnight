@@ -148,7 +148,6 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
               className="ai-sparkle-large"
               d="M 0,-34 C 7,-20 9,-9 34,0 C 9,9 7,20 0,34 C -7,20 -9,9 -34,0 C -9,-9 -7,-20 0,-34 Z"
               fill="url(#ai-sparkle-large-gradient)"
-              filter="url(#ai-bubble-glow)"
             />
           </g>
 
@@ -157,7 +156,6 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
               className="ai-sparkle-small"
               d="M 0,-18 C 4,-8 6,-4 18,0 C 6,4 4,8 0,18 C -4,8 -6,4 -18,0 C -6,-4 -4,-8 0,-18 Z"
               fill="url(#ai-sparkle-small-gradient)"
-              filter="url(#ai-bubble-glow)"
             />
           </g>
         </g>

@@ -208,7 +208,8 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
               there"). */}
           {showTooltip && !tooltipDismissed && !open && (
             <div
-              className="ai-tooltip absolute bottom-[calc(100%-2px)] right-0 flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 shadow-lg shadow-slate-900/10"
+              className="ai-tooltip absolute right-0 flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 shadow-lg shadow-slate-900/10"
+              style={{ bottom: "calc(100% - 8px)" }}
               role="tooltip"
             >
               <span className="text-[11px] text-slate-900 font-medium whitespace-nowrap">Ask Cars Night AI</span>
@@ -359,7 +360,7 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
               placeholder="Ask about cars, budgets, rentals…"
               disabled={sending}
               aria-label="Type your message"
-              className="ai-input flex-1 min-w-0 rounded-full px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-400/40 disabled:opacity-60"
+              className="ai-input flex-1 min-w-0 rounded-full px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none disabled:opacity-60"
               maxLength={500}
             />
             <button

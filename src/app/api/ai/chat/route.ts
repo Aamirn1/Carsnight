@@ -48,10 +48,17 @@ function getLLM(): Promise<LLMClient> {
           chat: {
             completions: {
               create: async (body: any) => {
-                const messages = body.messages.map((m: any) => ({
-                  role: m.role === "assistant" ? "system" : m.role,
-                  content: m.content,
-                }));
+                // Map ZAI-style roles to OpenAI roles:
+                // ZAI uses "assistant" for system prompts; OpenAI uses "system".
+                // ZAI uses "assistant" for AI responses; OpenAI also uses "assistant".
+                // We detect system prompts by checking if the content starts with
+                // the SYSTEM_PROMPT or SUMMARIZE_PROMPT markers.
+                const messages = body.messages.map((m: any, i: number) => {
+                  if (i === 0 && m.role === "assistant" && typeof m.content === "string" && m.content.length > 200) {
+                    return { role: "system", content: m.content };
+                  }
+                  return { role: m.role, content: m.content };
+                });
                 const res = await fetch("https://api.openai.com/v1/chat/completions", {
                   method: "POST",
                   headers: {
@@ -66,8 +73,9 @@ function getLLM(): Promise<LLMClient> {
                   }),
                 });
                 if (!res.ok) {
-                  const err = await res.text();
-                  throw new Error(`OpenAI API error: ${res.status} ${err}`);
+                  const errText = await res.text();
+                  console.error("[AI Chat] OpenAI API error:", res.status, errText);
+                  throw new Error(`OpenAI API error: ${res.status}`);
                 }
                 const data = await res.json();
                 // Normalize to the ZAI response format
@@ -380,7 +388,8 @@ export async function POST(req: Request) {
     }
 
     return await finalize(zai, clean, parsed);
-  } catch {
+  } catch (err: any) {
+    console.error("[AI Chat] Error:", err?.message || err);
     return NextResponse.json({
       reply: FALLBACK_REPLY,
       listings: [],
