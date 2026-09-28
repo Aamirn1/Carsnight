@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback, useImperativeHandle, forwardRef, FormEvent } from "react";
+import Image from "next/image";
 import { X, Send, Sparkles, Trash2, AlertTriangle, ArrowRight } from "lucide-react";
 import { AIListingCard, type AIListing } from "@/components/ai-listing-card";
 import { AIAssistantIcon } from "@/components/ai-assistant-icon";
@@ -193,7 +194,7 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
               there"). */}
           {showTooltip && !tooltipDismissed && !open && (
             <div
-                           className="ai-tooltip absolute bottom-[calc(100%+10px)] right-0 flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-2xl shadow-slate-900/10"
+                           className="ai-tooltip absolute bottom-[calc(100%+4px)] right-0 flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-2xl shadow-slate-900/10"
               role="tooltip"
             >
               <span className="text-xs text-slate-900 font-medium whitespace-nowrap">Ask Cars Night AI</span>
@@ -262,8 +263,18 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
               background: "linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%)",
             }}
           >
-            <div className="grid place-items-center shrink-0" style={{ width: 44, height: 44 }}>
-              <AIAssistantIcon width={44} />
+            {/* DP — uses the current favicon as the AI chat DP (per user
+                spec: "use the current favicon as the ai chat dp"). The
+                favicon is the user's 'CM' car logo image. */}
+            <div className="grid place-items-center shrink-0 bg-white rounded-full overflow-hidden" style={{ width: 44, height: 44 }}>
+              <Image
+                src="/favicon-256.png"
+                alt="Cars Night AI"
+                width={44}
+                height={44}
+                className="object-cover"
+                unoptimized
+              />
             </div>
             <div className="flex-1 min-w-0">
               <h2 className="text-sm font-semibold text-white flex items-center gap-1.5">
@@ -275,11 +286,14 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
               </h2>
               <p className="text-[11px] text-white/50 truncate">Your personal car-shopping assistant</p>
             </div>
+            {/* Delete + close icons — solid white (per user spec: "use solid
+                white color for both of them, they must be visible like the
+                heading Cars Night AI"). */}
             <button
               type="button"
               onClick={onNewChat}
               aria-label="Start a new chat"
-              className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+              className="p-2 rounded-lg text-white hover:bg-white/20 transition-colors"
               title="New chat"
             >
               <Trash2 className="h-4 w-4" />
@@ -288,7 +302,7 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
               type="button"
               onClick={() => setOpen(false)}
               aria-label="Close chat"
-              className="p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/5 transition-colors"
+              className="p-2 rounded-lg text-white hover:bg-white/20 transition-colors"
             >
               <X className="h-4 w-4" />
             </button>
@@ -315,9 +329,10 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
             )}
           </div>
 
-          {/* Composer — white background with black text (per user spec:
-              "turn it to white both chat inner input box and outer black
-              background turn all the text color to black"). */}
+          {/* Composer — white background with black text. Per user spec:
+              - Send button: gradient by default (not dull), with a button
+                press animation when clicked.
+              - Input border: website gradient (not pink). */}
           <form
             onSubmit={onSubmit}
             className="border-t border-slate-200 bg-white p-3 flex items-center gap-2"
@@ -330,14 +345,14 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
               placeholder="Ask about cars, budgets, rentals…"
               disabled={sending}
               aria-label="Type your message"
-              className="flex-1 min-w-0 rounded-full bg-slate-100 border border-slate-300 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-400/40 focus:border-fuchsia-400/30 disabled:opacity-60"
+              className="ai-input flex-1 min-w-0 rounded-full bg-slate-50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-400/40 disabled:opacity-60"
               maxLength={500}
             />
             <button
               type="submit"
               disabled={sending || !input.trim()}
               aria-label="Send message"
-              className="shrink-0 h-10 w-10 rounded-full grid place-items-center text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:scale-105 active:scale-95"
+              className="ai-send-btn shrink-0 h-10 w-10 rounded-full grid place-items-center text-white transition-all active:scale-90 disabled:cursor-not-allowed"
               style={{
                 background: "linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%)",
                 boxShadow: "0 4px 16px -4px rgba(139,92,246,0.6)",
@@ -406,6 +421,43 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
             opacity: 1;
             transform: translateX(0) scale(1);
           }
+        }
+
+        /* ===== Input border — website gradient (per user spec: "In ai chat
+           the message input box border is pink use website gradient for it") =====
+           Uses the border-image property to apply the neon gradient as the
+           border color. border-image-slice: 1 stretches the gradient across
+           the entire border. */
+        .ai-input {
+          border: 2px solid;
+          border-image: linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%) 1;
+          border-radius: 9999px;
+        }
+
+        /* ===== Quick reply chips — gradient border (per user spec: "for the
+           suggestion messages borders use the website gradient too") =====
+           Uses the border-image property to apply the neon gradient as the
+           border color. */
+        .ai-quick-reply {
+          border: 2px solid;
+          border-image: linear-gradient(135deg, #00A8FF 0%, #6366F1 40%, #8B5CF6 70%, #D946EF 100%) 1;
+          border-radius: 9999px;
+        }
+
+        /* ===== Send button — gradient by default + button press animation
+           (per user spec: "make that gradient by default when user click that
+           send icon button use a button press animation for that") =====
+           The gradient is set via inline style. The press animation is a
+           quick scale-down on :active. The gradient stays vibrant even
+           when disabled (no dimming) — per user spec: "make that gradient
+           by default". */
+        .ai-send-btn:disabled {
+          opacity: 1;
+          cursor: not-allowed;
+        }
+        .ai-send-btn:not(:disabled):active {
+          transform: scale(0.85);
+          box-shadow: 0 2px 8px -2px rgba(139,92,246,0.8) !important;
         }
 
         /* ===== Hide the entire AI FAB container (button + tooltip) when a
@@ -478,7 +530,8 @@ function MessageBubble({
           </div>
         )}
 
-        {/* Quick reply chips — dark border/text on white background */}
+        {/* Quick reply chips — gradient border (per user spec: "for the
+            suggestion messages borders use the website gradient too"). */}
         {message.quickReplies && message.quickReplies.length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {message.quickReplies.map((qr, i) => (
@@ -487,7 +540,7 @@ function MessageBubble({
                 type="button"
                 onClick={() => onQuickReply(qr)}
                 disabled={disabled}
-                className="group inline-flex items-center gap-1 rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-700 hover:text-slate-900 hover:border-fuchsia-400 hover:bg-fuchsia-50 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="ai-quick-reply group inline-flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-xs text-slate-700 hover:text-slate-900 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Sparkles className="h-3 w-3 text-fuchsia-500 group-hover:text-fuchsia-600" />
                 <span className="truncate max-w-[200px]">{qr}</span>
