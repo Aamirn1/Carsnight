@@ -96,16 +96,6 @@ export function AIAssistantIcon({ width, className = "" }: AIAssistantIconProps)
             <stop offset="0%" stopColor="#FF007F" />
             <stop offset="100%" stopColor="#FF66C4" />
           </linearGradient>
-
-          <filter id="ai-bubble-glow" x="-50%" y="-50%" width="200%" height="200%">
-            <feGaussianBlur stdDeviation="2" result="blur1" />
-            <feGaussianBlur stdDeviation="4" in="SourceGraphic" result="blur2" />
-            <feMerge>
-              <feMergeNode in="blur2" />
-              <feMergeNode in="blur1" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
         </defs>
 
         <g>
