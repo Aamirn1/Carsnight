@@ -2398,3 +2398,47 @@ Verified on production: all 10 elements (a-j) present, AI assistant
 visible, mobile works, zero console errors.
 
 Commit: a4cc524 — pushed to GitHub main. Vercel rebuilt and deployed.
+
+---
+Task ID: 60
+Agent: main (orchestrator)
+Task: Comprehensive desktop hero redesign — glassmorphism, SVG network, flag city cards, gradient stats, feature cards
+
+Note: The user's attached reference images (Reference A background + Reference B UI design) did not arrive on the sandbox filesystem. The existing /hero-cars-desktop.png (generated in Task 59) was kept as the background — NOT regenerated.
+
+Redesigned the desktop hero per the user's detailed 23-section spec:
+
+1. READABILITY OVERLAY: left-dark/right-light gradient
+   linear-gradient(90deg, rgba(2,5,20,0.72) → 0.05) so cars remain visible.
+
+2. HEADLINE: 'no limits.' uses purple-blue gradient text:
+   linear-gradient(90deg, #A855F7, #7C6CF6, #38A7FF)
+   font-size: clamp(44px, 4.2vw, 68px), line-height: 1.0, letter-spacing: -0.03em.
+
+3. SEARCH CARD: premium glassmorphism with gradient bg, blur(18px), border.
+   - Buy/Rent/All tabs with icons (Car, CalendarDays, Grid2X2)
+   - Buy active with brand gradient
+   - Search input + country dropdown + gradient Search button
+
+4. STATS ROW: 4 items with specific icon colors and vertical separators:
+   Car #E040FB, Globe2 #00B7FF, Bitcoin #F5B82E, ShieldCheck #22D3EE.
+
+5. BRANDS STRIP: dark navy glass bar, 9 brands + 'and many more →'.
+
+6. FEATURE CARDS: 4 glassmorphism cards with gradient icon containers
+   (Globe2, ShieldCheck, Car, Crown), hover translateY(-2px).
+
+7. SVG GLOBAL NETWORK: 4 dotted connection arcs with animated dash movement,
+   4 glowing nodes with radial glow, opacity 0.25-0.5.
+
+8. CITY CARDS: 4 floating glassmorphism cards with COUNTRY FLAGS:
+   🇺🇸 New York, 🇬🇧 London, 🇦🇪 Dubai, 🇯🇵 Tokyo.
+   Staggered float animation, blue border, glow shadow.
+
+9. LAYOUT: max-width 1500px, 5vw padding, left 42% / right 58% grid.
+   min-h-screen for proper breathing room.
+
+Verified on production: all 10 elements (a-j) present, AI assistant visible,
+mobile unchanged, zero console errors, no overflow.
+
+Commit: b98ee12 — pushed to GitHub main. Vercel rebuilt and deployed.
