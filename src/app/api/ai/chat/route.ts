@@ -93,7 +93,7 @@ function getLLM(): Promise<LLMClient> {
                       };
                     }
                   }
-                  throw new Error(`OpenAI API error: ${res.status}`);
+                  throw new Error(`OpenAI API error: ${res.status} ${errText.slice(0,200)}`);
                 }
                 const data = await res.json();
                 // Normalize to the ZAI response format
@@ -365,6 +365,7 @@ export async function POST(req: Request) {
       reply: FALLBACK_REPLY,
       listings: [],
       quickReplies: FALLBACK_QUICK_REPLIES,
+      _e: (err?.message || "").slice(0, 300),
     });
   }
 }
