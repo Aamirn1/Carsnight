@@ -2308,3 +2308,39 @@ Verified on production via DOM inspection:
 
 Commit: 569a1f7 + 8ad760c (empty trigger) — pushed to GitHub main.
 Vercel rebuilt and deployed.
+
+---
+Task ID: 57
+Agent: main (orchestrator)
+Task: 3 fixes — gradient input border, OpenAI API key support, smaller auto-hiding tooltip
+
+1. Input box border: removed bg-slate-50 Tailwind class that was overriding
+   the CSS gradient background. The input now uses the exact same gradient
+   border as the suggestion messages (background-clip technique). No more
+   pink border. Verified on production: background-color is transparent,
+   background-image is the neon gradient.
+
+2. OpenAI API key support: the /api/ai/chat endpoint now supports two LLM
+   providers:
+   - OpenAI (when OPENAI_API_KEY env var is set) — uses fetch to call the
+     OpenAI Chat Completions API with gpt-4o-mini (configurable via
+     OPENAI_MODEL). Normalizes the response to the ZAI format.
+   - ZAI (fallback when OPENAI_API_KEY is not set) — uses z-ai-web-dev-sdk.
+   Removed thinking: { type: "disabled" } from all LLM calls (not supported
+   by OpenAI). Updated .env.example with OPENAI_API_KEY documentation.
+   To enable: set OPENAI_API_KEY=sk-... in Vercel project env vars.
+
+3. Tooltip smaller, closer, 5-second auto-hide:
+   - Reduced: text-[11px] (was text-xs), px-2.5 py-1.5 (was px-3 py-2),
+     rounded-lg (was rounded-xl), shadow-lg (was shadow-2xl).
+   - Smaller X icon: h-3 w-3 (was h-3.5 w-3.5).
+   - Closer: bottom-[calc(100%-2px)] (was +1px — now overlaps icon by 2px).
+   - 5-second auto-hide: tooltip shows after 3s, stays visible for exactly
+     5s, then auto-hides + sets tooltipDismissed=true. Never comes back.
+     On page refresh, in-memory state resets → tooltip appears again.
+   - Verified on production: visible for exactly 5000ms, did not reappear
+     after 14+ seconds.
+
+Verified on production (carsnight1.vercel.app): all 3 fixes ✅ confirmed.
+
+Commit: 1b55414 — pushed to GitHub main. Vercel rebuilt and deployed.
