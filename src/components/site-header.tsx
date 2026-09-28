@@ -114,14 +114,17 @@ export function SiteHeader() {
     >
       {/* Desktop: 3-column grid layout — logo left, nav links centered,
           auth buttons right. The nav links are truly centered independently
-          of the left/right section widths. */}
+          of the left/right section widths.
+          Mobile: the 3-column grid naturally puts logo left, empty center,
+          and theme toggle + burger right — matching the original layout. */}
       <div className="mx-auto grid h-16 max-w-7xl grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6 lg:px-8">
         {/* Left: logo */}
         <div className="flex items-center justify-start">
           <BrandMark light={logoLight} />
         </div>
 
-        {/* Center: nav links — perfectly centered between logo and right actions */}
+        {/* Center: nav links — perfectly centered between logo and right actions.
+            Hidden on mobile (lg:flex only). */}
         <nav className="hidden lg:flex items-center gap-1 justify-self-center" aria-label="Main navigation">
           {NAV_LINKS.map((l) => (
             <Link
@@ -143,8 +146,13 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        {/* Right: theme toggle + auth buttons */}
-        <div className="flex items-center gap-2 justify-end">
+        {/* Right: theme toggle + auth buttons + burger.
+            On mobile, only theme toggle and burger are visible
+            (auth buttons are hidden sm:inline-flex, burger is lg:hidden).
+            The justify-end keeps them at the far right.
+            col-start-3 forces this div into the 3rd grid column even when
+            the nav (2nd column) is display:none on mobile. */}
+        <div className="flex items-center gap-2 justify-end col-start-3 lg:col-start-auto">
           <ThemeToggle variant={iconVariant} />
           {isAuthed ? (
             <>
