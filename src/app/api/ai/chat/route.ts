@@ -13,47 +13,101 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 // ----------------------------------------------------------------------------
-// ZAI instance factory.
+// LLM instance factory.
 //
-// The z-ai-web-dev-sdk reads its credentials from a `.z-ai-config` file at
-// process.cwd(), home dir, or /etc/.z-ai-config. In this dev sandbox that file
-// is auto-provisioned. On Vercel (or any other deployment) the user must set
-// the following env vars so the assistant can call the LLM:
-//   ZAI_API_KEY   — required
-//   ZAI_BASE_URL  — optional (defaults to https://internal-api.z.ai/v1)
-//   ZAI_TOKEN     — optional (JWT session token)
-//   ZAI_CHAT_ID   — optional
-//   ZAI_USER_ID   — optional
-// If env vars are present we construct ZAI directly (bypassing the config
-// file). Otherwise we fall back to ZAI.create() (which reads the config file).
+// Supports two providers:
+// 1. OpenAI — when OPENAI_API_KEY is set in env vars. Uses the OpenAI
+//    Chat Completions API (https://api.openai.com/v1/chat/completions).
+//    Model: gpt-4o-mini (configurable via OPENAI_MODEL env var).
+// 2. ZAI (z-ai-web-dev-sdk) — fallback when OPENAI_API_KEY is not set.
+//    Uses the ZAI config file or ZAI_* env vars.
+//
+// To enable OpenAI on Vercel:
+//   OPENAI_API_KEY=sk-...  (required)
+//   OPENAI_MODEL=gpt-4o-mini  (optional, defaults to gpt-4o-mini)
 // ----------------------------------------------------------------------------
-let zaiPromise: Promise<any> | null = null;
-function getZai(): Promise<any> {
-  if (!zaiPromise) {
-    zaiPromise = (async () => {
-      const apiKey = process.env.ZAI_API_KEY;
-      const baseUrl = process.env.ZAI_BASE_URL;
-      const token = process.env.ZAI_TOKEN;
-      const chatId = process.env.ZAI_CHAT_ID;
-      const userId = process.env.ZAI_USER_ID;
-      if (apiKey || baseUrl || token) {
-        const config: any = {
-          baseUrl: baseUrl || "https://internal-api.z.ai/v1",
-          apiKey: apiKey || "Z.ai",
+
+interface LLMClient {
+  chat: {
+    completions: {
+      create: (body: any) => Promise<any>;
+    };
+  };
+}
+
+let llmPromise: Promise<LLMClient> | null = null;
+
+function getLLM(): Promise<LLMClient> {
+  if (!llmPromise) {
+    llmPromise = (async () => {
+      const openaiKey = process.env.OPENAI_API_KEY;
+      if (openaiKey) {
+        // --- OpenAI provider ---
+        const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
+        return {
+          chat: {
+            completions: {
+              create: async (body: any) => {
+                const messages = body.messages.map((m: any) => ({
+                  role: m.role === "assistant" ? "system" : m.role,
+                  content: m.content,
+                }));
+                const res = await fetch("https://api.openai.com/v1/chat/completions", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${openaiKey}`,
+                  },
+                  body: JSON.stringify({
+                    model,
+                    messages,
+                    temperature: 0.7,
+                    max_tokens: 1000,
+                  }),
+                });
+                if (!res.ok) {
+                  const err = await res.text();
+                  throw new Error(`OpenAI API error: ${res.status} ${err}`);
+                }
+                const data = await res.json();
+                // Normalize to the ZAI response format
+                return {
+                  choices: [
+                    {
+                      message: {
+                        content: data.choices?.[0]?.message?.content ?? "",
+                      },
+                    },
+                  ],
+                };
+              },
+            },
+          },
         };
-        if (token) config.token = token;
-        if (chatId) config.chatId = chatId;
-        if (userId) config.userId = userId;
-        return new ZAI(config);
       }
-      return await ZAI.create();
+
+      // --- ZAI provider (fallback) ---
+      const zaiConfig: any = {};
+      const zaiApiKey = process.env.ZAI_API_KEY;
+      const zaiBaseUrl = process.env.ZAI_BASE_URL;
+      const zaiToken = process.env.ZAI_TOKEN;
+      const zaiChatId = process.env.ZAI_CHAT_ID;
+      const zaiUserId = process.env.ZAI_USER_ID;
+      if (zaiApiKey || zaiBaseUrl || zaiToken) {
+        zaiConfig.baseUrl = zaiBaseUrl || "https://internal-api.z.ai/v1";
+        zaiConfig.apiKey = zaiApiKey || "Z.ai";
+        if (zaiToken) zaiConfig.token = zaiToken;
+        if (zaiChatId) zaiConfig.chatId = zaiChatId;
+        if (zaiUserId) zaiConfig.userId = zaiUserId;
+        return new ZAI(zaiConfig) as LLMClient;
+      }
+      return (await ZAI.create()) as LLMClient;
     })().catch((e) => {
-      // Reset so next request can try again
-      zaiPromise = null;
+      llmPromise = null;
       throw e;
     });
   }
-  return zaiPromise;
+  return llmPromise;
 }
 
 // ============================================================================
@@ -288,7 +342,7 @@ export async function POST(req: Request) {
     .map((m) => ({ role: m.role, content: m.content.slice(0, 4000) }));
 
   try {
-    const zai = await getZai();
+    const zai = await getLLM();
 
     // --- STEP 1: ask the LLM what to do (and which tool to call, if any) ---
     const firstMessages = [
@@ -298,7 +352,6 @@ export async function POST(req: Request) {
 
     const completion1 = await zai.chat.completions.create({
       messages: firstMessages,
-      thinking: { type: "disabled" },
     });
 
     const raw1 = completion1.choices[0]?.message?.content ?? "";
@@ -313,7 +366,6 @@ export async function POST(req: Request) {
       ];
       const completionRetry = await zai.chat.completions.create({
         messages: retryMessages,
-        thinking: { type: "disabled" },
       });
       const rawRetry = completionRetry.choices[0]?.message?.content ?? "";
       const parsedRetry = parseAssistantJson(rawRetry);
@@ -362,7 +414,6 @@ async function finalize(zai: any, history: ChatMessage[], parsed: AssistantJson)
   try {
     const completion2 = await zai.chat.completions.create({
       messages: finalMessages,
-      thinking: { type: "disabled" },
     });
     const reply = completion2.choices[0]?.message?.content ?? "";
 

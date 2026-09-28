@@ -68,13 +68,27 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
   }, [messages, sending, open]);
 
   // Show a one-time tooltip after 3s if user hasn't opened the chat and
-  // hasn't dismissed it yet. Once dismissed, it will never show again.
+  // hasn't dismissed it yet. The tooltip auto-hides after 5s and never
+  // comes back (but reappears on page refresh since it's in-memory state).
   useEffect(() => {
-    const t = setTimeout(() => {
+    const showTimer = setTimeout(() => {
       if (!firstOpenRef.current && !tooltipDismissed) setShowTooltip(true);
     }, 3000);
-    return () => clearTimeout(t);
-  }, [tooltipDismissed]);
+
+    // Auto-hide after 5 seconds (the tooltip shows for 5s then goes back)
+    let hideTimer: ReturnType<typeof setTimeout> | undefined;
+    if (showTooltip && !tooltipDismissed) {
+      hideTimer = setTimeout(() => {
+        setShowTooltip(false);
+        setTooltipDismissed(true);
+      }, 5000);
+    }
+
+    return () => {
+      clearTimeout(showTimer);
+      if (hideTimer) clearTimeout(hideTimer);
+    };
+  }, [tooltipDismissed, showTooltip]);
 
   // Auto-hide tooltip when chat opens
   useEffect(() => {
@@ -194,20 +208,20 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
               there"). */}
           {showTooltip && !tooltipDismissed && !open && (
             <div
-                           className="ai-tooltip absolute bottom-[calc(100%+1px)] right-0 flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 shadow-2xl shadow-slate-900/10"
+              className="ai-tooltip absolute bottom-[calc(100%-2px)] right-0 flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 shadow-lg shadow-slate-900/10"
               role="tooltip"
             >
-              <span className="text-xs text-slate-900 font-medium whitespace-nowrap">Ask Cars Night AI</span>
+              <span className="text-[11px] text-slate-900 font-medium whitespace-nowrap">Ask Cars Night AI</span>
               <button
                 type="button"
                 onClick={() => { setShowTooltip(false); setTooltipDismissed(true); }}
                 aria-label="Dismiss tooltip"
                 className="text-slate-400 hover:text-slate-900"
               >
-                <X className="h-3.5 w-3.5" />
+                <X className="h-3 w-3" />
               </button>
               {/* Arrow */}
-              <span className="absolute -bottom-1 right-6 h-2 w-2 rotate-45 bg-white border-r border-b border-slate-200" />
+              <span className="absolute -bottom-1 right-5 h-2 w-2 rotate-45 bg-white border-r border-b border-slate-200" />
             </div>
           )}
 
@@ -345,7 +359,7 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
               placeholder="Ask about cars, budgets, rentals…"
               disabled={sending}
               aria-label="Type your message"
-              className="ai-input flex-1 min-w-0 rounded-full bg-slate-50 px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-400/40 disabled:opacity-60"
+              className="ai-input flex-1 min-w-0 rounded-full px-4 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-400/40 disabled:opacity-60"
               maxLength={500}
             />
             <button
@@ -403,11 +417,13 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
         }
 
         /* ===== Tooltip animation — slides out from behind the AI icon =====
-           Per user spec: "make an animation this text must come out from
-           behind the ai assistant icon if user close it then go back from
-           where it come and must not come out again."
-           The tooltip slides in from the right (from behind the icon) and
-           slides back out to the right when dismissed. */
+           Per user spec: "add an animation it will come out for 5 seconds
+           then go back in and never come again, if user refresh page the
+           it again occur."
+           The tooltip slides in from the right (from behind the icon),
+           stays visible for 5 seconds, then slides back out to the right.
+           The auto-hide is handled by the React useEffect (setTooltipDismissed
+           after 5s), and this CSS animation handles the slide-in visual. */
         .ai-tooltip {
           animation: ai-tooltip-slide-out 0.4s ease-out forwards;
           transform-origin: right center;
@@ -415,7 +431,7 @@ function AssistantImpl(_props: Record<string, never>, ref: React.Ref<{ open: () 
         @keyframes ai-tooltip-slide-out {
           from {
             opacity: 0;
-            transform: translateX(30px) scale(0.8);
+            transform: translateX(20px) scale(0.8);
           }
           to {
             opacity: 1;
