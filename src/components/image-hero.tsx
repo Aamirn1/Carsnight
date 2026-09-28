@@ -73,11 +73,13 @@ export function ImageHero({ tagline, announcement, saleCount, rentCount, userCou
           buttons, links, or text selection. Respects prefers-reduced-motion. */}
       <FallingStars count={80} />
 
-      {/* Content overlay — headline, typewriter, CTAs, stats.
-          Positioned in the lower-left area (justify-end + pb-24). */}
-      <div className="relative z-10 h-full flex flex-col justify-end pb-24 md:pb-28">
+      {/* Content overlay — announcement pill, headline, paragraph, buttons,
+          stats. Positioned in the upper-left area with proper spacing so it
+          doesn't overlap the cars. Left-aligned with max-width ~640px.
+          Top spacing accounts for the navbar height (64px = pt-20). */}
+      <div className="relative z-10 h-full flex flex-col justify-center pt-20 pb-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full">
-          <div className="max-w-2xl text-white">
+          <div className="max-w-[640px] text-white">
             <div className="inline-flex items-center gap-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/25 px-2.5 py-1 text-[10px] sm:text-xs md:text-sm font-medium whitespace-nowrap overflow-hidden">
               <Sparkles className="h-3 w-3 icon-neon shrink-0" /> {announcement}
             </div>
@@ -97,10 +99,10 @@ export function ImageHero({ tagline, announcement, saleCount, rentCount, userCou
                 />
               </span>
             </h1>
-            <p className="mt-6 text-base sm:text-lg text-white max-w-xl [text-shadow:0_1px_8px_rgba(0,0,0,0.6)]">
+            <p className="mt-5 text-base sm:text-lg text-white max-w-[580px] leading-relaxed [text-shadow:0_1px_8px_rgba(0,0,0,0.6)]">
               Post your car ad and reach premium buyers worldwide — list in minutes, sell faster, and rent your vehicle for special events.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <div className="mt-7 flex flex-wrap gap-3">
               <Button asChild size="lg" className="btn-gold shadow-lg shadow-amber-900/30">
                 <Link href="/cars-for-sale">Browse cars</Link>
               </Button>
@@ -113,7 +115,7 @@ export function ImageHero({ tagline, announcement, saleCount, rentCount, userCou
                 <Link href="/post-ad"><Sparkles className="h-4 w-4 mr-1.5" /> Post a free ad</Link>
               </Button>
             </div>
-            <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/85 [text-shadow:0_1px_6px_rgba(0,0,0,0.6)]">
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/85 [text-shadow:0_1px_6px_rgba(0,0,0,0.6)]">
               <span><strong className="font-semibold text-white">{(saleCount + rentCount).toLocaleString()}+</strong> listings</span>
               <span className="text-white/30">·</span>
               <span><strong className="font-semibold text-white">20+</strong> countries</span>

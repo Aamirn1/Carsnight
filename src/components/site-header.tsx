@@ -112,32 +112,39 @@ export function SiteHeader() {
           : "border-b border-transparent bg-transparent backdrop-blur-none",
       )}
     >
-      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-8">
+      {/* Desktop: 3-column grid layout — logo left, nav links centered,
+          auth buttons right. The nav links are truly centered independently
+          of the left/right section widths. */}
+      <div className="mx-auto grid h-16 max-w-7xl grid-cols-[1fr_auto_1fr] items-center px-4 sm:px-6 lg:px-8">
+        {/* Left: logo */}
+        <div className="flex items-center justify-start">
           <BrandMark light={logoLight} />
-          <nav className="hidden lg:flex items-center gap-1" aria-label="Main navigation">
-            {NAV_LINKS.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className={cn(
-                  "rounded-md px-2.5 py-2 text-sm font-medium transition-colors whitespace-nowrap",
-                  navTextWhite
-                    ? isActive(l.href)
-                      ? "bg-white/15 text-white"
-                      : "text-white/80 hover:text-white hover:bg-white/10"
-                    : isActive(l.href)
-                      ? "bg-primary/10 text-primary"
-                      : "text-foreground/70 hover:text-foreground hover:bg-muted",
-                )}
-              >
-                {l.label}
-              </Link>
-            ))}
-          </nav>
         </div>
 
-        <div className="flex items-center gap-2">
+        {/* Center: nav links — perfectly centered between logo and right actions */}
+        <nav className="hidden lg:flex items-center gap-1 justify-self-center" aria-label="Main navigation">
+          {NAV_LINKS.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className={cn(
+                "rounded-md px-2.5 py-2 text-sm font-medium transition-colors whitespace-nowrap",
+                navTextWhite
+                  ? isActive(l.href)
+                    ? "bg-white/15 text-white"
+                    : "text-white/80 hover:text-white hover:bg-white/10"
+                  : isActive(l.href)
+                    ? "bg-primary/10 text-primary"
+                    : "text-foreground/70 hover:text-foreground hover:bg-muted",
+              )}
+            >
+              {l.label}
+            </Link>
+          ))}
+        </nav>
+
+        {/* Right: theme toggle + auth buttons */}
+        <div className="flex items-center gap-2 justify-end">
           <ThemeToggle variant={iconVariant} />
           {isAuthed ? (
             <>
