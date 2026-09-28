@@ -382,6 +382,9 @@ export async function POST(req: Request) {
           reply: FALLBACK_REPLY,
           listings: [],
           quickReplies: FALLBACK_QUICK_REPLIES,
+          _debug: "parse_failed",
+          _debug_raw1: raw1?.slice(0, 500),
+          _debug_rawRetry: rawRetry?.slice(0, 500),
         });
       }
       return await finalize(zai, clean, parsedRetry);
